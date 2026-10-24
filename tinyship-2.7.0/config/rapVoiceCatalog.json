@@ -1,0 +1,26 @@
+{
+  "male-young": [
+    { "id": "male-young-a", "seed": 1246101, "person": "young adult man in his twenties", "description": "young adult masculine voice, bright tenor, light clean resonance, forward placement and agile crisp consonants" },
+    { "id": "male-young-b", "seed": 1246102, "person": "young adult man in his twenties", "description": "young adult masculine voice, low baritone, full chest resonance, slightly grainy texture and punchy attacks" }
+  ],
+  "male-mature": [
+    { "id": "male-mature-a", "seed": 1246201, "person": "middle-aged adult man in his forties", "description": "mature masculine voice, deep rounded baritone, warm dense resonance and measured authoritative diction" },
+    { "id": "male-mature-b", "seed": 1246202, "person": "middle-aged adult man in his forties", "description": "mature masculine voice, mid-register tenor, lean nasal edge, dry smoky texture and incisive staccato diction" }
+  ],
+  "male-senior": [
+    { "id": "male-senior-a", "seed": 1246301, "person": "older adult man in his seventies", "description": "older masculine voice, low gravelly bass-baritone, weathered rough resonance, deliberate firm consonants and energetic clear delivery without frailty" },
+    { "id": "male-senior-b", "seed": 1246302, "person": "older adult man in his seventies", "description": "older masculine voice, lighter mid-register tenor, dry reedy resonance, gentle airy edge and nimble precise consonants without frailty" }
+  ],
+  "female-young": [
+    { "id": "female-young-a", "seed": 1246401, "person": "young adult woman in her twenties", "description": "young adult feminine voice, bright high-mid speaking register, clear ringing resonance, light clean texture and sharp agile consonants" },
+    { "id": "female-young-b", "seed": 1246402, "person": "young adult woman in her twenties", "description": "young adult feminine voice, lower alto speaking register, rounded warm resonance, slightly husky texture and bold clipped consonants" }
+  ],
+  "female-mature": [
+    { "id": "female-mature-a", "seed": 1246501, "person": "middle-aged adult woman in her forties", "description": "mature feminine voice, rich low contralto speaking register, smoky chest resonance, grounded confident diction and crisp phrase endings" },
+    { "id": "female-mature-b", "seed": 1246502, "person": "middle-aged adult woman in her forties", "description": "mature feminine voice, clear mid-high speaking register, focused forward resonance, dry bright texture and pointed articulate consonants" }
+  ],
+  "female-senior": [
+    { "id": "female-senior-a", "seed": 1246601, "person": "older adult woman in her seventies", "description": "older feminine voice, low warm alto, gently weathered husky resonance, full rounded tone and deliberate crisp diction without frailty" },
+    { "id": "female-senior-b", "seed": 1246602, "person": "older adult woman in her seventies", "description": "older feminine voice, higher light speaking register, thin reedy resonance with a gentle airy texture, lively precise diction without frailty" }
+  ]
+}

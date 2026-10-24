@@ -2,6 +2,24 @@
 
 The deployed TanStack homepage now uses free direct generation. New requests do not create Stripe checkouts or consume user credits. Historical paid-order verification and recovery remain available.
 
+## Current voice library: owner-supplied recordings
+
+### Rap delivery revision
+
+The owner reported conversational delivery for task `ukO8TeibXEXt8U6FQeAQH`. Its saved English lyrics use four birthday-greeting lines; the prior drafting instructions requested 4–6 words and "unhurried" delivery. This is an owner listening report plus source/task inspection, not an independent audio assessment.
+
+Lyric drafting and the video prompt now share a 96 BPM target (`RAP_TEMPO_BPM`). New drafts target 6–8 short English words and roughly 8–12 syllables per bar, paired end rhymes and internal rhythmic groups. The video prompt explicitly requests four-beat MC bars with eighth-note bursts, occasional offbeat pickups, backbeat accents and audible drums. Delivery guidance sits outside literal dialogue tags, preserving approved lyrics verbatim and the existing solo windows. Source voices supply identity/timbre only. Existing edited lyrics are never rewritten on video submission; users must regenerate lyrics to get the new drafting style.
+
+These are generation targets, not guaranteed audio timing or proof of rap quality. No paid synthesis, final-video acceptance run or automated test is performed for this revision. If voice-conditioned H3 continues to reproduce speech cadence, a separate controlled rap-audio and lip-sync pipeline needs evaluation rather than treating more prompt adjectives as a guaranteed solution.
+
+Submission fix: `validateStoredPhotos` previously sent the third, built-in rap scene through the R2 user-upload ownership validator. Since that asset uses the website origin rather than the upload origin, every current three-image request was rejected before provider submission, surfaced as `video_service_unavailable`. The validator now recognizes only an exact configured scene URL in position 3 for the rap workflow. Both performer photos still undergo ownership and R2 existence validation; arbitrary website URLs do not receive an exemption. No paid generation is used to verify this change, per the owner's instruction.
+
+The active catalog is `config/rapVoiceSources.json`: five supplied WAV files, labelled young/middle-aged/older male and young/middle-aged female by the owner. `scripts/manual/import-owner-rap-voices.py --source-dir C:/Users/zhouw/Downloads` encodes the complete recordings as 24 kHz mono 128 kbps MP3 under `public/audio/rap-voices/owner-v1/`, with no pitch, tempo, EQ or content edits. A manifest records source/output hashes. Source WAV files remain untouched.
+
+Both preview and H3 reference URLs use this catalog. Each recording is independent of performer position; there is no invented A/B variation. The UI disables the other performer's selected voice, and the server rejects duplicate choices, including legacy gender aliases. The older female option is absent until a corresponding recording is provided. The former H3-generated v3 library and MiniMax candidate script remain archived locally and are not selected by the active catalog.
+
+The prompt references speaker identity/timbre only, not source speech language or cadence. Approved lyric language and rap timing remain explicit. No final-video generation or listening acceptance is performed; the owner handles manual evaluation. Type checking and the production build passed. Cloudflare deployed Worker version `6ec68ab6-e85f-43b0-8549-ec930fc46118` with all five MP3 assets. No automated tests or paid generation calls were run for this replacement.
+
 ## Fill the API key
 
 Edit `apps/tanstack-app/.dev.vars` and fill or replace this server-only value:
@@ -29,13 +47,79 @@ The DeepSeek key powers the first, editable-lyrics step. It is also a production
 
 ## Product settings
 
+### Active image and separated-audio references
+
+The public video request still contains exactly the two uploaded people. The server
+adds the selected built-in, empty scene image as the third image reference. Image 1
+and image 2 define the left and right identities; image 3 supplies only the set,
+lighting, and central microphone. New scene-reference assets are separate from the
+existing display thumbnails. The default stage is the plain Orange Studio, with
+one hanging microphone, instead of the previous hotel lounge.
+
+The source clip for the extracted audio is the site owner's supplied
+`friends.mp4`. A local source-separation model produces the instrumental and vocal
+stems. Its instrumental remains the shared BGM reference. New voice selections
+use the original synthetic `rap-v3` voice library described below. The previously
+extracted vocal stem and time-window crops remain available for older jobs.
+
+Each generation submits three audio references: performer 1, performer 2, and BGM.
+The prompt binds `<audio 0>` and `<audio 1>` only to their performer and describes
+`<audio 2>` as instrumental style and groove, never a third voice. Reference words
+must not replace the approved lyrics. This is reference-based generation, not
+post-production copying of the BGM into the finished video.
+
+AutoDL 803 documents its audio inputs primarily as speaker references. Assigning
+the third input to music is an explicit prompt instruction, not a separately
+documented BGM parameter; its actual output behavior remains for the owner's
+manual generation review. No additional user-video generation is submitted to
+test this revision.
+
+### H3 prompt structure and timed actions
+
+The prompt follows the six sections in the [official H3 full-reference guide](https://github.com/MiniMax-AI/MiniMax-H3/blob/main/skills/h3-prompt-writing/references/ref-en.txt):
+`subject_definitions`, `summary`, `retention_analysis`, `detailed_description`,
+`overall_soundscape`, and `non_diegetic_music`. The empty environment is defined
+as `<Subject 3>` from `<Picture 3>`; it is not a third performer. Audio labels
+retain the AutoDL wrapper's zero-based spelling `<audio 0>` through `<audio 2>`.
+
+`detailed_description` establishes the live-action style before `[Shot 1]` and
+describes one uncut waist-up portrait composition. Time ranges are phases inside
+this shot, not new shot or cut markers. Each phase pairs the active performer's
+concrete movement and exact approved lyric with the listener's closed-mouth,
+silent state. These intervals remain aligned with the lyrics player:
+
+| Seconds | Action and voice |
+| --- | --- |
+| 0–0.5 | Both settle with hands low, mouths closed, one preparatory nod; instrumental intro. |
+| 0.5–3 | Person 1 raises the outside hand to chest height, extends an open palm, and raps line 1. Person 2 listens silently with closed lips. |
+| 3–5.5 | Person 1 lowers the hand with two small wrist pulses and raps line 2, closing their mouth at 5.5. Person 2 remains silent. |
+| 5.5–6 | Both mouths closed; person 1 lowers both hands, person 2 gives an anticipatory nod; instrumental handoff. |
+| 6–8.5 | Person 2 raises the outside hand for a compact open-palm sweep and raps line 3. Person 1 listens silently with closed lips. |
+| 8.5–11 | Person 2 draws the hand back with two small wrist pulses and raps line 4, closing their mouth at 11. Person 1 remains silent. |
+| 11–12 | Both lower hands, give one small nod and closed-mouth smiles; instrumental outro. |
+
+Hands remain below faces and clear of the central microphone. Positions and
+camera remain fixed. The prompt uses `fully_preserved` for the two identities
+and empty set, and `reference` for audio timbre, flow, and instrumental groove.
+It requests new rhythmic spoken rap from the approved script, without melodic
+vowels, extra words, or overlapping voices. Timing and audio compliance remain
+model-output properties for the owner's manual review.
+
+Deployment of the separated-reference and timed-action revision: Worker version
+`a9b1a8b2-99eb-4f57-b782-421f073fffcf` on `ai-rapvideo.co` and
+`www.ai-rapvideo.co`. TanStack type checking and the Cloudflare production build
+completed successfully. The deployed static bundle contains the four empty
+scene references and all four `friends-reference-v1` MP3 files. Existing Worker
+variables and secrets were preserved with `--keep-vars`. At the owner's request,
+no test suite, new video generation, or listening acceptance test was run.
+
 `config/rapVideo.ts` contains the public fixed settings and four scene cards:
 
 - Workflow: `minimax_h3_803`.
 - Duration: 12 seconds.
 - Resolution: `768p竖(768*1376)`.
 - Mode: `高质模式`.
-- Scenes: hotel lobby, luxury lobby, studio booth and street cypher.
+- Scenes: Orange Studio, Luxury Lobby, Studio Booth and Street Cypher.
 - Two separately uploaded portraits are required; each may be JPG, PNG or WebP up to 20 MB.
 - The optional theme is at most 240 characters.
 
@@ -67,13 +151,75 @@ The separate video action uploads both portraits to their existing owned R2 path
 }
 ```
 
-`POST /api/video-generate/` returns the persisted task ID. Existing status and download endpoints deliver the result. Refresh recovers the current task; it never submits a new generation. The server validates ownership of both photos, the scene, topic, selected voices and all four lyrics before calling AutoDL. New jobs use two appearance references, two server-selected dry rap audio references and the four exact approved lines, with generated rap vocals and a beat. No reference video, default second person or separate per-request audio-generation service is required. The submitted script is frozen in existing task JSON before completion and retained in the finished result, without a database migration.
+`POST /api/video-generate/` returns the persisted task ID. Existing status and download endpoints deliver the result. Refresh recovers the current task; it never submits a new generation. The server validates ownership of both photos, the scene, topic, selected voices and all four lyrics before calling AutoDL. New jobs use two appearance references, one server-selected empty scene image, two server-selected rap voice references, one instrumental reference, and the four exact approved lines, with generated rap vocals and a beat. No reference video, default second person or separate per-request audio-generation service is required. The submitted script is frozen in existing task JSON before completion and retained in the finished result, without a database migration.
 
 The in-flight admission guard permits one active request per browser/account. Once a run completes, the visitor may generate another. Provider status/download errors retry the existing task. Managed uploaded photos and saved videos retain the existing scheduled 24-hour deletion policy.
 
 Automated verification uses mocked AutoDL responses. A real provider generation remains a separately identifiable billable request; mock success does not certify rap quality or mouth synchronization.
 
 ## Voice casting
+
+### Twelve-sample voice library
+
+Current status: all 12 original tasks completed and their MP3 references are
+present. The original `female-senior-a` task eventually succeeded; its existing
+result was downloaded without submitting or charging a new
+generation task in this completion step. The temporary availability override has
+been removed, enabling person 1's older-female style as well. All six profiles
+now have independent A/B reference assets and per-person previews.
+
+Completion release: Worker `00c36217-58f1-4759-ae18-1ac5c8da1d21` deployed to
+`ai-rapvideo.co` and `www.ai-rapvideo.co`. Type checking and the production build
+passed, and the deployment bundle contains all 12 MP3 files. Existing variables
+and secrets were preserved. No new generation task, automated test suite, or
+listening acceptance test was performed during this completion step.
+
+Availability on initial release: 11 of the 12 planned samples completed. The
+original `female-senior-a` task remained RUNNING for over 28 minutes; a replacement
+submission was rejected by AutoDL with `BadRequest: 余额不足，请先充值` and returned
+no task ID. The original task ID and state are preserved in the ignored progress
+file. This sample is explicitly `available: false` in the catalog: person 1's
+older-female option is disabled and labeled Preparing, and the server also
+rejects that unavailable selection. Person 2's older-female sample is ready.
+No placeholder or another age profile was substituted. The completion release
+removes that availability override and includes the original successful sample.
+
+Published Worker version: `1bcc2996-0926-48c8-92ad-7fdd92c2afd1`, with the 11 ready
+MP3s, six profile choices, per-person previews, and the pending selection disabled
+on both client and server. Type checking and the Cloudflare build passed. Existing
+Worker variables/secrets were preserved. No automated test suite, listening
+acceptance test, or end-user video-generation test was run. The original pending
+provider task was not cancelled; local polling processes have been stopped.
+
+`config/rapVoiceCatalog.json` defines male/female voices in young-adult, mature,
+and older-adult styles, with independent A/B samples for each of the six profiles.
+The assets are original fictional solo performances created through the existing
+AutoDL text-generation workflow `minimax_h3_z0901`; each has its own task, seed,
+resonance/texture direction and ten-second acapella performance. They are not
+pitch-shifted copies of one speaker. Requested age and vocal characteristics are
+generation targets, not a claim of human listening verification.
+
+`config/rapVoices.ts` selects A for person 1 and B for person 2. Same-profile pairs
+therefore always use separate reference IDs and files. The six valid profile keys
+are validated server-side; legacy `male` and `female` values map to the respective
+young-adult profile. Arbitrary audio URLs are still rejected. The frontend offers
+six voice-style choices per person and a collapsed audio preview of that exact
+person's assigned sample. Previewing a static file creates no generation task.
+Changing a voice replaces its preview audio element, stopping previous playback.
+
+The script `node scripts/manual/generate-rap-voice-assets.mjs --apply --catalog-v3`
+creates/resumes the assets and extracts their soundtracks to
+`public/audio/rap-voices/rap-v3/`. Task IDs and original generated media remain in
+the ignored `.tmp/rap-voice-assets-v3/`; the deployed NOTICE records provenance.
+An uncertain submission is never automatically resubmitted. The script creates
+the library deliverables, not test videos featuring user-uploaded people.
+
+The prompt explicitly binds each selected profile's gender, age character,
+resonance, and delivery to its own person. Photo appearance does not override a
+user's selected voice. H3 still generates the final vocals; whether it maintains
+the selected contrast must be judged by the owner using the previews and output.
+
+### Performance binding
 
 The prompt in `apps/tanstack-app/src/lib/rap-prompt.ts` binds the first photo to on-screen speaker S1 and the second photo to S2. The user explicitly chooses male or female for each voice; the default pair is male/female. `config/rapVoices.ts` selects a different server-owned dry rap sample for each position, including male/male and female/female pairs. The first sample supplies S1's voice identity and spoken-rap delivery, and the second supplies S2's. The prompt asks for short consonant-led syllables, syncopation and strong-beat accents at natural speaking pitch. The samples do not replace the approved words or the explicitly selected English/Chinese language. Each person's voice stays bound to their own performer, with no shared vocals, voice swapping or off-screen narrator.
 
@@ -163,4 +309,25 @@ to the deployed static directory. The Cloudflare production build and deployment
 completed successfully. No automated tests, post-deploy HTTP checks, or final
 user-video generation were run for this revision, as requested. The old TTS files
 remain available only for previously submitted jobs; new requests use `rap-v2`.
+
+### Reference-informed performer motion (2026-10-25)
+
+Compared half-second frames from the owner's `friends.mp4` reference with the
+latest generated result. The reference uses a closer waist-level two-shot,
+camera-pointing, chest-level two-hand accents, a raised index finger, forward
+leans and continuous silent-partner reactions. The previous prompt's steady
+shoulders, low hands and restrained listener instructions suppressed these moves.
+
+The current motion description specifies gesture preparation, beat accent and
+recovery within each lyric window, a tighter crop, and continuous shoulder/head
+rhythm for both performers. The reference's earlier speaker change is retimed
+to the existing solo windows: S1 at 0.5–5.5 seconds and S2 at 6–11 seconds.
+Only the active performer mouths lyrics; the silent partner remains expressive.
+
+This is text-directed choreography, not reference-video motion transfer. The
+current adapter still sends two portraits, one scene image, two selected
+`owner-v1` voice samples and the existing BGM; it does not submit `friends.mp4`.
+Exact poses and frame-level reproduction are not guaranteed. Type checking and
+the production build passed. No automated test suite or new paid video-generation
+task was run; actual motion quality is left for the owner's manual evaluation.
 

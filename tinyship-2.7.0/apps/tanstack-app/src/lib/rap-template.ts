@@ -2,7 +2,7 @@ import type { VideoGenerationOptions } from '@libs/ai/types';
 import { RAP_VIDEO_DURATION, RAP_VIDEO_MAX_TOPIC_LENGTH, RAP_VIDEO_RESOLUTION, RAP_VIDEO_SCENES, RAP_VIDEO_TEMPLATE, RAP_VIDEO_WORKFLOW_ID } from '../../../../config/rapVideo';
 import { buildRapPrompt } from './rap-prompt';
 import { normalizeRapLyricsDraft } from '@libs/ai/rap-lyrics-draft';
-import { normalizeRapVoices, rapVoiceReference } from '../../../../config/rapVoices';
+import { normalizeRapVoices, rapVoiceReference, RAP_BGM_REFERENCE_URL } from '../../../../config/rapVoices';
 
 function imageUrl(value: unknown): string {
   if (typeof value !== 'string' || !value.trim()) throw new Error('Both performer photos are required');
@@ -26,8 +26,10 @@ export function createRapVideoOptions(input: Record<string, unknown>): VideoGene
   if (first === second) throw new Error('Upload a different photo for each person');
   return {
     provider: 'autodl', model: 'minimax-h3', workflowId: RAP_VIDEO_WORKFLOW_ID,
-    prompt: buildRapPrompt(scene.id, topic, rapLyrics, voices), referenceImageUrls: [first, second], rapLyrics,
-    referenceAudioUrls: [rapVoiceReference(0, voices[0]).url, rapVoiceReference(1, voices[1]).url],
+    prompt: buildRapPrompt(scene.id, topic, rapLyrics, voices),
+    referenceImageUrls: [first, second, new URL(scene.referenceImage, 'https://ai-rapvideo.co').href],
+    rapLyrics,
+    referenceAudioUrls: [rapVoiceReference(0, voices[0]).url, rapVoiceReference(1, voices[1]).url, RAP_BGM_REFERENCE_URL],
     duration: RAP_VIDEO_DURATION, size: RAP_VIDEO_RESOLUTION,
   };
 }

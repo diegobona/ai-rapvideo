@@ -4,7 +4,8 @@ export const rapCopy = {
     photos: 'Upload two photos', photoHint: 'One clear face per photo · JPG, PNG or WebP · up to 20 MB each',
     people: ['Person 1', 'Person 2'], upload: 'Upload photo', replace: 'Change photo', remove: 'Remove photo',
     preview: 'Photo preview', drop: 'Choose a photo or drop it here', required: 'Required',
-    voice: { label: 'Voice', male: 'Male voice', female: 'Female voice' },
+    voice: { label: 'Voice style', male: 'Male voice', female: 'Female voice', preview: 'Preview voice', pending: 'Preparing', inUse: 'Selected for the other person', hint: 'Choose a different voice for each person. This sample is the voice reference used for generation.',
+      profiles: { 'male-young': 'Male · Young adult', 'male-mature': 'Male · Mature', 'male-senior': 'Male · Older adult', 'female-young': 'Female · Young adult', 'female-mature': 'Female · Mature' } },
     scene: 'Choose your scene', sceneHint: 'Set the stage for both people.',
     scenes: {
       'hotel-lobby': { name: 'Hotel Lobby', description: 'Warm lights, grand entrance' },
@@ -52,7 +53,8 @@ export const rapCopy = {
     title: '制作你的双人说唱', subtitle: '两张照片，一个主题，一起登台。',
     photos: '上传两张人物照片', photoHint: '每张照片一张清晰人脸 · JPG、PNG 或 WebP · 每张不超过 20 MB',
     people: ['人物 1', '人物 2'], upload: '上传照片', replace: '更换照片', remove: '移除照片', preview: '照片预览', drop: '选择照片或拖拽至此', required: '必填',
-    voice: { label: '音色', male: '男声', female: '女声' },
+    voice: { label: '声音风格', male: '男声', female: '女声', preview: '试听音色', pending: '准备中', inUse: '另一人已选', hint: '请为两人选择不同音色。试听样本就是生成时使用的声音参考。',
+      profiles: { 'male-young': '男声 · 青年', 'male-mature': '男声 · 中年', 'male-senior': '男声 · 老年', 'female-young': '女声 · 青年', 'female-mature': '女声 · 中年' } },
     scene: '选择说唱场景', sceneHint: '为两位主角选一个舞台。',
     scenes: {
       'hotel-lobby': { name: '酒店大堂', description: '暖色灯光，华丽登场' }, 'luxury-lobby': { name: '奢华大堂', description: '高级质感，电影氛围' },

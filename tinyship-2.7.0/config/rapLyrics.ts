@@ -1,5 +1,7 @@
 /** Public lyric editor limits and planned performance intervals. */
 export const RAP_LYRICS_LINE_COUNT = 4;
+/** Delivery target shared by lyric drafting and video prompting, not measured output tempo. */
+export const RAP_TEMPO_BPM = 96;
 export const RAP_LYRICS_MAX_LINE_LENGTH = 80;
 export const RAP_LYRICS_MAX_ENGLISH_WORDS = 8;
 export const RAP_LYRICS_MAX_CHINESE_CHARACTERS = 20;

@@ -5,7 +5,7 @@ import { normalizeRapLyricsDraft } from '@libs/ai/rap-lyrics-draft'
 import type { RapLyricsDraft, RapLyricsLanguage } from '@libs/ai/rap-lyrics-types'
 import { RAP_VIDEO_DURATION, RAP_VIDEO_SCENES, type RapVideoSceneId } from '../../../../config/rapVideo'
 import { RAP_LYRICS_MAX_LINE_LENGTH } from '../../../../config/rapLyrics'
-import type { RapVoiceType } from '../../../../config/rapVoices'
+import { RAP_VOICE_PROFILES, isRapVoiceAvailable, rapVoiceReference, type RapVoiceType } from '../../../../config/rapVoices'
 import { DanceGenerationError, ensureDanceSession, pollDanceTask, readDancePurchase } from '../lib/dance-generation'
 import { forgetDanceTask, readDanceTask, rememberDanceTask } from '../lib/dance-task-session'
 import { downloadRapVideo, getRapErrorCode, RAP_PHOTO_ACCEPT, RAP_POLLING, RAP_TOPIC_LIMIT, RapGenerationError, resolveRapRecoveryTask, startRapGeneration, uploadRapPhoto, validateRapPhoto, type RapErrorCode } from '../lib/rap-generation'
@@ -24,9 +24,9 @@ interface DanceMakerProps {
 type Phase = 'idle' | 'uploading' | 'queued' | 'processing' | 'succeeded' | 'failed' | 'recovering'
 type Photo = { file: File; url?: string }
 
-function PhotoInput({ index, id, photo, voice, disabled, copy, onChange, onVoiceChange }: {
+function PhotoInput({ index, id, photo, voice, otherVoice, disabled, copy, onChange, onVoiceChange }: {
   index: number; id: string; photo: Photo | null; disabled: boolean
-  voice: RapVoiceType; onVoiceChange: (voice: RapVoiceType) => void
+  voice: RapVoiceType; otherVoice: RapVoiceType; onVoiceChange: (voice: RapVoiceType) => void
   copy: typeof rapCopy.en | typeof rapCopy['zh-CN']; onChange: (file: File | null) => void
 }) {
   const input = useRef<HTMLInputElement>(null)
@@ -60,9 +60,21 @@ function PhotoInput({ index, id, photo, voice, disabled, copy, onChange, onVoice
     <label className="rap-duo-voice" htmlFor={id + '-voice'}>{copy.voice.label}
       <select id={id + '-voice'} value={voice} disabled={disabled} aria-label={copy.people[index] + ' ' + copy.voice.label}
         onChange={event => onVoiceChange(event.target.value as RapVoiceType)}>
-        <option value="male">{copy.voice.male}</option><option value="female">{copy.voice.female}</option>
+        {RAP_VOICE_PROFILES.map(profile => <option key={profile} value={profile} disabled={profile === otherVoice || !isRapVoiceAvailable(index === 0 ? 0 : 1, profile)}>
+          {copy.voice.profiles[profile]}{profile === otherVoice ? ' · ' + copy.voice.inUse : ''}
+        </option>)}
       </select>
     </label>
+    <details className="rap-duo-voice-preview">
+      <summary>{copy.voice.preview}</summary>
+      <audio key={voice} controls preload="none" src={rapVoiceReference(index === 0 ? 0 : 1, voice).url}
+        onPlay={event => {
+          const current = event.currentTarget
+          current.closest('.rap-duo-maker')?.querySelectorAll('audio').forEach(audio => { if (audio !== current) audio.pause() })
+        }}
+        aria-label={copy.people[index] + ' ' + copy.voice.preview} />
+      <p>{copy.voice.hint}</p>
+    </details>
   </div>
 }
 
@@ -80,7 +92,7 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
   const previousTask = useRef<string | null>(null)
   const needsRecovery = useRef(true)
   const [photos, setPhotos] = useState<[Photo | null, Photo | null]>([null, null])
-  const [voices, setVoices] = useState<[RapVoiceType, RapVoiceType]>(['male', 'female'])
+  const [voices, setVoices] = useState<[RapVoiceType, RapVoiceType]>(['male-young', 'female-young'])
   const [scene, setScene] = useState<RapVideoSceneId>('hotel-lobby')
   const [topic, setTopic] = useState('')
   const [lyrics, setLyrics] = useState<RapLyricsDraft>({ language: 'en', lines: ['', '', '', ''] })
@@ -294,7 +306,7 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
       <fieldset className="rap-duo-step" disabled={working}>
         <legend><span className="rap-duo-number">01</span>{copy.photos}</legend>
         <p className="rap-duo-hint">{copy.photoHint}</p>
-        <div className="rap-duo-photos">{photos.map((photo, index) => <PhotoInput key={index} id={id + '-person-' + (index + 1)} index={index} photo={photo} voice={voices[index]} disabled={working} copy={copy} onChange={file => selectPhoto(index, file)}
+        <div className="rap-duo-photos">{photos.map((photo, index) => <PhotoInput key={index} id={id + '-person-' + (index + 1)} index={index} photo={photo} voice={voices[index]} otherVoice={voices[index === 0 ? 1 : 0]} disabled={working} copy={copy} onChange={file => selectPhoto(index, file)}
           onVoiceChange={voice => setVoices(current => index === 0 ? [voice, current[1]] : [current[0], voice])} />)}</div>
       </fieldset>
       <fieldset className="rap-duo-step" disabled={working}>

@@ -1,0 +1,10 @@
+{
+  "model": "speech-2.8-hd",
+  "text": "Step to the mic, let the rhythm connect. Every word is clear, every bar earns respect. Keep the beat moving, let your own voice shine.",
+  "voices": [
+    { "id": "male-gentle", "voiceId": "English_Gentle-voiced_man", "label": "男声候选 A：柔和", "gender": "male" },
+    { "id": "male-deep", "voiceId": "English_ManWithDeepVoice", "label": "男声候选 B：低沉", "gender": "male" },
+    { "id": "female-radiant", "voiceId": "English_radiant_girl", "label": "女声候选 A：明亮", "gender": "female" },
+    { "id": "female-compelling", "voiceId": "English_compelling_lady1", "label": "女声候选 B：有力量", "gender": "female" }
+  ]
+}

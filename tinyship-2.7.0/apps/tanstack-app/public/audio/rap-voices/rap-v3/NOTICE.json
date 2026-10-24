@@ -1,0 +1,68 @@
+{
+  "workflow": "minimax_h3_z0901",
+  "synthetic": true,
+  "listeningVerified": false,
+  "voices": [
+    {
+      "id": "male-young-a",
+      "description": "young adult masculine voice, bright tenor, light clean resonance, forward placement and agile crisp consonants",
+      "taskId": "5e42d5a9-e27b-4b9b-99e2-92bf5acb9c8d"
+    },
+    {
+      "id": "male-young-b",
+      "description": "young adult masculine voice, low baritone, full chest resonance, slightly grainy texture and punchy attacks",
+      "taskId": "3b0f9380-aa0d-4ab8-8abc-ff95eea37d4f"
+    },
+    {
+      "id": "male-mature-a",
+      "description": "mature masculine voice, deep rounded baritone, warm dense resonance and measured authoritative diction",
+      "taskId": "7d626a2b-57b1-403a-b66d-c9b850f632fb"
+    },
+    {
+      "id": "male-mature-b",
+      "description": "mature masculine voice, mid-register tenor, lean nasal edge, dry smoky texture and incisive staccato diction",
+      "taskId": "32f10551-e566-43bd-8725-e5dd9551762b"
+    },
+    {
+      "id": "male-senior-a",
+      "description": "older masculine voice, low gravelly bass-baritone, weathered rough resonance, deliberate firm consonants and energetic clear delivery without frailty",
+      "taskId": "0c36c224-e099-4fcd-a8cd-e693db470616"
+    },
+    {
+      "id": "male-senior-b",
+      "description": "older masculine voice, lighter mid-register tenor, dry reedy resonance, gentle airy edge and nimble precise consonants without frailty",
+      "taskId": "05951f54-3d9f-44c9-83be-3b6962d73259"
+    },
+    {
+      "id": "female-young-a",
+      "description": "young adult feminine voice, bright high-mid speaking register, clear ringing resonance, light clean texture and sharp agile consonants",
+      "taskId": "60df7c09-ca95-48a6-b415-82fa15b9617e"
+    },
+    {
+      "id": "female-young-b",
+      "description": "young adult feminine voice, lower alto speaking register, rounded warm resonance, slightly husky texture and bold clipped consonants",
+      "taskId": "989a1007-79f4-4071-ab47-3fcfc09afbe4"
+    },
+    {
+      "id": "female-mature-a",
+      "description": "mature feminine voice, rich low contralto speaking register, smoky chest resonance, grounded confident diction and crisp phrase endings",
+      "taskId": "8a999d28-729e-497b-9611-8f726fcefb62"
+    },
+    {
+      "id": "female-mature-b",
+      "description": "mature feminine voice, clear mid-high speaking register, focused forward resonance, dry bright texture and pointed articulate consonants",
+      "taskId": "76c088dd-5048-483e-a676-c461f1c49649"
+    },
+    {
+      "id": "female-senior-a",
+      "description": "older feminine voice, low warm alto, gently weathered husky resonance, full rounded tone and deliberate crisp diction without frailty",
+      "taskId": "024e340a-6e84-400e-9488-6928dd9dd59e"
+    },
+    {
+      "id": "female-senior-b",
+      "description": "older feminine voice, higher light speaking register, thin reedy resonance with a gentle airy texture, lively precise diction without frailty",
+      "taskId": "bd655757-61dd-456f-910c-7d39b3ff9593"
+    }
+  ],
+  "note": "Original synthetic acapella references. Age and timbre are generation targets pending manual listening. No real person voice was cloned."
+}

@@ -12,8 +12,8 @@
 #rap-maker.rap-duo-maker .rap-duo-photos { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; }
 #rap-maker.rap-duo-maker .rap-duo-photo-label { display:flex;justify-content:space-between;gap:5px;margin-bottom:7px;color:#e4dcec;font-size:11px;font-weight:550; }
 #rap-maker.rap-duo-maker .rap-duo-photo-label span { color:#8e819e;font-size:9px;font-weight:400; }
-#rap-maker.rap-duo-maker .rap-duo-voice { display:flex;align-items:center;justify-content:space-between;gap:7px;margin-top:9px;color:#ae9bbf;font-size:10px; }
-#rap-maker.rap-duo-maker .rap-duo-voice select { min-width:0;max-width:calc(100% - 35px);min-height:32px;padding:5px 7px;border:1px solid #594169;border-radius:7px;background:#171020;color:#f0e5ff;font:inherit; }
+#rap-maker.rap-duo-maker .rap-duo-voice { display:grid;gap:6px;margin-top:9px;color:#ae9bbf;font-size:10px; }
+#rap-maker.rap-duo-maker .rap-duo-voice select { width:100%;min-width:0;max-width:100%;min-height:32px;padding:5px 7px;border:1px solid #594169;border-radius:7px;background:#171020;color:#f0e5ff;font:inherit; }
 #rap-maker.rap-duo-maker .rap-duo-voice select:disabled { opacity:.55; }
 #rap-maker.rap-duo-maker .rap-duo-drop { position:relative;display:flex;min-height:164px;flex-direction:column;align-items:center;justify-content:center;gap:12px;overflow:hidden;border:1px dashed #66517e;border-radius:11px;background:#0e0b17;color:#a68fc2;text-align:center;transition:border-color .18s,background .18s; }
 #rap-maker.rap-duo-maker .rap-duo-drop.is-dragging { border-color:#c0a0ff;background:#2f204c; }
@@ -84,6 +84,10 @@
 #rap-maker.rap-duo-maker button:focus-visible,#rap-maker.rap-duo-maker textarea:focus-visible,#rap-maker.rap-duo-maker .rap-duo-scene:has(:focus-visible),#rap-maker.rap-duo-maker .rap-duo-drop:has(input:focus-visible) { outline:2px solid #c4a0ff;outline-offset:3px; }
 #rap-maker.rap-duo-maker .rap-duo-visually-hidden { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
 .rap-duo-spin { animation:rap-duo-spin 1.2s linear infinite; }
+#rap-maker.rap-duo-maker .rap-duo-voice-preview { margin-top:8px;color:#baa8ce;font-size:11px;min-width:0; }
+#rap-maker.rap-duo-maker .rap-duo-voice-preview summary { cursor:pointer;padding:5px 0; }
+#rap-maker.rap-duo-maker .rap-duo-voice-preview audio { display:block;width:100%;max-width:100%;height:32px;margin-top:7px; }
+#rap-maker.rap-duo-maker .rap-duo-voice-preview p { margin:7px 0 0;font-size:10px;line-height:1.6;color:#9b8dac; }
 @keyframes rap-duo-spin { to { transform:rotate(360deg); } }
 @media(max-width:760px) { #rap-maker.rap-duo-maker { grid-template-columns:minmax(0,1fr); } #rap-maker.rap-duo-maker .rap-duo-output { border-left:0;border-top:1px solid #bba0ff13; } #rap-maker.rap-duo-maker .rap-duo-screen { width:100%;max-width:310px;align-self:center; } }
 @media(max-width:420px) { #rap-maker.rap-duo-maker .rap-duo-heading { padding:20px 17px; } #rap-maker.rap-duo-maker .rap-duo-form { padding:22px 17px; } #rap-maker.rap-duo-maker .rap-duo-output { padding:23px 17px; } #rap-maker.rap-duo-maker .rap-duo-drop { min-height:154px; } #rap-maker.rap-duo-maker .rap-duo-heading p { font-size:17px; } }

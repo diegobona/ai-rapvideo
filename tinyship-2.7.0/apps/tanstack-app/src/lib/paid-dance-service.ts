@@ -1,5 +1,6 @@
 import type Stripe from 'stripe';
 import { getVideoPurchaseConfig, videoPurchaseConfig } from '../../../../config/videoPurchase';
+import { RAP_VIDEO_SCENES, RAP_VIDEO_WORKFLOW_ID } from '../../../../config/rapVideo';
 import {
   PaidVideoError,
   PaidVideoInputMissing,
@@ -41,7 +42,13 @@ async function photoStorage() {
 async function validateStoredPhotos(options: VideoGenerationOptions, userId: string) {
   const { publicUrl, bucket } = await photoStorage();
   const base = new URL(publicUrl);
-  for (const value of options.referenceImageUrls || []) {
+  for (const [index, value] of (options.referenceImageUrls || []).entries()) {
+    // The rap template appends one server-selected static scene after the two
+    // owned photos. It lives in Workers Assets, not the user's R2 uploads.
+    // Match the complete configured URL and position, never a whole origin.
+    const builtInRapScene = options.workflowId === RAP_VIDEO_WORKFLOW_ID && index === 2 &&
+      RAP_VIDEO_SCENES.some(scene => value === new URL(scene.referenceImage, 'https://ai-rapvideo.co').href);
+    if (builtInRapScene) continue;
     const url = new URL(value);
     const reference =
       Object.values(DANCE_REFERENCE_KEYS).includes(

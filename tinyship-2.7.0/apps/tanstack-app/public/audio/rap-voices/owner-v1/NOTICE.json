@@ -1,0 +1,44 @@
+{
+  "source": "Five audio files supplied by the site owner in this chat",
+  "labels": "Gender and age groups follow the owner-provided filenames; not independently inferred.",
+  "processing": "Full recording encoded as 24 kHz mono 128 kbps MP3. No pitch, tempo, EQ or content changes.",
+  "usage": "Voice identity references only. Final lyrics language and rap rhythm are controlled separately.",
+  "listeningVerified": false,
+  "files": [
+    {
+      "id": "male-young",
+      "sourceFile": "青年男声.wav",
+      "sourceSha256": "8851f3465a24faa74eeee88221f85879426ee69d201f8b8fcdcf0b05fcf92ee6",
+      "outputFile": "male-young.mp3",
+      "outputSha256": "5a4eec6f07703aa090f807664d4503148197bb951d2db821a13d4b04564192fd"
+    },
+    {
+      "id": "male-mature",
+      "sourceFile": "中年男声.wav",
+      "sourceSha256": "904103e2fc5d09092ff9cbbb687a886d4362addcd162330917f4287acf425133",
+      "outputFile": "male-mature.mp3",
+      "outputSha256": "935c11af5e68a7f2041696747dfb445fbfa28749fcb03a68b7229a5d1937c445"
+    },
+    {
+      "id": "male-senior",
+      "sourceFile": "老年男声.wav",
+      "sourceSha256": "cf96416df7199a9a7a765a9da68c9e26757011cba51e2c757053135d6009b72a",
+      "outputFile": "male-senior.mp3",
+      "outputSha256": "fdc171f6672fb980934f33eac1dab4f728bf3c751dbd226efd7b5ecb1c4e5e3e"
+    },
+    {
+      "id": "female-young",
+      "sourceFile": "青年女声.wav",
+      "sourceSha256": "883c773ad742e1258cd0831a1e0f02aaa2c912ba7d11fa955dd8ab93f9f81a3b",
+      "outputFile": "female-young.mp3",
+      "outputSha256": "07b274f2808572ff9e8e3e687a09526b6645da91a84f143ef6f6e0ae64d18d59"
+    },
+    {
+      "id": "female-mature",
+      "sourceFile": "中年女声.wav",
+      "sourceSha256": "5dacd4d58af1517517b96f2a2be6d9b73ee4c00ad65664fb2a571d58a4593eec",
+      "outputFile": "female-mature.mp3",
+      "outputSha256": "63bc7865459393e2fe9596b5c0194b979ff338e06182d1409ed7a7035e624d1f"
+    }
+  ]
+}

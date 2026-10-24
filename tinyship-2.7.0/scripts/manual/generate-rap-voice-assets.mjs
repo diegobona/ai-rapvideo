@@ -1,5 +1,6 @@
 // One-time production asset creation, never imported by the app or its build.
-// --apply creates the four deliverable voices; an existing task is resumed.
+// --apply creates the legacy four voices; --catalog-v3 creates the 12-profile library.
+// Existing tasks are resumed without new submissions.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -7,13 +8,15 @@ import { fileURLToPath } from 'node:url';
 import { parse } from 'dotenv';
 import { ProxyAgent, setGlobalDispatcher } from 'undici';
 
-if (!process.argv.includes('--apply')) throw new Error('Pass --apply to create the four production reference assets.');
+if (!process.argv.includes('--apply')) throw new Error('Pass --apply to create production reference assets.');
 const root = new URL('../../', import.meta.url);
-const work = new URL('.tmp/rap-voice-assets-v2/', root);
-const output = new URL('apps/tanstack-app/public/audio/rap-voices/rap-v2/', root);
+const catalogMode = process.argv.includes('--catalog-v3');
+const catalog = JSON.parse(await readFile(new URL('config/rapVoiceCatalog.json', root), 'utf8'));
+const work = new URL(catalogMode ? '.tmp/rap-voice-assets-v3/' : '.tmp/rap-voice-assets-v2/', root);
+const output = new URL(catalogMode ? 'apps/tanstack-app/public/audio/rap-voices/rap-v3/' : 'apps/tanstack-app/public/audio/rap-voices/rap-v2/', root);
 const stateFile = new URL('tasks.json', work);
 const workflow = 'minimax_h3_z0901';
-const voices = [
+const voices = catalogMode ? Object.values(catalog).flat().map(v => ({ ...v, name: v.id, voice: v.description })) : [
   { name: 'male-one', seed: 46197021, person: 'adult man', voice: 'distinctly masculine, deep, chest-resonant, grainy and weighty; clipped low-pitched consonants' },
   { name: 'male-two', seed: 91368042, person: 'adult man', voice: 'distinctly masculine, lean, bright, slightly nasal and forward; quick dry attacks, lighter pitch than a deep male voice' },
   { name: 'female-one', seed: 30875063, person: 'adult woman', voice: 'distinctly feminine female voice, clear, bright and cutting, agile percussive articulation in a natural female speaking range' },
@@ -67,7 +70,10 @@ async function main() {
     });
     if (!response.ok) throw new Error(`AutoDL HTTP ${response.status}`);
     const envelope = await response.json();
-    if (envelope.code !== 'Success' || !envelope.data) throw new Error(`AutoDL ${String(envelope.code || 'invalid_response')}`);
+    if (envelope.code !== 'Success' || !envelope.data) {
+      const detail = String(envelope.msg || envelope.message || envelope.data?.message || '').replaceAll(key, '[redacted]').slice(0, 500);
+      throw new Error(`AutoDL ${String(envelope.code || 'invalid_response')}${detail ? ': ' + detail : ''}`);
+    }
     return envelope.data;
   }
   for (const voice of voices) {
@@ -112,7 +118,8 @@ async function main() {
       console.log(JSON.stringify({ asset: voice.name, stage: 'written', file: fileURLToPath(audioFile), listeningVerified: false }));
     }
     if (voices.every(voice => state[voice.name]?.complete)) {
-      console.log(JSON.stringify({ stage: 'all_four_assets_ready', workflow, listeningVerified: false }));
+      await writeFile(new URL('NOTICE.json', output), JSON.stringify({ workflow, synthetic: true, listeningVerified: false, voices: voices.map(v => ({ id: v.name, description: v.voice, taskId: state[v.name].taskId })), note: 'Original synthetic acapella references. Age and timbre are generation targets pending manual listening. No real person voice was cloned.' }, null, 2));
+      console.log(JSON.stringify({ stage: 'all_assets_ready', count: voices.length, workflow, listeningVerified: false }));
       return;
     }
     await new Promise(resolve => setTimeout(resolve, 10_000));

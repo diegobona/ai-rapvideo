@@ -1,0 +1,59 @@
+{
+  "createdAt": "2026-10-24T14:11:08.062134+00:00",
+  "source": {
+    "filename": "friends.mp4",
+    "sha256": "75f8793b9a5c6ab792054f9f7b41ff3b736d862d04830d774c50bbe23fd88044",
+    "durationSeconds": 12.096009070294784,
+    "providedBy": "site owner in this chat"
+  },
+  "separation": {
+    "implementation": "UVR MDX ONNX, NumPy STFT, CPU, two-pass denoise",
+    "model": "UVR-MDX-NET-Inst_HQ_3.onnx",
+    "modelSha256": "317554b07fe1ea5279a77f2b1520a41ea4b93432560c4ffd08792c30fddf9adc",
+    "uvrModelHash": "55657dd70583b0fedfba5f67df11d711",
+    "parameters": {
+      "compensate": 1.022,
+      "mdx_dim_f_set": 3072,
+      "mdx_dim_t_set": 8,
+      "mdx_n_fft_scale_set": 6144,
+      "primary_stem": "Instrumental"
+    },
+    "reference": "https://github.com/Anjok07/ultimatevocalremovergui",
+    "modelSource": "https://github.com/TRvlvr/model_repo/releases/tag/all_public_uvr_models",
+    "mediaUploadedToExternalService": false
+  },
+  "files": {
+    "bgm.mp3": {
+      "sha256": "ce09b84fa2292462ee6846a9f707f2844f1bf6e49d22d1205980cf6772365c79",
+      "bytes": 292196
+    },
+    "person-one.mp3": {
+      "sha256": "8f6c51ad6ad5bbff68ace10635911d25508397e59b26cd91fef63595197c2d3e",
+      "bytes": 121669
+    },
+    "person-two.mp3": {
+      "sha256": "9b6d520e95205c41b9cc9c579679abdf0e92cb8559eeb3ebce581184887888b9",
+      "bytes": 121669
+    },
+    "vocals.mp3": {
+      "sha256": "d38348f1a618e5890a5d00ce2f879e3344ff61eb053a9f88098dcbea4a22e165",
+      "bytes": 292196
+    }
+  },
+  "speakerCrops": {
+    "person-one.mp3": {
+      "startSeconds": 0.5,
+      "endSeconds": 5.5
+    },
+    "person-two.mp3": {
+      "startSeconds": 6.0,
+      "endSeconds": 11.0
+    }
+  },
+  "notes": [
+    "vocals is the estimated vocal stem; bgm is the estimated instrumental stem. Neural separation can retain residual bleed/artifacts.",
+    "Person references are temporal crops from the separated vocal track, not a separate speaker-identification model.",
+    "No listening or video-generation acceptance test is claimed. Site owner will manually review the generated result.",
+    "Reference-only asset build from the user-supplied example; not presented as newly created original music."
+  ]
+}
