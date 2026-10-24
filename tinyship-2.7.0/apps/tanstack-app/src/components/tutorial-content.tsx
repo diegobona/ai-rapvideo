@@ -1,5 +1,6 @@
 import { pageRegistry } from '@/lib/page-registry'
 import { tutorialCopy } from '@/lib/tutorial-copy'
+import { VIDEO_PAYMENT_REQUIRED } from '../../../../config/videoPurchase'
 
 export function TutorialContent() {
   return (
@@ -17,10 +18,10 @@ export function TutorialContent() {
         <section className="article-section article-step" aria-labelledby={step.id} key={step.id}>
           <h2 id={step.id}>{step.heading}</h2>
           {step.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-          <figure className="article-figure" style={{ maxWidth: Math.min(step.width, 900) }}>
+          {(VIDEO_PAYMENT_REQUIRED || step.id !== 'generate-video') && <figure className="article-figure" style={{ maxWidth: Math.min(step.width, 900) }}>
             <img src={step.image} alt={step.alt} width={step.width} height={step.height} loading="lazy" decoding="async" />
             <figcaption>{step.caption}</figcaption>
-          </figure>
+          </figure>}
         </section>
       ))}
       <section className="article-section article-faq" aria-labelledby="common-problems">

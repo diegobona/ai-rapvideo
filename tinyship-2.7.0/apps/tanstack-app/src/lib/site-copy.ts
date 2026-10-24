@@ -8,7 +8,6 @@ export const siteCopy = {
     description: homePage.description,
     heading: homePage.h1,
   },
-  nav: { signIn: 'Sign in' },
   notFound: {
     title: 'Page not found | Rumpelstiltskin AI',
     heading: 'Page not found',

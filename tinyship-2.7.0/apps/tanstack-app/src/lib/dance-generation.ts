@@ -1,11 +1,17 @@
 import { aiVideoConfig } from '../../../../config/aiVideo'
-import { creditsConfig, resolveFixedConsumption } from '../../../../config/credits'
 import type { VideoGenerationResult, VideoProviderName } from '@libs/ai/types'
-export type DanceErrorCode = 'fileType' | 'fileSize' | 'photoRequired' | 'consentRequired' | 'upload' | 'generation' | 'credits' | 'status' | 'timeout' | 'download' | 'invalidResponse' | 'unauthorized' | 'expired' | 'trialUsed' | 'trialProcessing' | 'rateLimited' | 'visitor'
-export type DancePhase = 'idle' | 'uploading' | 'submitting' | 'processing' | 'succeeded' | 'failed'
+import { normalizeDanceCustomization, normalizeFixedSceneDanceCustomization, type DanceCustomization } from '@libs/ai/dance-customization'
+import { normalizeDanceOrientation } from '@libs/ai/dance-output'
+import { DEFAULT_DANCE_ORIENTATION, type DanceOrientation } from '../../../../config/danceOutput'
+import { readVideoFailureReason, type VideoFailureReason } from '../../../../config/videoFailure'
+import { DANCE_PURCHASE_TIMEOUT_MS } from '../../../../config/danceUi'
+
+const paidPolling = { ...aiVideoConfig.polling, maxTimeoutMs: DANCE_PURCHASE_TIMEOUT_MS }
+export type DanceErrorCode = 'fileType' | 'fileSize' | 'photoRequired' | 'consentRequired' | 'upload' | 'generation' | 'credits' | 'status' | 'timeout' | 'download' | 'invalidResponse' | 'unauthorized' | 'expired' | 'trialUsed' | 'trialProcessing' | 'rateLimited' | 'visitor' | 'checkout' | 'paymentRequired' | 'paymentPending' | 'refundPending' | 'refunded'
+export type DancePhase = 'idle' | 'checkout' | 'uploading' | 'submitting' | 'processing' | 'succeeded' | 'failed'
 
 export class DanceGenerationError extends Error {
-  constructor(readonly code: DanceErrorCode) {
+  constructor(readonly code: DanceErrorCode, readonly terminal = ['expired', 'generation', 'refunded', 'paymentRequired', 'unauthorized'].includes(code)) {
     super(code)
     this.name = 'DanceGenerationError'
   }
@@ -13,9 +19,6 @@ export class DanceGenerationError extends Error {
 
 export const DANCE_PHOTO_ACCEPT = '.jpg,.jpeg,.png,.webp'
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
-const provider = aiVideoConfig.defaultProvider as VideoProviderName
-const model = aiVideoConfig.defaultModels[provider]
-export const DANCE_CREDIT_COST = resolveFixedConsumption(creditsConfig.fixedConsumption.aiVideo, model)
 export const DANCE_DURATION_SECONDS = aiVideoConfig.defaults.duration
 
 export function validateDancePhoto(file: File): 'fileType' | 'fileSize' | null {
@@ -49,7 +52,7 @@ function isHttpUrl(value: unknown): value is string {
 function readVideoResult(value: unknown): VideoGenerationResult {
   if (!isRecord(value) || typeof value.videoUrl !== 'string'
     || !(isHttpUrl(value.videoUrl) || /^data:video\/[a-z0-9.+-]+;base64,[a-z0-9+/=\s]+$/i.test(value.videoUrl))
-    || !['fal', 'volcengine', 'aliyun', provider].includes(String(value.provider)) || typeof value.model !== 'string') {
+    || !['fal', 'volcengine', 'aliyun', 'autodl', 'compshare'].includes(String(value.provider)) || typeof value.model !== 'string') {
     throw new DanceGenerationError('invalidResponse')
   }
   return {
@@ -63,11 +66,15 @@ function readVideoResult(value: unknown): VideoGenerationResult {
 
 async function readApiData(response: Response, fallback: DanceErrorCode): Promise<Record<string, unknown>> {
   if (response.status === 401) throw new DanceGenerationError('unauthorized')
-  if (response.status === 402) throw new DanceGenerationError('credits')
   if (!response.ok) {
     const payload = await response.json().catch(() => null) as { error?: string } | null
-    const code: DanceErrorCode = payload?.error === 'trial_used' ? 'trialUsed' : payload?.error === 'trial_processing' ? 'trialProcessing' : response.status === 429 ? 'rateLimited' : payload?.error === 'visitor_required' ? 'visitor' : fallback
-    throw new DanceGenerationError(code)
+    const codes: Record<string, DanceErrorCode> = { trial_used: 'trialUsed', trial_processing: 'trialProcessing', visitor_required: 'visitor', payment_required: 'paymentRequired', payment_pending: 'paymentPending', refund_pending: 'refundPending', refunded: 'refunded', insufficient_credits: 'credits', not_found: 'expired', checkout_expired: 'expired', invalid_origin: 'unauthorized' }
+    const code: DanceErrorCode = codes[payload?.error ?? ''] ?? (response.status === 402 ? 'paymentRequired' : response.status === 403 ? 'unauthorized' : response.status === 404 || response.status === 410 ? 'expired' : response.status === 429 ? 'rateLimited' : fallback)
+    // Client errors invalidate this recovery reference unless the response
+    // explicitly asks us to wait. Outages must preserve a possible payment.
+    const terminal = response.status >= 400 && response.status < 500
+      && ![408, 409, 425, 429].includes(response.status) && !['paymentPending', 'refundPending'].includes(code)
+    throw new DanceGenerationError(code, terminal)
   }
   let payload: unknown
   try { payload = await response.json() } catch { throw new DanceGenerationError('invalidResponse') }
@@ -75,20 +82,69 @@ async function readApiData(response: Response, fallback: DanceErrorCode): Promis
   return payload.data
 }
 
-export interface DanceTrial { state: 'available' | 'processing' | 'used'; taskId: string | null; storageKey: string }
-export async function readDanceTrial(signal?: AbortSignal): Promise<DanceTrial> {
-  const data = await readApiData(await fetch('/api/video-generate/', { signal, cache: 'no-store' }), 'visitor')
-  if (!['available', 'processing', 'used'].includes(String(data.state)) || typeof data.storageKey !== 'string') throw new DanceGenerationError('invalidResponse')
-  return { state: data.state as DanceTrial['state'], taskId: typeof data.taskId === 'string' ? data.taskId : null, storageKey: data.storageKey }
+export interface PublicVideoPurchase {
+  id: string
+  state: 'pending' | 'paid' | 'starting' | 'processing' | 'succeeded' | 'refund_pending' | 'refunded' | 'expired'
+  taskId: string | null
+  result?: VideoGenerationResult
+  error?: string
+  refundStatus?: string
+  failureReason?: VideoFailureReason
+  orientation?: DanceOrientation
+  sceneImageUrl?: string
+  dancerImageUrl?: string
+  princessImageUrl?: string
+  customDescription?: string
+  quickTags?: ReturnType<typeof normalizeDanceCustomization>['quickTags']
 }
 
-export async function ensureDanceSession(signal: AbortSignal) {
-  const sessionResponse = await fetch('/api/auth/get-session', { signal, cache: 'no-store' })
+function readPurchase(value: unknown, expectedId?: string): PublicVideoPurchase {
+  if (!isRecord(value) || typeof value.id !== 'string' || !value.id.trim() || (expectedId !== undefined && value.id !== expectedId)
+    || !['pending', 'paid', 'starting', 'processing', 'succeeded', 'refund_pending', 'refunded', 'expired'].includes(String(value.state))
+    || !(value.taskId === null || (typeof value.taskId === 'string' && value.taskId.trim()))) {
+    throw new DanceGenerationError('invalidResponse')
+  }
+  const result = value.result === undefined ? undefined : readVideoResult(value.result)
+  if (value.sceneImageUrl !== undefined && !isHttpUrl(value.sceneImageUrl)) throw new DanceGenerationError('invalidResponse')
+  for (const key of ['dancerImageUrl', 'princessImageUrl'] as const) {
+    if (value[key] !== undefined && !isHttpUrl(value[key])) throw new DanceGenerationError('invalidResponse')
+  }
+  let customization
+  try {
+    if (value.customDescription !== undefined || value.quickTags !== undefined) customization = normalizeDanceCustomization(value)
+  } catch { throw new DanceGenerationError('invalidResponse') }
+  if (value.state === 'succeeded' && !result) throw new DanceGenerationError('invalidResponse')
+  const failureReason = readVideoFailureReason(value.failureReason)
+  return {
+    id: value.id, state: value.state as PublicVideoPurchase['state'], taskId: value.taskId as string | null,
+    ...(result ? { result } : {}),
+    ...(typeof value.error === 'string' ? { error: value.error } : {}),
+    ...(typeof value.refundStatus === 'string' ? { refundStatus: value.refundStatus } : {}),
+    ...(failureReason ? { failureReason } : {}),
+    ...(value.orientation !== undefined ? { orientation: normalizeDanceOrientation(value.orientation) } : {}),
+    ...(typeof value.sceneImageUrl === 'string' ? { sceneImageUrl: value.sceneImageUrl } : {}),
+    ...(typeof value.dancerImageUrl === 'string' ? { dancerImageUrl: value.dancerImageUrl } : {}),
+    ...(typeof value.princessImageUrl === 'string' ? { princessImageUrl: value.princessImageUrl } : {}),
+    ...customization,
+  }
+}
+
+export async function readDancePurchase(signal?: AbortSignal, transport: typeof fetch = fetch): Promise<{ purchase: PublicVideoPurchase | null; storageKey: string; directTaskId?: string }> {
+  const data = await readApiData(await transport('/api/video-generate/', { signal, cache: 'no-store' }), 'visitor')
+  if (typeof data.storageKey !== 'string' || !data.storageKey.trim()) throw new DanceGenerationError('invalidResponse')
+  if (data.directTaskId !== undefined && data.directTaskId !== null && (typeof data.directTaskId !== 'string' || !/^[\w-]{1,128}$/.test(data.directTaskId))) throw new DanceGenerationError('invalidResponse')
+  return { purchase: data.purchase === null ? null : readPurchase(data.purchase), storageKey: data.storageKey,
+    ...(typeof data.directTaskId === 'string' ? { directTaskId: data.directTaskId } : {}),
+  }
+}
+
+export async function ensureDanceSession(signal: AbortSignal, transport: typeof fetch = fetch) {
+  const sessionResponse = await transport('/api/auth/get-session', { signal, cache: 'no-store' })
   if (!sessionResponse.ok) throw new DanceGenerationError('visitor')
   const session = await sessionResponse.json() as { user?: { id?: string } } | null
   if (session?.user?.id) return
   // Better Auth's installed anonymous plugin issues the protected session cookie.
-  const response = await fetch('/api/auth/sign-in/anonymous', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', signal })
+  const response = await transport('/api/auth/sign-in/anonymous', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', signal })
   if (!response.ok) {
     const error = await response.json().catch(() => null) as { error?: string } | null
     throw new DanceGenerationError(error?.error === 'trial_used' ? 'trialUsed' : error?.error === 'trial_processing' ? 'trialProcessing' : response.status === 429 ? 'rateLimited' : 'visitor')
@@ -107,18 +163,58 @@ export async function uploadDancePhoto(file: File, signal: AbortSignal, transpor
   return data.url
 }
 
-export type DanceSubmission = { status: 'processing'; taskId: string } | { status: 'succeeded'; result: VideoGenerationResult }
+export async function createDanceCheckout(dancerImageUrl: string, princessImageUrl: string | undefined, returnPath: string, signal: AbortSignal, transport: typeof fetch = fetch, customization: DanceCustomization & { orientation?: DanceOrientation; sceneImageUrl?: string } = {}): Promise<{ purchaseId: string; checkoutUrl: string }> {
+  // The server owns quantity, price, duration and prompt compilation.
+  buildDanceRequest(dancerImageUrl, princessImageUrl)
+  const { customDescription, quickTags } = normalizeFixedSceneDanceCustomization(customization)
+  const orientation = normalizeDanceOrientation(customization.orientation)
+  const response = await transport('/api/video-checkout/', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dancerImageUrl, ...(princessImageUrl ? { princessImageUrl } : {}), returnPath,
+      ...(customDescription ? { customDescription } : {}), ...(quickTags.length ? { quickTags } : {}),
+      ...(orientation !== DEFAULT_DANCE_ORIENTATION ? { orientation } : {}),
+    }), signal,
+  })
+  const data = await readApiData(response, 'checkout')
+  if (typeof data.purchaseId !== 'string' || !data.purchaseId.trim() || typeof data.checkoutUrl !== 'string') throw new DanceGenerationError('invalidResponse')
+  let url: URL
+  try { url = new URL(data.checkoutUrl) } catch { throw new DanceGenerationError('invalidResponse') }
+  if (url.protocol !== 'https:' || url.hostname !== 'checkout.stripe.com' || url.username || url.password) throw new DanceGenerationError('invalidResponse')
+  return { purchaseId: data.purchaseId, checkoutUrl: data.checkoutUrl }
+}
 
-export async function startDanceGeneration(dancerImageUrl: string, princessImageUrl: string | undefined, signal: AbortSignal, transport: typeof fetch = fetch): Promise<DanceSubmission> {
+export async function verifyDanceCheckout(sessionId: string, signal: AbortSignal, transport: typeof fetch = fetch): Promise<PublicVideoPurchase> {
+  if (!sessionId.trim()) throw new DanceGenerationError('invalidResponse')
+  const data = await readApiData(await transport('/api/video-checkout/verify', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId }), signal,
+  }), 'checkout')
+  return readPurchase(data.purchase)
+}
+
+export async function startDanceGeneration(purchaseId: string, signal: AbortSignal, transport: typeof fetch = fetch): Promise<PublicVideoPurchase> {
+  if (!purchaseId.trim()) throw new DanceGenerationError('invalidResponse')
   const response = await transport('/api/video-generate/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(buildDanceRequest(dancerImageUrl, princessImageUrl)),
+    body: JSON.stringify({ purchaseId }),
     signal,
   })
   const data = await readApiData(response, 'generation')
-  if (data.status === 'processing' && typeof data.taskId === 'string' && data.taskId.trim()) return { status: 'processing', taskId: data.taskId }
-  return { status: 'succeeded', result: readVideoResult(data) }
+  return readPurchase(data.purchase, purchaseId)
+}
+
+/** Temporary direct access still leaves provider, workflow and scene server-owned. */
+export async function startDirectDanceGeneration(dancerImageUrl: string, princessImageUrl: string | undefined, signal: AbortSignal, transport: typeof fetch = fetch, customization: DanceCustomization & { orientation?: DanceOrientation } = {}): Promise<{ taskId: string; status: 'processing' }> {
+  const references = buildDanceRequest(dancerImageUrl, princessImageUrl)
+  const { customDescription, quickTags } = normalizeFixedSceneDanceCustomization(customization)
+  const orientation = normalizeDanceOrientation(customization.orientation)
+  const response = await transport('/api/video-generate/', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...references, ...(customDescription ? { customDescription } : {}), ...(quickTags.length ? { quickTags } : {}), orientation }), signal,
+  })
+  const data = await readApiData(response, 'generation')
+  if (typeof data.taskId !== 'string' || !/^[\w-]{1,128}$/.test(data.taskId) || data.status !== 'processing') throw new DanceGenerationError('invalidResponse')
+  return { taskId: data.taskId, status: 'processing' }
 }
 
 function delay(ms: number, signal: AbortSignal): Promise<void> {
@@ -130,7 +226,7 @@ function delay(ms: number, signal: AbortSignal): Promise<void> {
   })
 }
 
-export async function pollDanceTask(taskId: string, signal: AbortSignal, transport: typeof fetch = fetch, polling: { intervalMs: number; maxTimeoutMs: number } = aiVideoConfig.polling): Promise<VideoGenerationResult> {
+export async function pollDanceTask(taskId: string, signal: AbortSignal, transport: typeof fetch = fetch, polling: { intervalMs: number; maxTimeoutMs: number } = paidPolling): Promise<VideoGenerationResult> {
   signal.throwIfAborted()
   const startedAt = Date.now()
   const pollingController = new AbortController()
@@ -157,4 +253,38 @@ export async function pollDanceTask(taskId: string, signal: AbortSignal, transpo
     clearTimeout(timeout)
     signal.removeEventListener('abort', onAbort)
   }
+}
+
+export async function pollDancePurchase(purchaseId: string, signal: AbortSignal, transport: typeof fetch = fetch, polling: { intervalMs: number; maxTimeoutMs: number } = paidPolling): Promise<PublicVideoPurchase> {
+  signal.throwIfAborted()
+  const startedAt = Date.now()
+  const controller = new AbortController()
+  const onAbort = () => controller.abort(signal.reason)
+  signal.addEventListener('abort', onAbort, { once: true })
+  const timeout = setTimeout(() => controller.abort(new DanceGenerationError('timeout')), polling.maxTimeoutMs)
+  try {
+    while (Date.now() - startedAt < polling.maxTimeoutMs) {
+      controller.signal.throwIfAborted()
+      const response = await transport(`/api/video-generate/status?purchaseId=${encodeURIComponent(purchaseId)}`, { signal: controller.signal, cache: 'no-store' })
+      if (response.status === 404) throw new DanceGenerationError('expired')
+      const data = await readApiData(response, 'status')
+      const purchase = readPurchase(data.purchase, purchaseId)
+      if (!['paid', 'starting', 'processing'].includes(purchase.state)) return purchase
+      await delay(Math.min(polling.intervalMs, Math.max(0, polling.maxTimeoutMs - (Date.now() - startedAt))), controller.signal)
+    }
+    throw new DanceGenerationError('timeout')
+  } catch (cause) {
+    if (signal.aborted) throw signal.reason
+    if (controller.signal.aborted && controller.signal.reason instanceof DanceGenerationError) throw controller.signal.reason
+    throw cause
+  } finally {
+    clearTimeout(timeout)
+    signal.removeEventListener('abort', onAbort)
+  }
+}
+
+export async function resumeDancePurchase(purchase: PublicVideoPurchase, signal: AbortSignal, transport: typeof fetch = fetch, polling: { intervalMs: number; maxTimeoutMs: number } = paidPolling): Promise<PublicVideoPurchase> {
+  if (purchase.state === 'pending') throw new DanceGenerationError('paymentPending')
+  const current = purchase.state === 'paid' ? await startDanceGeneration(purchase.id, signal, transport) : purchase
+  return ['paid', 'starting', 'processing'].includes(current.state) ? pollDancePurchase(current.id, signal, transport, polling) : current
 }

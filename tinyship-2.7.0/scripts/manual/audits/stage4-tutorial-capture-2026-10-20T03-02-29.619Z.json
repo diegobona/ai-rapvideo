@@ -1,0 +1,30 @@
+{
+  "screenshots": [
+    {
+      "name": "01-choose-photo.png",
+      "width": 549,
+      "height": 538
+    },
+    {
+      "name": "02-dance-setting.png",
+      "width": 549,
+      "height": 300
+    },
+    {
+      "name": "03-generate-video.png",
+      "width": 416,
+      "height": 648
+    },
+    {
+      "name": "04-download-video.png",
+      "width": 509,
+      "height": 300
+    }
+  ],
+  "input": "Existing generic illustrative still: /images/dance/example-barn.png",
+  "paymentAndReadyStates": "Real checkout dialog and locally mocked verified-return response; no card entry or generated output is shown.",
+  "realUploads": 0,
+  "paidJobs": 0,
+  "accountChanges": 0,
+  "intercepted": []
+}

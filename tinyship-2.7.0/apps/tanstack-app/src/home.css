@@ -1,3 +1,5 @@
+@import './motion-home.css';
+
 .home-page {
   --primary: #2d483b;
   --primary-foreground: #fffdf7;
@@ -19,6 +21,10 @@
 .home-maker button { min-height: 44px; }
 .home-maker [type=submit] { background: #2d483b; color: #fffdf7; }
 .home-maker button:disabled { opacity: .58; }
+.dance-customization { min-width: 0; border: 0; padding: 0; }
+.dance-customization textarea { display: block; min-height: 96px; }
+.dance-quick-tag { color: var(--muted-foreground); background: var(--background); }
+.dance-quick-tag[aria-pressed=true] { border-color: var(--primary); background: var(--primary); color: var(--primary-foreground); }
 .home-intro { margin: 32px 0 0; max-width: 850px; font-size: 17px; line-height: 1.8; color: #5f6a5f; }
 .home-section { margin-top: 72px; scroll-margin-top: 30px; }
 .home-section h2 { margin: 0 0 26px; color: #28392f; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(1.8rem, 3vw, 2.35rem); font-weight: 500; line-height: 1.18; letter-spacing: -.03em; }
@@ -37,6 +43,12 @@
 .example-card figcaption { padding: 20px; }
 .example-kind { font-size: 10px; font-weight: 650; letter-spacing: .09em; text-transform: uppercase; color: #6b7968; }
 .example-card h3 { margin: 8px 0; font-size: 18px; font-weight: 650; }
+.example-player { min-width: 0; background: #15231b; }
+.example-player video { display: block; width: 100%; height: auto; aspect-ratio: 9 / 16; object-fit: contain; background: #15231b; }
+.example-card .example-details { margin-top: 14px; color: #63725e; font-size: 12px; }
+.example-open { display: inline-block; margin-top: 14px; color: #2d483b; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+.example-open:focus-visible { outline: 3px solid #8b9d71; outline-offset: 4px; }
+.example-player .example-error { padding: 14px; color: #fffdf7; font-size: 13px; line-height: 1.6; }
 .faq-list { border-top: 1px solid #dce1d6; }
 .faq-item { display: grid; grid-template-columns: 1fr 1.4fr; gap: 40px; padding: 25px 0; border-bottom: 1px solid #dce1d6; }
 .faq-item h3 { margin: 0; font-size: 16px; font-weight: 650; line-height: 1.6; }

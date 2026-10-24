@@ -1,7 +1,7 @@
 export const legalDetails = {
   operator: 'ColdStone co.',
   supportEmail: 'zw83716@gmail.com',
-  updated: 'October 14, 2026',
+  updated: 'October 21, 2026',
   updatedLabel: 'Last updated:',
   contactHeading: 'Contact',
   contactLead: 'For support, privacy requests or questions about these terms, email',
@@ -12,43 +12,57 @@ export const legalPages = {
     path: '/privacy-policy',
     label: 'Privacy Policy',
     title: 'Privacy Policy | Rumpelstiltskin AI',
-    description: 'How ColdStone co. handles account information, uploaded photos and video generation data for Rumpelstiltskin AI.',
-    intro: 'ColdStone co. operates Rumpelstiltskin AI. This policy describes the information used to provide accounts and photo-to-video generation.',
+    description: 'How ColdStone co. handles visitor sessions, uploaded photos and video generation data for Rumpelstiltskin AI.',
+    intro: 'ColdStone co. operates Rumpelstiltskin AI. This policy describes the information used for visitor sessions and photo-to-video generation.',
     sections: [
       {
         heading: 'Information used by the service',
         paragraphs: [
-          'When you use the free trial without signing up, the service creates an anonymous session with a generated internal identifier. If you create an account, it stores your name, email address, authentication records and credit transactions. Email-and-password accounts use a password hash. Session records can include your IP address and browser information.',
-          'When you generate a video, the service processes the photos you select, the prepared generation instructions, job status and a link to the resulting video. Support emails contain the information you choose to send us.',
+          'The service creates an anonymous session with a generated internal identifier to associate uploads and video tasks with your browser. Registration, a name, an email address and a password are not required. Session records can include your IP address and browser information.',
+          'When you continue to checkout, the service uploads your selected photos and stores a purchase record with the prepared generation instructions. After payment, it processes the video job status and a link to the result. Support emails contain the information you choose to send us.',
         ],
       },
       {
         heading: 'Why we use this information',
         paragraphs: [
-          'Account and session data let you sign in. Credit records track generation charges and refunds. Uploaded photos and generation instructions are needed to create your requested video. Technical logs help diagnose errors and protect the service from misuse.',
+          'Visitor sessions protect access to uploads, purchases and video tasks. Purchase and refund records track payment, delivery and failure recovery. Uploaded photos and generation instructions are needed to create your requested video. Technical logs help diagnose errors and protect the service from misuse.',
           'We use information sent to the support address to respond to your request. Avoid including passwords, API keys or unnecessary personal information in your message.',
         ],
       },
       {
         heading: 'Storage and video processing',
         paragraphs: [
-          'Cloudflare provides the application hosting, D1 account database and R2 photo storage. AutoDL receives the reference-image URLs and generation instructions to run the video workflow. These providers process data on their own infrastructure and may process it outside your country.',
-          'Uploaded reference photos currently use public storage URLs so the video provider can retrieve them. Anyone who has such a URL can access the image. Do not upload confidential documents or images you need to keep private. A local preview alone does not upload a photo; the upload begins when you start generation.',
+          'We use Cloudflare to host the service and store uploaded photos and saved generated videos. AutoDL creates new videos; earlier orders may use Compshare. These providers may process information outside your country.',
+          'Photos are uploaded when you continue to checkout and provided to the video processor through image links. Image links grant access to the corresponding photos and should be kept private. Selecting a photo for a local preview does not upload it.',
+        ],
+      },
+      {
+        heading: 'Payments and refunds',
+        paragraphs: [
+          'Stripe processes your checkout and payment details on its own payment page. We do not receive or store your full card number or card security code. Stripe may collect information such as your email, billing details and payment-method information to process the transaction.',
+          'We store the purchase amount and currency, Stripe checkout and payment references, payment status, and any refund reference and status. These records associate one paid video with your browser session, prevent duplicate generation, and support payment inquiries and refunds. Your uploaded photos and generation instructions are not sent to Stripe as payment metadata.',
         ],
       },
       {
         heading: 'Retention and deletion requests',
         paragraphs: [
-          'There is currently no automatic deletion schedule for uploaded photos. Account and credit records remain until removed through administration or a supported deletion process. Generated-video links supplied by the provider can expire, so download the result while it is available.',
-          'To request access, correction or deletion, email us and describe the records or uploads involved. If you used a guest session, include the approximate generation time and any task or image URL you retained. If you have an account, contact us from its email address. We may need information to verify the request. Deleting an application record does not necessarily remove provider-retained copies.',
+          'Uploaded photos and saved generated videos are scheduled for automatic deletion from our Cloudflare storage 24 hours after each file is stored. Removal runs in the background and can take additional time. Download your completed MP4 within 24 hours to keep a copy. Purchase, refund and service records may be retained for payment processing and support.',
+          'For access, correction or deletion requests, email us with the approximate order time or a reference that helps identify your records. We may verify your request before acting on it. Service providers manage their own retention under their respective policies.',
+        ],
+      },
+      {
+        heading: 'Video examples',
+        paragraphs: [
+          'Some creative-reference videos and their preview images load directly from third-party servers. Those servers receive the connection information needed to serve the media, such as your IP address and browser information. The videos do not autoplay. Playing an example does not upload your photos or start a generation.',
         ],
       },
       {
         heading: 'Cookies and analytics',
         paragraphs: [
-          'A signed, HttpOnly visitor cookie lasts up to one year and links this browser to its free-video allowance. Database records enforce that allowance across sessions and account registration. Clearing cookies or using a different device can affect this recognition. We also use short-lived, keyed hashes of Cloudflare-provided IP addresses to limit request bursts; the trial rate counters do not store raw IP addresses.',
-          'The authentication system uses session cookies, and the interface may store your theme preference in the browser. The current tab also keeps your latest video task ID for up to 24 hours so a refresh can resume checking the result; photos are not stored in this browser record. The application currently has no active analytics identifier and does not load an analytics beacon by default.',
-          'If we enable an analytics service or change how personal information is processed, we will update this policy to describe that change.',
+          'The service uses a signed, HttpOnly visitor cookie for session continuity and misuse prevention. This cookie can last up to one year. We also use short-lived, keyed hashes of Cloudflare-provided IP addresses to limit request bursts; the trial rate counters do not store raw IP addresses.',
+          'The authentication system uses session cookies, and the interface may store your theme preference in the browser. The current tab may keep your latest video task ID, uploaded-photo links, expression notes and selected format for recovery. It does not keep uploaded photo bytes in this browser record.',
+          'We use PostHog for basic visit and referral-source statistics, including visits from AI assistants. A page-load event includes the page URL, referring website, campaign tags, and browser and device information. PostHog uses anonymous identifiers in browser storage to estimate visitor counts. Its US-hosted service processes analytics requests, including the network information needed to receive them.',
+          'Session recording, automatic click capture and person profiles are disabled. We do not track video-generation, upload, preview or download actions. We do not send uploaded photos, filenames, generation prompts, generated-video URLs, names or email addresses as analytics event data. Unrelated query parameters and URL fragments are removed from page URLs before analytics events are sent.',
         ],
       },
     ],
@@ -57,7 +71,7 @@ export const legalPages = {
     path: '/terms-of-service',
     label: 'Terms of Service',
     title: 'Terms of Service | Rumpelstiltskin AI',
-    description: 'Terms for using the Rumpelstiltskin AI photo-to-video tool operated by ColdStone co., including uploads, credits and generated results.',
+    description: 'Terms for using the Rumpelstiltskin AI photo-to-video tool operated by ColdStone co., including $4.99 purchases, refunds, uploads and generated results.',
     intro: 'These terms cover your use of Rumpelstiltskin AI, operated by ColdStone co. Please read them before uploading photos or starting a generation.',
     sections: [
       {
@@ -68,9 +82,9 @@ export const legalPages = {
         ],
       },
       {
-        heading: 'Your account and photos',
+        heading: 'Your browser session and photos',
         paragraphs: [
-          'Keep your sign-in details secure and provide an email address you control. You are responsible for activity you authorize through your account.',
+          'Keep cookies enabled while using the maker so it can associate your uploads and video tasks with the same browser session. You are responsible for the photos and generation requests you submit.',
           'Upload only photos you have permission to use, including the permission needed to depict identifiable people. Do not use the tool to harass people, commit fraud or create unlawful content. We may restrict access when the service is misused.',
         ],
       },
@@ -82,18 +96,25 @@ export const legalPages = {
         ],
       },
       {
-        heading: 'Free trial and generation',
+        heading: 'Payment and generation',
         paragraphs: [
-          'The current offer is one successful 10-second video without registration or payment. The site enforces the allowance through browser and account records. Creating an account or signing out does not add another opportunity. An active job reserves the opportunity; checking its status does not start another generation.',
-          'When the provider reports a failed generation and the internal refund completes, the free opportunity is restored. Contact support if it remains unavailable after a failure. A completed video that differs from your expectations still counts as a successful generation. Short-term network limits may temporarily delay retries.',
-          'Any future paid offer must show its price and applicable purchase terms before payment. These terms do not establish an unannounced subscription or automatic renewal.',
+          'Each video costs $4.99 USD. The price is shown before Stripe checkout, and generation begins only after payment is confirmed. One payment covers one generated video. No account or subscription is required, and there is no automatic renewal. An additional video requires a separate purchase.',
+          'Closing or cancelling an unpaid checkout does not start a generation. Refreshing the page, returning from checkout or checking an existing paid video does not buy another video or authorize a second charge.',
+          'Keep access to the same browser session to retrieve your order and video. Payment confirmation and generation may continue after you close the page. Contact zw83716@gmail.com with your approximate purchase time and Stripe receipt reference if you need help finding an order.',
+        ],
+      },
+      {
+        heading: 'Generation failures and refunds',
+        paragraphs: [
+          'A confirmed technical generation failure triggers a full refund to the original payment method. Refund processing can take time, and your bank determines when the refund appears on your statement. Contact zw83716@gmail.com if a refund remains unresolved.',
+          'A temporary network or status-check error is not proof that generation failed; the service continues checking the existing order. A completed video can differ from the reference photos or intended motion. A completed result is not automatically refunded solely for a difference in appearance or movement; contact support if you have a concern. Nothing in these terms limits refund rights required by applicable law.',
         ],
       },
       {
         heading: 'Availability and downloads',
         paragraphs: [
-          'Generation can take several minutes and depends on provider availability. Keep the tool open while a job runs, preview the result, and download the MP4 to your device. The application does not currently provide a permanent video library.',
-          'Temporary links and unfinished job status can become unavailable. Contact support with your account email and the approximate generation time if you need help with a charge or interrupted job.',
+          'Generation can take a few minutes. Preview your finished video and download the MP4 within 24 hours to save and share. Uploaded photos and saved videos are scheduled for automatic deletion from our Cloudflare storage after 24 hours.',
+          'Temporary links and unfinished job status can become unavailable. Contact support with the approximate generation time and any task reference you retained if you need help with an interrupted job.',
         ],
       },
       {

@@ -1,13 +1,15 @@
 /**
  * AI Video Generation Configuration
- * Providers: fal (AI SDK), volcengine, aliyun, autodl (native HTTP)
+ * Providers: fal (AI SDK), volcengine, aliyun, autodl, compshare (native HTTP)
  */
 
 export const aiVideoConfig = {
   /**
    * Default Video Provider
-   * @type {'fal' | 'volcengine' | 'aliyun' | 'autodl'}
+   * @type {'fal' | 'volcengine' | 'aliyun' | 'autodl' | 'compshare'}
    */
+  // Retained alternative; historical orders keep their own provider:
+  // defaultProvider: 'compshare' as const,
   defaultProvider: 'autodl' as const,
 
   /**
@@ -18,6 +20,7 @@ export const aiVideoConfig = {
     volcengine: 'doubao-seedance-2-5-260628',
     aliyun: 'wan3.0-video',
     autodl: 'minimax-h3',
+    compshare: 'MiniMax-H3',
   },
 
   /**
@@ -33,16 +36,27 @@ export const aiVideoConfig = {
     volcengine: ['doubao-seedance-2-5-260628', 'doubao-seedance-2-0-260128'],
     aliyun: ['wan3.0-video', 'wan3.0-video-prime'],
     autodl: ['minimax-h3'],
+    compshare: ['MiniMax-H3'],
   },
 
   /** Public workflow identifiers and supported input rules; credentials stay server-side. */
   autodl: {
-    workflowId: 'minimax_h3_lightx2v_v5',
+    workflowId: 'minimax_h3_zm_u24',
+    legacyWorkflowId: 'minimax_h3_lightx2v_v5',
     defaultResolution: '768p横',
-    maxDuration: 10,
+    maxDuration: 15,
+    legacyMaxDuration: 10,
     maxReferenceImages: 9,
   },
   autodlSizes: [
+    { value: '480p竖', label: '480P 9:16' },
+    { value: '768p竖', label: '768P 9:16' },
+    { value: '480p横', label: '480P 16:9' },
+    { value: '768p横', label: '768P 16:9' },
+    { value: '480p(1:1)', label: '480P 1:1' },
+    { value: '768p(1:1)', label: '768P 1:1' },
+  ],
+  autodlLegacySizes: [
     { value: '480p竖', label: '480P 9:16' },
     { value: '768p竖', label: '768P 9:16' },
     { value: '1080p竖', label: '1080P 9:16' },
@@ -52,6 +66,21 @@ export const aiVideoConfig = {
     { value: '480p(1:1)', label: '480P 1:1' },
     { value: '768p(1:1)', label: '768P 1:1' },
     { value: '1080p(1:1)', label: '1080P 1:1' },
+  ],
+  compshare: {
+    apiBase: 'https://cp.compshare.cn/minimax/v2',
+    defaultResolution: '768P',
+    maxReferenceImages: 9,
+    maxReferenceVideos: 3,
+    maxReferenceMedia: 12,
+    maxPromptLength: 7000,
+  },
+  compshareSizes: [
+    { value: '480P', label: '480P' },
+    { value: '768P', label: '768P' },
+    { value: '1080P', label: '1080P' },
+    { value: '2K', label: '2K' },
+    { value: '4K', label: '4K' },
   ],
 
   /**
@@ -125,7 +154,7 @@ export const aiVideoConfig = {
 } as const;
 
 // Type exports for external use
-export type VideoProviderName = 'fal' | 'volcengine' | 'aliyun' | 'autodl';
+export type VideoProviderName = 'fal' | 'volcengine' | 'aliyun' | 'autodl' | 'compshare';
 
 function isVeoModel(model?: string): boolean {
   return Boolean(model && model.includes('veo3'));
@@ -152,6 +181,8 @@ export function getVideoSizesForProvider(provider: VideoProviderName, model?: st
       return aiVideoConfig.aliyunSizes;
     case 'autodl':
       return aiVideoConfig.autodlSizes;
+    case 'compshare':
+      return aiVideoConfig.compshareSizes;
     default:
       return [];
   }
@@ -161,7 +192,10 @@ export function getVideoSizesForProvider(provider: VideoProviderName, model?: st
  * Get duration options (seconds) for a video provider and model
  */
 export function getVideoDurationsForProvider(provider: VideoProviderName, model?: string): number[] {
+  // Generic forms can still use a legacy workflow without frozen options.
+  // The upgraded workflow accepts up to 15s; the public dance maker requests 10s.
   if (provider === 'autodl') return [5, 10];
+  if (provider === 'compshare') return [5, 10, 15, 20, 30];
   if (provider === 'fal') {
     if (isVeoModel(model)) return [4, 6, 8];
     if (isKlingV3(model)) return [5, 10, 15];

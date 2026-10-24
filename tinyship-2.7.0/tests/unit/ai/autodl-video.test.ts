@@ -27,14 +27,14 @@ describe('AutoDL multi-image MiniMax H3 video', () => {
     vi.unstubAllGlobals();
   });
 
-  test('defaults to AutoDL and prices a generation at 40 credits', () => {
+  test('uses the upgraded image workflow catalog while retaining the historical credit mapping', () => {
     expect(aiVideoConfig.defaultProvider).toBe('autodl');
     expect(calculateVideoCreditCost({ provider })).toBe(40);
     expect(getVideoSizesForProvider(provider).map(size => size.value)).toContain('768p竖');
     expect(aiVideoConfig.autodl.defaultResolution).toBe('768p横');
-    expect(aiVideoConfig.autodl.maxDuration).toBe(10);
+    expect(aiVideoConfig.autodl.maxDuration).toBe(15);
     expect(getVideoDurationsForProvider(provider)).toEqual([5, 10]);
-    expect(getVideoSizesForProvider(provider).map(size => size.value)).toContain('1080p横');
+    expect(getVideoSizesForProvider(provider).map(size => size.value)).not.toContain('1080p横');
   });
 
   test('submits only the verified image-and-prompt workflow fields using raw Authorization', async () => {
@@ -122,6 +122,31 @@ describe('AutoDL multi-image MiniMax H3 video', () => {
     await createVideoTask(options);
     expect(fetch.mock.calls[0][0]).toBe('https://autodl.art/api/v1/comfyui/comfyui_workflow/minimax_h3_lightx2v_v5');
     expect(() => calculateVideoCreditCost({ provider, model: 'unpriced-model' })).toThrow('Unsupported AutoDL video model');
+  });
+
+  test('freezes the upgraded workflow despite a stale environment and accepts its seed/duration boundaries', async () => {
+    const fetch = mockResponse({ code: 'Success', data: { task_id: 'upgraded-task' } });
+    vi.stubGlobal('fetch', fetch);
+    await createVideoTask({ ...options, workflowId: 'minimax_h3_zm_u24', duration: 15, seed: 0 });
+    expect(fetch.mock.calls[0][0]).toBe('https://autodl.art/api/v1/comfyui/comfyui_workflow/minimax_h3_zm_u24');
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toMatchObject({ duration: 15, seed: 0, resolution: '768p竖' });
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).not.toHaveProperty('audio_url');
+  });
+
+  test('rejects unsupported upgraded resolutions and any reference video before submitting', async () => {
+    const fetch = mockResponse({ code: 'Success', data: { task_id: 'never-created' } });
+    vi.stubGlobal('fetch', fetch);
+    await expect(createVideoTask({ ...options, workflowId: 'minimax_h3_zm_u24', size: '1080p横' })).rejects.toThrow('resolution');
+    await expect(createVideoTask({ ...options, workflowId: 'minimax_h3_zm_u24', referenceVideoUrls: ['https://media.example/ref.mp4'] })).rejects.toThrow();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  test('keeps legacy resolution support for historical tasks without a frozen workflow', async () => {
+    const fetch = mockResponse({ code: 'Success', data: { task_id: 'old-task' } });
+    vi.stubGlobal('fetch', fetch);
+    await createVideoTask({ ...options, size: '1080p横' });
+    expect(fetch.mock.calls[0][0]).toBe('https://autodl.art/api/v1/comfyui/comfyui_workflow/test-workflow');
+    expect(JSON.parse(fetch.mock.calls[0][1].body).resolution).toBe('1080p横');
   });
 
   test('queries queued or running tasks without depending on workflow configuration', async () => {

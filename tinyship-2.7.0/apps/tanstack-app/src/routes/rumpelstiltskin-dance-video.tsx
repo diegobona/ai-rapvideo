@@ -20,9 +20,9 @@ export const Route = createFileRoute('/rumpelstiltskin-dance-video')({
 function DanceVideoPage() {
   const { isAvailable } = Route.useLoaderData()
   return (
-    <main className="home-page tool-page">
+    <main className="home-page tool-page dance-page">
       <h1 className="home-title">{page.h1}</h1>
-      <DanceMaker copy={homeCopy.tool} isAvailable={isAvailable} className="home-maker" returnTo={page.path} />
+      <DanceMaker copy={homeCopy.tool} isAvailable={isAvailable} className="home-maker" />
       <DanceVideoContent />
     </main>
   )

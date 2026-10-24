@@ -1,5 +1,7 @@
 # 阶段 5：上线操作清单
 
+> 2026-10-15 更新：网站现已部署，以下为阶段 5 的历史准备记录。当前数据库、媒体域名、部署命令和线上检查结果以 [Cloudflare 生产部署记录](./cloudflare-production-deployment.md) 为准；旧的数据库 ID、账号相关说明和宣传原文不再适用。
+
 适用项目：TinyShip / TanStack Start / Cloudflare Workers。主域为 `https://rumpelstiltskin-ai.co`，Worker 名称为 `rumpelstiltskin-ai`。本阶段只完成本地代码与验收，没有部署 Worker、修改线上 DNS 或执行远程数据库迁移。
 
 ## 上线前先处理的现有缺口
@@ -43,7 +45,7 @@
 
 7. **在线上走一次完整用户流程。** 在未登录的新浏览器会话中上传照片，确认直接生成一次，等待完成后播放并下载 MP4；刷新不应重复提交。随后在同一浏览器注册、退出、登录，再在另一浏览器登录该账号，均不应获得第二次免费机会。由开发侧以受控失败验证退款和机会恢复，避免为了测试重复购买生成。检查站内链接、法律页、移动端及浏览器查看源代码；首页和内页的 H1/正文应直接出现在 HTML 中。确认 `/robots.txt` 可抓取、`/sitemap.xml` 包含主页加六个内容/工具页，共 7 个可索引页面；登录、账户、付费与法律页保留 `noindex`，不放入 sitemap。
 
-8. **需要统计时再填 Token。** Cloudflare Web Analytics 添加 `rumpelstiltskin-ai.co`，在 Manage site 选择 **Enable with JS Snippet installation**，取 snippet 中的 `token`。填到 `apps/tanstack-app/src/lib/analytics.ts` 的 `analyticsConfig.cloudflareWebAnalyticsToken`，然后重新构建部署。当前值为空，不加载统计脚本。统一入口是 `src/components/site-analytics.tsx`；不要在页面重复粘贴，也不要同时打开 Cloudflare 自动注入。上线后确认页面只加载一次 beacon、后台有访问记录。[官方配置说明](https://developers.cloudflare.com/web-analytics/get-started/)
+8. **统计已接入 PostHog。** 只采集基础访问与来源，不采集生成、下载、点击等操作。后台 Web Analytics → Channels → AI 查看 AI 来源访客数。公开项目 Token/Host 位于仓库根目录 `.env.production`，统一入口仍是 `src/components/site-analytics.tsx`。不要再添加 Cloudflare/Plausible 的重复统计脚本。变更配置后需要重新构建部署；当前配置与验收记录见 [PostHog 接入说明](./posthog-analytics.md)。
 
 9. **提交 Google Search Console。** 添加 Domain property `rumpelstiltskin-ai.co`，按其给出的 TXT 值在 Cloudflare DNS 验证所有权，验证后保留该记录。然后在 Sitemaps 提交 `https://rumpelstiltskin-ai.co/sitemap.xml`。用 URL Inspection 检查首页与六个内页，确认实时测试可访问、canonical 正确后申请收录；不要提交 `noindex` 资源页。[所有权验证](https://support.google.com/webmasters/answer/9008080)、[提交 sitemap](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap)
 

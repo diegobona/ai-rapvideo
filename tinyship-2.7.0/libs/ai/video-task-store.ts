@@ -9,6 +9,7 @@ type LocalVideoTaskStatus = 'processing' | 'succeeded' | 'failed';
 export interface VideoTaskRecord {
   id: string;
   userId: string;
+  purchaseId?: string;
   provider: AsyncVideoProviderName;
   model: string;
   providerTaskId: string;
@@ -30,6 +31,7 @@ function toRecord(row: typeof videoTask.$inferSelect): VideoTaskRecord {
     result: (row.result ?? undefined) as VideoGenerationResult | undefined,
     errorMessage: row.errorMessage ?? undefined,
     consumeTransactionId: row.consumeTransactionId ?? undefined,
+    purchaseId: row.purchaseId ?? undefined,
     createdAt: row.createdAt.getTime(),
     updatedAt: row.updatedAt.getTime(),
   };
@@ -60,6 +62,11 @@ export async function getVideoTaskRecord(taskId: string, userId: string): Promis
   const [row] = await db.select().from(videoTask).where(and(
     eq(videoTask.id, taskId), eq(videoTask.userId, userId),
   )).limit(1);
+  return row ? toRecord(row) : undefined;
+}
+
+export async function getVideoTaskByPurchase(purchaseId: string, userId: string): Promise<VideoTaskRecord | undefined> {
+  const [row] = await db.select().from(videoTask).where(and(eq(videoTask.purchaseId,purchaseId),eq(videoTask.userId,userId))).limit(1);
   return row ? toRecord(row) : undefined;
 }
 

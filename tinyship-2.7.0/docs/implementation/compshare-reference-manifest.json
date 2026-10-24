@@ -1,0 +1,15 @@
+{
+  "sourcePost": "https://x.com/itsjusttimbro/status/2105601473878859850",
+  "referenceUrl": "https://media.rumpelstiltskin-ai.co/references/rumpelstiltskin-v2/motion-x-2105601473878859850-silent-15s-v2.mp4",
+  "referenceDuration": 15,
+  "referenceWidth": 854,
+  "referenceHeight": 486,
+  "referenceFPS": 24,
+  "referenceAudio": false,
+  "referenceBytes": 1955214,
+  "referenceSHA256": "2ff125b0553d3d90b57bbd45beea8021eee251d4a16262eb9ab96c4ea9098f06",
+  "jobId": "01a15886-2779-7a36-8a1c-ed0c90ed0930",
+  "generatedVideoBytes": 4341091,
+  "generatedVideoSHA256": "5a6dc8c2fe3427ffbfbd2038a0d0542474ccb6392c3a347f79d1711a7c41845a",
+  "availablePointsAfter": 905
+}

@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { pageRegistry } from '../../../apps/tanstack-app/src/lib/page-registry'
+import { VIDEO_PAYMENT_REQUIRED } from '../../../config/videoPurchase'
 
 const cases = [
   {
@@ -16,9 +17,9 @@ const cases = [
   },
   {
     entry: pageRegistry.movie1987,
-    title: '1987 Rumpelstiltskin - The Dance Scene Behind the AI Meme',
-    h1: '1987 Rumpelstiltskin: The Dance Scene Behind the Meme',
-    h2: ['What the 1987 Scene Is', 'Why It Became a Meme Again', 'Make Your Own Version'],
+    title: 'Is Rumpelstiltskin 1987 Real? The AI Meme Explained',
+    h1: 'Is Rumpelstiltskin 1987 Real?',
+    h2: ['Is the Viral Dance from the 1987 Film?', 'The Real 1987 and 1995 Films', 'Where the Tip Toe Music Comes From', 'Make Your Own Version'],
   },
 ]
 
@@ -58,10 +59,11 @@ for (const { entry, title, h1, h2 } of cases) {
           const paragraphs = await step.locator(':scope > p').count()
           expect(paragraphs).toBeGreaterThanOrEqual(2)
           expect(paragraphs).toBeLessThanOrEqual(3)
-          await expect(step.locator('figure img')).toHaveCount(1)
+          const paymentStep = (await step.locator('h2').getAttribute('id')) === 'generate-video'
+          await expect(step.locator('figure img')).toHaveCount(!VIDEO_PAYMENT_REQUIRED && paymentStep ? 0 : 1)
         }
         await expect(page.locator('section[aria-labelledby="common-problems"] h3')).toHaveCount(3)
-        for (const text of ['Choose dancer photo', 'Generate video', 'Download video', 'MP4', 'several minutes']) {
+        for (const text of ['Choose dancer photo', 'Generate video', 'Download video', 'MP4', 'a few minutes', VIDEO_PAYMENT_REQUIRED ? 'Pay $4.99 & generate' : 'Access is temporarily free']) {
           await expect(page.locator('main')).toContainText(text)
         }
       } else {
@@ -81,3 +83,17 @@ for (const { entry, title, h1, h2 } of cases) {
     }
   })
 }
+
+test('the former film URL permanently redirects to the single new article', async ({ request }) => {
+  for (const query of ['', '?utm_source=old-link']) {
+    const response = await request.get(`/1987-rumpelstiltskin${query}`, { maxRedirects: 0 })
+    expect(response.status()).toBe(301)
+    expect(response.headers().location).toBe(`${pageRegistry.movie1987.path}${query}`)
+  }
+  const sitemap = await (await request.get('/sitemap.xml')).text()
+  expect(sitemap).toContain(`https://rumpelstiltskin-ai.co${pageRegistry.movie1987.path}`)
+  expect(sitemap).not.toContain('/1987-rumpelstiltskin')
+  const html = await (await request.get(pageRegistry.movie1987.path)).text()
+  for (const credit of ['Mark Jones', 'Max Grodénchik', 'Kim Johnston Ulrich', 'Billy Barty']) expect(html).toContain(credit)
+  expect(html).toContain('AI-generated')
+})

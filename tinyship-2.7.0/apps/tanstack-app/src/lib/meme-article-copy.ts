@@ -1,9 +1,10 @@
 import { pageRegistry } from './page-registry'
+import { danceFactSources } from './dance-fact-sources'
 
 export const memeSources = {
   afi: { href: 'https://catalog.afi.com/Film/57804-RUMPELSTILTSKIN', label: 'AFI Catalog' },
-  history: { href: 'https://knowyourmeme.com/memes/ai-rumpelstiltskin-tip-toein-in-my-jordans', label: 'Know Your Meme' },
-  reporting: { href: 'https://www.nbclosangeles.com/entertainment/entertainment-news/ai-generated-rumpelstiltskin-meme/3952695/', label: 'NBC News reporting' },
+  history: danceFactSources.meme,
+  reporting: danceFactSources.reporting,
 } as const
 
 export const memeArticleCopy = {
@@ -15,22 +16,22 @@ export const memeArticleCopy = {
   origin: {
     heading: 'Where the Rumpelstiltskin Meme Came From',
     paragraphs: [
-      'According to Know Your Meme, the Instagram pages Stroinaya, Neuroferma and Anna Glinskaya jointly posted the AI video on August 27, 2026. Its source-linked timeline then follows captioned edits and character replacements across TikTok and X in late September and early October.',
-      'The familiar music edit pairs the dance with Riff Raff’s “Tip Toe Wing In My Jawwdinz.” The music and joke captions gave people ways to reuse the short performance, while AI replacements let them put another character in the dancer’s place.',
+      'The dance was made with AI in the style of an older fantasy film. The muted lighting and film-like texture help explain why viewers looked for a movie credit. The 1987 film is real, but it does not contain this viral performance.',
+      'The familiar music edit pairs the dance with Riff Raff’s 2014 song “Tip Toe Wing In My Jawwdinz.” The song was added to the meme; it is not the score from either of the real Rumpelstiltskin films.',
     ],
     more: 'For the cast and film credits that often get mixed into this story, read about',
     link: pageRegistry.movie1987,
   },
   make: {
     heading: 'How to Make Your Own Rumpelstiltskin Meme',
-    intro: 'You can make a new version with your own dancer photo. This site uses a prepared 10-second dance sequence with a princess reaction and a footwork detail shot.',
+    intro: 'You can make a new version with your own dancer photo. The template requests a 10-second dance sequence with a princess reaction and a footwork detail shot; generated movement and cuts can vary.',
     steps: [
       'Open the maker and select Choose dancer photo. Pick one JPG, PNG or WebP file up to 10 MB showing one person with a clearly visible face; no account is required.',
       'Keep the included princess or select Choose princess photo to replace her. The straw-corner setting and dance sequence are already selected.',
-      'Confirm the photo-permission checkbox and select Generate video. Allow a few minutes for processing and keep the page open.',
+      'Confirm the photo-permission checkbox and select Generate video. Generation can take a few minutes; keep the page open.',
       'Watch the result, then select Download video to save the MP4. Check the face and footwork before sharing it.',
     ],
-    timing: 'Generation time depends on the service queue. A 30-second turnaround is not guaranteed, and a new result may differ from the meme’s exact steps or cut timing.',
+    timing: 'A new result may differ from the meme’s steps or cut timing.',
     toolLead: 'Start with',
     homeLead: 'The same maker is on',
     guideLead: 'For screenshots of each control, follow',
@@ -49,8 +50,8 @@ export const memeArticleCopy = {
         answer: 'The maker prompts a shush gesture, a frightened princess reaction and measured tiptoe dancing. AI generation can change the pacing, framing or movement, so preview the result before you download it.',
       },
       {
-        question: 'Can I try making a meme for free?',
-        answer: 'You can make one 10-second video free without signing up. The limit applies to your browser and any linked account. A failed generation restores the opportunity; creating an account does not add another one.',
+        question: 'How much does it cost to make a meme video?',
+        answer: 'One video costs $4.99 USD through Stripe, with no account or subscription required. Choose your photos, pay before generation, then preview and download the result.',
       },
     ],
   },
@@ -58,22 +59,36 @@ export const memeArticleCopy = {
 
 export const movieArticleCopy = {
   scene: {
-    heading: 'What the 1987 Scene Is',
-    correction: 'The tiptoe dance circulating as a “1987 scene” is an AI-generated video. It is not a scene from the real film Rumpelstiltskin. NBC News reported the mistaken movie attribution during the meme’s spread.',
-    film: 'Rumpelstiltskin was released in 1987 as part of Cannon’s Movie Tales series of live-action fairy-tale musicals. The AFI Catalog credits David Irving as director and writer, Billy Barty as Rumpelstiltskin, and Amy Irving as Katie, the miller’s daughter.',
-    distinction: 'Billy Barty’s performance belongs to that film. The dance meme’s synthetic character should not be presented as footage of him.',
+    heading: 'Is the Viral Dance from the 1987 Film?',
+    correction: 'No. The tiptoe dance with the frightened princess is AI-generated. LADBible’s October 6, 2026 report directly addresses the claim that it came from the 1987 Rumpelstiltskin film and explains that the clip imitates the look of 1980s fantasy films.',
+    distinction: 'The 1987 film itself does exist. A caption naming it can look like a movie credit, but the name and vintage style do not establish the source of the dance.',
   },
-  revival: {
-    heading: 'Why It Became a Meme Again',
-    timeline: 'The 2026 trend brought the name Rumpelstiltskin back into circulation through a new AI clip. Know Your Meme documents its August upload and the music edits that spread in late September and early October.',
-    mechanism: 'NBC News describes viewers looking for an old film, followed by remixes with other characters in the dancer’s place. That helps explain the renewed attention to the 1987 title: the old-movie look encouraged the connection, even though the clip had a different source.',
-    more: 'The upload history and music edit are covered in',
+  films: {
+    heading: 'The Real 1987 and 1995 Films',
+    items: [
+      {
+        heading: 'The 1987 Rumpelstiltskin Film',
+        body: 'The AFI Catalog records a 1987 release directed by David Irving, with Billy Barty as Rumpelstiltskin and Amy Irving as Katie. Those are credits for the real film; Billy Barty’s name does not identify the AI dancer.',
+        source: danceFactSources.film1987,
+      },
+      {
+        heading: 'The Rumpelstiltskin Movie from 1995',
+        body: 'The 1995 Rumpelstiltskin movie is a separate film directed by Mark Jones, with Max Grodénchik as Rumpelstiltskin and Kim Johnston Ulrich starring. It is another title to check when a search result says only “Rumpelstiltskin movie.”',
+        source: danceFactSources.film1995,
+      },
+    ],
+    distinction: 'Neither film supplies the viral AI dance. Their release years and cast lists identify separate productions, not a source scene for this meme.',
+  },
+  music: {
+    heading: 'Where the Tip Toe Music Comes From',
+    body: 'The meme pairs the AI dance with Riff Raff’s 2014 song “Tip Toe Wing In My Jawwdinz.” It is music added to the dance edit, not a soundtrack cue from the 1987 or 1995 film.',
+    more: 'For an explanation of the AI clip and how to make a new version, read',
     link: pageRegistry.meme,
   },
   make: {
     heading: 'Make Your Own Version',
     intro: 'Use a photo to make your own interpretation of the dance. The maker supplies the straw corner and a default princess; you choose the dancer and can replace the princess with a second photo.',
-    expectations: 'The result is a newly generated 10-second MP4. Allow a few minutes for rendering, then check the character likeness and steps. It is a recreation of the meme, with motion that can vary between generations.',
+    expectations: 'The maker requests a 10-second video, delivered as an MP4. Generation can take a few minutes. Preview the character likeness and motion before sharing.',
     toolLead: 'Open',
     guideLead: 'or follow the illustrated guide:',
   },

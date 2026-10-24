@@ -1,5 +1,6 @@
 import { homeCopy } from '@/lib/home-copy'
 import { moreAiVideoTools } from '@/lib/page-registry'
+import { VideoExamples } from './video-examples'
 
 type RelatedTool = {
   category: string
@@ -31,22 +32,7 @@ export function HomeContent({ relatedTools = moreAiVideoTools }: HomeContentProp
         </ol>
       </section>
 
-      <section className="home-section section-examples" aria-labelledby="video-examples">
-        <h2 id="video-examples">{homeCopy.examples.heading}</h2>
-        <p className="section-note">{homeCopy.examples.note}</p>
-        <div className="example-grid">
-          {homeCopy.examples.items.map((example) => (
-            <figure className="example-card" key={example.image}>
-              <img src={example.image} alt={example.alt} width={768} height={768} loading="lazy" decoding="async" />
-              <figcaption>
-                <span className="example-kind">{example.kind}</span>
-                <h3>{example.title}</h3>
-                <p>{example.body}</p>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      </section>
+      <VideoExamples />
 
       <section className="home-section section-faq" aria-labelledby="video-faq">
         <h2 id="video-faq">{homeCopy.faq.heading}</h2>

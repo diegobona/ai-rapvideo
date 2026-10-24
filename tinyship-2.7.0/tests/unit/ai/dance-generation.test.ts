@@ -4,11 +4,31 @@ import {
   DanceGenerationError,
   pollDanceTask,
   startDanceGeneration,
+  startDirectDanceGeneration,
   uploadDancePhoto,
   validateDancePhoto,
 } from '../../../apps/tanstack-app/src/lib/dance-generation'
 
 describe('home dance generation', () => {
+  test('direct generation sends only fixed-template photos, expression details and orientation with no checkout', async () => {
+    const transport = vi.fn<typeof fetch>(async (url, options) => {
+      expect(url).toBe('/api/video-generate/')
+      expect(JSON.parse(String(options?.body))).toEqual({ danceTemplate: 'rumpelstiltskin-v2', dancerImageUrl: 'https://photos.test/dancer.jpg', princessImageUrl: 'https://photos.test/princess.jpg', customDescription: 'A sly grin', quickTags: ['playful'], orientation: 'portrait' })
+      return Response.json({ success: true, data: { taskId: 'direct-task', status: 'processing' } })
+    })
+    await expect(startDirectDanceGeneration('https://photos.test/dancer.jpg', 'https://photos.test/princess.jpg', new AbortController().signal, transport, { customDescription: ' A sly grin ', quickTags: ['push-in', 'playful'], orientation: 'portrait', sceneImageUrl: 'https://photos.test/scene.png', provider: 'compshare' } as any)).resolves.toEqual({ taskId: 'direct-task', status: 'processing' })
+    expect(transport).toHaveBeenCalledTimes(1)
+  })
+
+  test('direct generation rejects missing task identifiers without treating the result as paid', async () => {
+    const transport = vi.fn<typeof fetch>(async () => Response.json({ success: true, data: { status: 'processing' } }))
+    await expect(startDirectDanceGeneration('https://photos.test/dancer.jpg', undefined, new AbortController().signal, transport)).rejects.toMatchObject({ code: 'invalidResponse' })
+  })
+
+  test('historical Compshare results still load after the default provider changes', async () => {
+    const transport = vi.fn<typeof fetch>(async () => Response.json({ success: true, data: { status: 'succeeded', result: { videoUrl: 'https://videos.test/compshare.mp4', provider: 'compshare', model: 'MiniMax-H3' } } }))
+    await expect(pollDanceTask('historical-task', new AbortController().signal, transport)).resolves.toMatchObject({ provider: 'compshare' })
+  })
   test('sends dancer identity and lets the server supply the fixed template and default princess', () => {
     expect(buildDanceRequest('https://photos.test/photo.jpg')).toEqual({
       danceTemplate: 'rumpelstiltskin-v2', dancerImageUrl: 'https://photos.test/photo.jpg',
@@ -42,19 +62,19 @@ describe('home dance generation', () => {
     expect(transport.mock.calls[0][0]).toBe('/api/upload')
   })
 
-  test('turns insufficient credits into a recoverable UI error', async () => {
-    const transport = vi.fn<typeof fetch>(async () => Response.json({ error: 'insufficient_credits', required: 40, balance: 0 }, { status: 402 }))
-    await expect(startDanceGeneration('https://photos.test/photo.jpg', undefined, new AbortController().signal, transport)).rejects.toMatchObject({ code: 'credits' })
+  test('turns an unpaid purchase into a recoverable payment error', async () => {
+    const transport = vi.fn<typeof fetch>(async () => Response.json({ error: 'payment_required' }, { status: 402 }))
+    await expect(startDanceGeneration('purchase-123', new AbortController().signal, transport)).rejects.toMatchObject({ code: 'paymentRequired' })
   })
 
-  test('sends both identities to the existing endpoint without client-controlled instructions', async () => {
+  test('submits only an owned purchase identifier without client-controlled generation options', async () => {
     const transport = vi.fn<typeof fetch>(async (url, options) => {
       expect(url).toBe('/api/video-generate/')
       expect(options?.method).toBe('POST')
-      expect(JSON.parse(options?.body as string)).toEqual({ danceTemplate: 'rumpelstiltskin-v2', dancerImageUrl: 'https://photos.test/photo.jpg', princessImageUrl: 'https://photos.test/princess.jpg' })
-      return Response.json({ success: true, data: { taskId: 'task-123', status: 'processing', async: true } })
+      expect(JSON.parse(options?.body as string)).toEqual({ purchaseId: 'purchase-123' })
+      return Response.json({ success: true, data: { purchase: { id: 'purchase-123', taskId: 'task-123', state: 'processing' } } })
     })
-    await expect(startDanceGeneration('https://photos.test/photo.jpg', 'https://photos.test/princess.jpg', new AbortController().signal, transport)).resolves.toEqual({ status: 'processing', taskId: 'task-123' })
+    await expect(startDanceGeneration('purchase-123', new AbortController().signal, transport)).resolves.toEqual({ id: 'purchase-123', state: 'processing', taskId: 'task-123' })
   })
 
   test('identifies unauthorized upload for the sign-in redirect', async () => {
@@ -64,7 +84,7 @@ describe('home dance generation', () => {
 
   test('rejects a success payload without a real video or task', async () => {
     const transport = vi.fn<typeof fetch>(async () => Response.json({ success: true, data: {} }))
-    await expect(startDanceGeneration('https://photos.test/photo.jpg', undefined, new AbortController().signal, transport)).rejects.toMatchObject({ code: 'invalidResponse' })
+    await expect(startDanceGeneration('purchase-123', new AbortController().signal, transport)).rejects.toMatchObject({ code: 'invalidResponse' })
   })
 
   test('polls an existing task without starting another chargeable generation', async () => {

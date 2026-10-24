@@ -1,7 +1,8 @@
 import { createVideoProvider } from './providers';
 import { getApiKey, getBaseUrl } from './config';
 import { getFixedConsumptionAmount } from '../credits/calculator';
-import { autodlCreateVideoTask, autodlQueryVideoTask, validateAutodlVideoOptions } from './autodl-video';
+import { autodlCreateVideoTask, autodlQueryVideoTask, validateAutodlVideoOptions, isAutodlVideoConfigured } from './autodl-video';
+import { compshareCreateVideoTask, compshareQueryVideoTask, validateCompshareVideoOptions, isCompshareVideoConfigured } from './compshare-video';
 import type {
   AsyncVideoProviderName,
   VideoProviderName,
@@ -25,6 +26,7 @@ const DEFAULT_MODELS: Record<VideoProviderName, string> = {
   volcengine: aiVideoConfig.defaultModels.volcengine,
   aliyun: aiVideoConfig.defaultModels.aliyun,
   autodl: aiVideoConfig.defaultModels.autodl,
+  compshare: aiVideoConfig.defaultModels.compshare,
 };
 
 function resolveVideoModel(provider: VideoProviderName, model?: string): string {
@@ -38,9 +40,16 @@ function resolveVideoModel(provider: VideoProviderName, model?: string): string 
 }
 
 /** Routes call this before credit consumption; provider adapters validate again on submission. */
+export function isVideoGenerationConfigured(provider: VideoProviderName = aiVideoConfig.defaultProvider): boolean {
+  if (provider === 'compshare') return isCompshareVideoConfigured();
+  if (provider === 'autodl') return isAutodlVideoConfigured();
+  return Boolean(getApiKey(provider));
+}
+
 export function validateVideoGenerationOptions(options: VideoGenerationOptions): void {
   resolveVideoModel(options.provider, options.model);
   if (options.provider === 'autodl') validateAutodlVideoOptions(options);
+  if (options.provider === 'compshare') validateCompshareVideoOptions(options);
 }
 
 function readHttpUrl(value: unknown): string | undefined {
@@ -765,6 +774,11 @@ export async function createVideoTask(options: VideoGenerationOptions): Promise<
   const provider = options.provider ?? aiVideoConfig.defaultProvider;
   const model = resolveVideoModel(provider, options.model);
 
+  if (provider === 'compshare') {
+    const providerTaskId = await compshareCreateVideoTask(options);
+    return { provider, model, providerTaskId };
+  }
+
   if (provider === 'autodl') {
     const providerTaskId = await autodlCreateVideoTask(options);
     return { provider, model, providerTaskId };
@@ -793,6 +807,7 @@ export async function queryVideoTask(
   errorMessage?: string;
 }> {
   if (provider === 'autodl') return autodlQueryVideoTask(model, providerTaskId);
+  if (provider === 'compshare') return compshareQueryVideoTask(model, providerTaskId);
   if (provider === 'volcengine') {
     const task = await volcengineQueryTask(providerTaskId);
     const status = task.status?.toLowerCase();
@@ -839,16 +854,17 @@ export async function queryVideoTask(
  */
 export async function generateVideoResponse(options: VideoGenerationOptions): Promise<VideoGenerationResult> {
   switch (options.provider ?? aiVideoConfig.defaultProvider) {
+    case 'compshare':
     case 'autodl': {
       const task = await createVideoTask(options);
       const startedAt = Date.now();
       while (Date.now() - startedAt < DEFAULT_MAX_TIMEOUT_MS) {
         const state = await queryVideoTask(task.provider, task.model, task.providerTaskId);
         if (state.status === 'succeeded' && state.result) return state.result;
-        if (state.status === 'failed') throw new Error(state.errorMessage || 'AutoDL video generation failed');
+        if (state.status === 'failed') throw new Error(state.errorMessage || 'Video generation failed');
         await sleep(DEFAULT_POLL_INTERVAL_MS);
       }
-      throw new Error('AutoDL video generation timed out after 600s');
+      throw new Error('Video generation timed out after 600s');
     }
     case 'fal':
       return falVideoGenerate(options);

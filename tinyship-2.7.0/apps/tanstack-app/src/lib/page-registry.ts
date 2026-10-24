@@ -6,23 +6,23 @@ function page(path: string, anchorText: string, targetKeyword: string, descripti
 export const pageRegistry = {
   home: {
     ...page('/', 'Rumpelstiltskin AI', 'rumpelstiltskin ai', '', 'Home'),
-    title: 'Rumpelstiltskin AI - Turn Any Photo Into the Dance Video',
+    title: 'Rumpelstiltskin AI - Turn a Photo Into a Dance Video',
     h1: 'Rumpelstiltskin AI Video Maker',
-    description: 'Type in a photo, get the Rumpelstiltskin AI dance video in seconds. The free Rumpelstiltskin AI generator behind the viral meme.',
+    description: 'Create a Rumpelstiltskin AI dance video from one photo for $4.99 USD. No account or subscription required. Preview and download your video.',
   },
   videoGenerator: {
     ...page(
     '/rumpelstiltskin-ai-video-generator', 'Rumpelstiltskin AI Video Generator', 'rumpelstiltskin ai video generator',
-    'Upload a photo and the Rumpelstiltskin AI video generator turns it into the viral dance clip in under a minute. Free to try on phone or desktop.', 'Video generators',
+    'Rumpelstiltskin AI video generator: create a dance video from one photo for $4.99 USD. No account or subscription required. Preview and download the MP4.', 'Video generators',
     ),
-    title: 'Rumpelstiltskin AI Video Generator - Free, Online, No Signup',
+    title: 'Rumpelstiltskin AI Video Generator - Make a Dance Video From One Photo',
   },
   danceVideo: {
     ...page(
     '/rumpelstiltskin-dance-video', 'Rumpelstiltskin Dance Video Generator', 'rumpelstiltskin ai dance video generator',
-    'Turn a photo into a Rumpelstiltskin dance video with a prepared AI dance template.', 'Video generators',
+    'Make a Rumpelstiltskin tip toe dance video from your photo for $4.99 USD. No account or subscription required. Create your own 10-second dance clip.', 'Video generators',
     ),
-    title: 'Rumpelstiltskin Dance Video Generator - Free AI Dance Maker',
+    title: 'Rumpelstiltskin Dance Video Generator - Recreate the Tip Toe Dance',
   },
   bestGenerators: {
     ...page(
@@ -34,7 +34,7 @@ export const pageRegistry = {
   meme: {
     ...page(
     '/rumpelstiltskin-meme', 'Rumpelstiltskin Meme', 'rumpelstiltskin meme',
-    'Yes, the Rumpelstiltskin meme is AI. Where it came from, why it blew up, and how to put yourself in the dance video in 30 seconds.', 'Meme and movie',
+    'The Rumpelstiltskin meme is AI-generated. Learn about its origins, the Tip Toe music and how to create your own dance video from a photo.', 'Meme and movie',
     ),
     title: 'Rumpelstiltskin Meme - Is It AI? How to Make Your Own',
     h1: 'The Rumpelstiltskin Meme',
@@ -48,11 +48,11 @@ export const pageRegistry = {
   },
   movie1987: {
     ...page(
-    '/1987-rumpelstiltskin', '1987 Rumpelstiltskin', '1987 rumpelstiltskin',
-    'The 1987 Rumpelstiltskin film stars Billy Barty. Learn why the viral AI tiptoe dance is mistaken for a scene from that movie.', 'Meme and movie',
+    '/is-rumpelstiltskin-1987-real', '1987 Rumpelstiltskin', 'is rumpelstiltskin 1987 real',
+    'The 1987 Rumpelstiltskin film is real, but the viral dance is AI-generated. Check the facts about the meme, its music, and the separate 1995 movie.', 'Meme and movie',
     ),
-    title: '1987 Rumpelstiltskin - The Dance Scene Behind the AI Meme',
-    h1: '1987 Rumpelstiltskin: The Dance Scene Behind the Meme',
+    title: 'Is Rumpelstiltskin 1987 Real? The AI Meme Explained',
+    h1: 'Is Rumpelstiltskin 1987 Real?',
   },
 } as const
 

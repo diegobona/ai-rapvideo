@@ -1,10 +1,9 @@
-import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
 import { siteCopy } from '@/lib/site-copy'
-import { redirectIfAuthenticated } from '@/lib/auth-guard'
 
 export const Route = createFileRoute('/(auth)')({
-  beforeLoad: async ({ location }) => {
-    await redirectIfAuthenticated((location.search as Record<string, unknown>).returnTo)
+  beforeLoad: () => {
+    throw redirect({ to: '/', statusCode: 301 })
   },
   component: AuthLayout,
 })

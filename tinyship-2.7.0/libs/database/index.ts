@@ -38,6 +38,7 @@ export { withdrawal } from './schema/withdrawal'
 export { blogPost } from './schema/blog-post'
 export { pricingPlan } from './schema/pricing-plan'
 export { videoTask } from './schema/video-task'
+export { videoPurchase } from './schema/video-purchase'
 
 // Build a schema object for drizzle() initialization from proxy exports.
 // Proxy modules return the correct dialect's tables at runtime.
@@ -51,12 +52,13 @@ import { withdrawal as _withdrawal } from './schema/withdrawal'
 import { blogPost as _blogPost } from './schema/blog-post'
 import { pricingPlan as _pricingPlan } from './schema/pricing-plan'
 import { videoTask as _videoTask } from './schema/video-task'
+import { videoPurchase as _videoPurchase } from './schema/video-purchase'
 
 const _schema = {
   user: _user, account: _account, session: _session, verification: _verification,
   order: _order, subscription: _subscription, creditTransaction: _creditTransaction,
   commission: _commission, withdrawal: _withdrawal,
-  blogPost: _blogPost, pricingPlan: _pricingPlan, videoTask: _videoTask,
+  blogPost: _blogPost, pricingPlan: _pricingPlan, videoTask: _videoTask, videoPurchase: _videoPurchase,
 }
 
 // ---------------------------------------------------------------------------

@@ -1,8 +1,29 @@
 import { describe, expect, test } from 'vitest';
-import { isAllowedAutoDlVideoUrl } from '../../../apps/tanstack-app/src/lib/video-download';
+import { isAllowedAutoDlVideoUrl, isAllowedDanceVideoUrl } from '../../../apps/tanstack-app/src/lib/video-download';
 
 const origin = 'https://cg-comfyui-prod.tos-cn-beijing.volces.com';
 const video = `${origin}/comfyui/outputs/example-video.mp4`;
+
+describe('Compshare and historical AutoDL download hosts', () => {
+  const compshare = 'https://compshare-files.cn-wlcb.ufileos.com/media/prod/tenant/main/task-attempt-1.mp4';
+  test.each([compshare, `${compshare}?ufileattname=task.mp4`, video])('allows the actual provider output: %s', url => {
+    expect(isAllowedDanceVideoUrl(url)).toBe(true);
+  });
+  test.each([
+    compshare.replace('ufileos.com', 'ufileos.com.attacker.test'),
+    compshare.replace('/media/prod/', '/another/'),
+    compshare.replace('https://', 'http://'),
+    compshare.replace('https://', 'https://user:pass@'),
+    compshare.replace('/main/', '/main/../'),
+    compshare.replace('/main/', '/%2e%2e/'),
+    `${compshare}#fragment`,
+    ` ${compshare}`,
+    compshare.replace('ufileos.com/', 'ufileos.com:444/'),
+    'https://127.0.0.1/media/prod/output.mp4',
+  ])('rejects unrelated or ambiguous provider URLs: %s', url => {
+    expect(isAllowedDanceVideoUrl(url)).toBe(false);
+  });
+});
 
 describe('AutoDL video download URL allowlist', () => {
   test.each([

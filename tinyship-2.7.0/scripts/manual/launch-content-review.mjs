@@ -6,7 +6,7 @@ import path from 'node:path'
 const root = fileURLToPath(new URL('../../', import.meta.url))
 const output = path.join(root, 'test-results/launch-content')
 await mkdir(output, { recursive: true })
-const routes = ['/', '/rumpelstiltskin-ai-video-generator', '/rumpelstiltskin-dance-video', '/best-rumpelstiltskin-ai-generators', '/rumpelstiltskin-meme', '/how-to-make-rumpelstiltskin-ai-video', '/1987-rumpelstiltskin']
+const routes = ['/', '/rumpelstiltskin-ai-video-generator', '/rumpelstiltskin-dance-video', '/best-rumpelstiltskin-ai-generators', '/rumpelstiltskin-meme', '/how-to-make-rumpelstiltskin-ai-video', '/is-rumpelstiltskin-1987-real']
 const browser = await chromium.launch({ channel: 'msedge', headless: true })
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } })
 const page = await context.newPage()

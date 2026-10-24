@@ -1,6 +1,6 @@
 export const authCopy = {
-  signinDescription: 'Sign in to your account. You can also try one free video without signing in.',
-  signupDescription: 'Creating an account is optional. Your existing free-video allowance carries over; signup does not add another video.',
+  signinDescription: 'A video costs $4.99 USD. You can buy one without creating an account.',
+  signupDescription: 'No account is required to buy a video. Each video costs $4.99 USD.',
   passwordHelp: 'Use 8–100 characters. Choose a password you do not use on other sites.',
   unavailableProvider: 'This sign-in method is not available. Please use your email and password.',
   resetUnavailable: 'Password reset emails are currently unavailable. Contact support if you need help accessing your account.',

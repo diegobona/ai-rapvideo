@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { withCfDb } from '@/lib/with-request-db'
-import { isAllowedAutoDlVideoUrl } from '@/lib/video-download'
+import { isAllowedDanceVideoUrl } from '@/lib/video-download'
+import { managedVideoStorageKey, MEDIA_RETENTION_MS, GENERATED_VIDEO_PREFIX } from '../../../../../../config/mediaRetention'
 
 const failure = (status: number, message: string) => Response.json(
   { error: 'download_failed', message },
@@ -19,7 +20,27 @@ export const Route = createFileRoute('/api/video-generate/download')({
           let body: unknown
           try { body = await request.json() } catch { return failure(400, 'Invalid request') }
           const url = body && typeof body === 'object' && 'url' in body ? body.url : undefined
-          if (!isAllowedAutoDlVideoUrl(url)) return failure(400, 'Invalid video URL')
+          const { isWorkersRuntime } = await import('@libs/database')
+          if (isWorkersRuntime) {
+            const { env } = await import('cloudflare:workers')
+            const key = managedVideoStorageKey(url, env.R2_PUBLIC_URL)
+            if (key) {
+              if (!key.startsWith(`${GENERATED_VIDEO_PREFIX}${session.user.id}/`)) return failure(404, 'Video not found')
+              const object = await env.R2_BUCKET.get(key)
+              if (!object) return failure(410, 'This video has expired. Please generate a new video.')
+              if (object.uploaded.getTime() + MEDIA_RETENTION_MS <= Date.now()) {
+                await object.body.cancel()
+                return failure(410, 'This video has expired. Please generate a new video.')
+              }
+              return new Response(object.body, { headers: {
+                'Content-Type': 'video/mp4',
+                'Content-Disposition': 'attachment; filename="rumpelstiltskin-ai.mp4"',
+                'Cache-Control': 'private, no-store',
+                'X-Content-Type-Options': 'nosniff',
+              } })
+            }
+          }
+          if (!isAllowedDanceVideoUrl(url)) return failure(400, 'Invalid video URL')
 
           // The signed output URL grants access to the clip. Fetch only the known
           // provider output host, without browser credentials or redirects.

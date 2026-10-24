@@ -15,6 +15,8 @@ BETTER_AUTH_SECRET=replace-with-a-random-32-char-min-secret
 
 # Optional placeholders (fill only if you use these features)
 # STRIPE_SECRET_KEY=
+# STRIPE_VIDEO_PRICE_ID=
+# STRIPE_VIDEO_WEBHOOK_SECRET=
 # OPENAI_API_KEY=
 
 # AutoDL video generation: a token in the ComfyUI group (server-only secret).
@@ -22,6 +24,10 @@ BETTER_AUTH_SECRET=replace-with-a-random-32-char-min-secret
 AUTODL_API_KEY=
 # Optional override; must have the same image-and-prompt input schema.
 AUTODL_VIDEO_WORKFLOW_ID=minimax_h3_lightx2v_v5
+
+# Active Compshare provider; retain the AutoDL token for older saved orders.
+COMPSHARE_API_KEY=
+COMPSHARE_REFERENCE_VIDEO_URL=
 
 # Required when testing R2 uploads through `wrangler dev`
 R2_PUBLIC_URL=https://your-r2-custom-domain.example

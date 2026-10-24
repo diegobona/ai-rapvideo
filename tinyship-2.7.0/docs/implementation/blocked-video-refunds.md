@@ -1,0 +1,19 @@
+# Rejected videos and refund visibility
+
+Deployed October 20, 2026: `786d3cc5-f701-4aa4-9394-ec438fd17a88`.
+
+The live Compshare API returns `blocked` for some content rejections, although its published task-status table omits that state. The adapter previously treated it as unknown, so polling kept the order processing instead of executing the failure/refund path. The adapter now treats `blocked` as terminal failure. Known political/public-figure rejection reasons are mapped to public category codes; raw moderation details and the hidden generation prompt are not sent to the browser.
+
+The owned order response includes the saved failure category for failed tasks in `refund_pending` and `refunded` orders. The maker shows the reason alongside the actual full $4.99 refund state directly in the right-hand video result panel, including after refresh. This replaces the empty-video placeholder and ends the spinner. Existing ownership checks, one-job-per-purchase admission, Stripe refund idempotency and historical AutoDL routing are unchanged. Unknown task states and transport errors remain retryable.
+
+## Live incident and payment
+
+Two recent orders initially had `starting` with no stored task. The earlier order already had a successful full 499-cent refund. The initial submission catch did not retain its exact error during this investigation. A later follow-up reproduced and fixed the original pre-network failure: the adapter's unsupported Workers redirect mode. See [Workers runtime incident](./compshare-workers-runtime.md). The original `starting` state was not evidence of a content rejection; the political-figure rejection below was returned after recovering that order through its original request key.
+
+The latest paid order `1e061271-5edb-41dc-8da8-1556e7e8d818` was recovered using its original `dance-{purchaseId}` idempotency key and the frozen request. Provider task `01a15920-eb28-7508-9a13-c31496d4274a` returned `blocked` with an explicit rejection of real political-figure likenesses. No new Stripe payment or unrelated diagnostic generation was created. Its verified terminal failure was recorded; the full $4.99 refund used the existing `video-refund:{purchaseId}:0:499` key. Stripe returned refund `re_3USbA5KmWtIG8s901YT2XZrO`, status `succeeded`, amount 499 USD cents. The production database independently reconciled to `refunded`, `refund_status=succeeded`, `refunded_amount=499`.
+
+## Verification
+
+Regression tests first reproduced the missing terminal mapping, reason propagation and client parsing. The final 300 AI/payment unit tests pass, including the actual blocked payload through closed-browser recovery and exactly one full refund. TanStack typecheck, Cloudflare build and deployment dry run pass. Browser checks use the published site with upload/checkout/generation mocked, so they create no charges or model jobs. Evidence is in ignored `test-results/last-generation-*` files.
+
+Final published-panel checks: all four focused live browser tests pass, covering pending/completed refund reasons visible in the result panel after refresh, no spinner or duplicate submission, ordinary refunded-order recovery and processing-order refresh. Screenshots were visually inspected. The earlier full 17-test live run passed 16 tests; one `page.reload` exceeded the 30-second navigation budget waiting for `load`. Its focused retry passed with a 60-second budget. That test now waits for DOM readiness plus its existing application-state assertions, and passes again in the final four-test run. Evidence: `last-generation-live-e2e.log`, `last-generation-recovery-e2e.log`, `last-generation-visible-e2e.log`, `rejected-photo-refund_pending.png`, `rejected-photo-refunded.png`. A separate read-back of the Stripe refund also confirms `succeeded` and 499 USD cents in `last-generation-refund-verified.json`.

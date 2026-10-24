@@ -21,7 +21,7 @@ export const Route = createFileRoute('/')({
 function HomePage() {
   const { isAvailable } = Route.useLoaderData()
   return (
-    <main className="home-page">
+    <main className="home-page motion-home">
       <h1 className="home-title">{siteCopy.home.heading}</h1>
       <DanceMaker copy={homeCopy.tool} isAvailable={isAvailable} className="home-maker" />
       <HomeContent />

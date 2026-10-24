@@ -1,0 +1,19 @@
+# Maker input retention and processing presentation
+
+The shared maker restores the owner's uploaded dancer/princess/scene previews, original custom description, tags and orientation after Stripe returns and on page reload. Active orders lock editing while leaving these values visible. Completed orders keep their inputs available for another checkout without another upload.
+
+The existing order JSON now saves normalized `danceCustomization` separately from the compiled prompt. The provider serializer does not send this UI metadata. The owned-order response exposes only creator text/tags and image references, never the hidden prompt. Historical orders recover bounded creator fields from the known template sections; default scaffold text is not presented as user input. No schema migration or browser photo storage is added.
+
+The maker uses its already-uploaded URL when there is no browser `File` after navigation. New file selection, remove and restore actions still invalidate the old result. Current ownership/photo validation, one-use paid admission and refunds remain in place.
+
+The violet homepage no longer supplies the demo still as the empty/processing panel's CSS background. The neutral dark panel and existing loading content remain; actual result videos and the separate example gallery retain their controls and posters.
+
+During `processing`, a two-minute timer shows a short patience message directly below the result panel. The hint states that busy periods can take longer and processing continues; it does not assert measured load or guarantee provider success. It is removed on a result/error/new order and timers are cleared on unmount. Public wording lives in `home-copy.ts`; the threshold is `DANCE_LONG_WAIT_DELAY_MS` in `config/danceUi.ts`.
+
+Verification includes owned-order projection/client parsing, historical creator-field recovery, provider metadata exclusion, current payment/AI regression tests and a browser-clock scenario covering return/reload, retained values, the two-minute boundary, completion cleanup and repeat checkout with zero uploads. Provider and Stripe mutations are simulated; no new paid model generation is needed for these UI changes.
+
+Local verification: 309 AI/payment unit tests pass, along with typecheck, Cloudflare build and deployment dry run. All 22 prior related browser checks passed in the regression run. The new combined scenario passed after correcting a test selector: opening the payment dialog makes the underlying form inaccessible by ARIA role while retaining its value, so the assertion now checks the textarea directly. That scenario verifies saved previews/description/tags/format after return and refresh, no screenshot background, the exact two-minute boundary, hint removal on success and another checkout with zero uploads. Evidence: `test-results/retain-maker-inputs-unit.log`, `retain-maker-inputs-e2e.log`, `retain-maker-inputs-focused-e2e.log`, `retain-maker-processing.png`.
+
+The reported public-site access issue was not reproduced during this work. Both the main domain and the www address returned HTTP 200 (www ended at the main domain), with the expected page title. This is an observation from this environment, not a diagnosis of the user's connection. Evidence: `test-results/remove-default-cover-availability.json`.
+
+Published Worker `cc1b413f-336e-434c-bb3e-470f76a3fb62` with existing variables/secrets preserved. The combined browser scenario also passed against the actual public website: retained inputs after return/reload, dark processing surface, exact two-minute hint, completion cleanup and repeat checkout all behave correctly. Order/payment/upload responses were fixtures and no charge or provider job was submitted. Evidence: `test-results/retain-maker-inputs-live-e2e.log` and `retain-maker-inputs-deploy.log`.

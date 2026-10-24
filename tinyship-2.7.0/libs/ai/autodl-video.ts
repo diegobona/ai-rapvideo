@@ -3,7 +3,7 @@ import { getApiKey } from './config';
 import type { VideoGenerationOptions, VideoGenerationResult } from './types';
 
 // Workflow input_rules and output_example verified through the official public
-// GET /api/v1/comfyui/workflows/minimax_h3_lightx2v_v5 endpoint.
+// GET /api/v1/comfyui/workflows/{id} endpoints (current and legacy workflows).
 const API_BASE = 'https://autodl.art/api/v1/comfyui/comfyui_workflow';
 
 type JsonObject = Record<string, unknown>;
@@ -34,10 +34,12 @@ function httpUrl(value: unknown): string | undefined {
   return undefined;
 }
 
-function getAutodlConfiguration() {
+function getAutodlConfiguration(frozenWorkflowId?: string) {
   const apiKey = getApiKey('autodl').trim();
   if (!apiKey) throw new Error('AutoDL API key is not configured. Set AUTODL_API_KEY.');
-  const workflowId = process.env.AUTODL_VIDEO_WORKFLOW_ID?.trim() || aiVideoConfig.autodl.workflowId;
+  // New requests freeze their workflow explicitly. Orders without this field
+  // retain the historical workflow selection rather than following the new default.
+  const workflowId = frozenWorkflowId ?? (process.env.AUTODL_VIDEO_WORKFLOW_ID?.trim() || aiVideoConfig.autodl.legacyWorkflowId);
   if (!/^[a-zA-Z0-9_.-]+$/.test(workflowId)) {
     throw new Error('AUTODL_VIDEO_WORKFLOW_ID must be a workflow identifier, not a URL');
   }
@@ -71,26 +73,31 @@ function referenceImageUrls(options: VideoGenerationOptions): string[] {
   });
 }
 
-function buildRequest(options: VideoGenerationOptions): AutodlRequest {
+function buildRequest(options: VideoGenerationOptions, workflowId: string): AutodlRequest {
   if (options.model && options.model !== aiVideoConfig.defaultModels.autodl) {
     throw new Error(`Unsupported AutoDL video model: ${options.model}`);
   }
   const prompt = typeof options.prompt === 'string' ? options.prompt.trim() : '';
   if (!prompt || prompt.length > 20000) throw new Error('AutoDL prompt must contain 1–20000 characters');
   const images = referenceImageUrls(options);
+  if (options.referenceVideoUrls?.length) throw new Error('AutoDL image workflow does not accept reference videos');
+  const upgraded = workflowId === aiVideoConfig.autodl.workflowId;
+  const maxDuration = upgraded ? aiVideoConfig.autodl.maxDuration : aiVideoConfig.autodl.legacyMaxDuration;
   const duration = options.duration ?? aiVideoConfig.defaults.duration;
-  if (!Number.isInteger(duration) || duration < 1 || duration > aiVideoConfig.autodl.maxDuration) {
-    throw new Error(`AutoDL duration must be an integer between 1 and ${aiVideoConfig.autodl.maxDuration} seconds`);
+  if (!Number.isInteger(duration) || duration < 1 || duration > maxDuration) {
+    throw new Error(`AutoDL duration must be an integer between 1 and ${maxDuration} seconds`);
   }
   const resolution = options.size ?? aiVideoConfig.autodl.defaultResolution;
-  if (!aiVideoConfig.autodlSizes.some(size => size.value === resolution)) {
+  const sizes = upgraded ? aiVideoConfig.autodlSizes : aiVideoConfig.autodlLegacySizes;
+  if (!sizes.some(size => size.value === resolution)) {
     throw new Error('Unsupported AutoDL resolution');
   }
   const body: AutodlRequest = { prompt, ref_image_0: images[0], duration, resolution };
   images.forEach((url, index) => { body[`ref_image_${index}`] = url; });
   if (options.seed !== undefined) {
-    if (!Number.isInteger(options.seed) || options.seed < 1 || options.seed > 999999999999999) {
-      throw new Error('AutoDL seed must be an integer between 1 and 999999999999999');
+    const minSeed = upgraded ? 0 : 1;
+    if (!Number.isInteger(options.seed) || options.seed < minSeed || options.seed > 999999999999999) {
+      throw new Error(`AutoDL seed must be an integer between ${minSeed} and 999999999999999`);
     }
     body.seed = options.seed;
   }
@@ -99,8 +106,8 @@ function buildRequest(options: VideoGenerationOptions): AutodlRequest {
 
 /** Validate configuration and input before the route consumes credits. */
 export function validateAutodlVideoOptions(options: VideoGenerationOptions): void {
-  getAutodlConfiguration();
-  buildRequest(options);
+  const { workflowId } = getAutodlConfiguration(options.workflowId);
+  buildRequest(options, workflowId);
 }
 
 async function request(path: string, apiKey: string, body?: AutodlRequest): Promise<JsonObject> {
@@ -122,8 +129,8 @@ async function request(path: string, apiKey: string, body?: AutodlRequest): Prom
 }
 
 export async function autodlCreateVideoTask(options: VideoGenerationOptions): Promise<string> {
-  const { apiKey, workflowId } = getAutodlConfiguration();
-  const body = buildRequest(options);
+  const { apiKey, workflowId } = getAutodlConfiguration(options.workflowId);
+  const body = buildRequest(options, workflowId);
   const data = await request(encodeURIComponent(workflowId), apiKey, body);
   if (typeof data.task_id !== 'string' || !data.task_id.trim()) {
     throw new Error('AutoDL API did not return a task_id');

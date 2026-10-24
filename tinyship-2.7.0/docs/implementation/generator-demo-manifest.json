@@ -1,0 +1,18 @@
+{
+  "source": "test-results/rumpelstiltskin-ai-three-image.mp4",
+  "sourceKind": "Existing successful AutoDL generation using the costume character reference, default princess and barn",
+  "containsUserPortrait": false,
+  "publicVideo": "apps/tanstack-app/public/videos/rumpelstiltskin-ai-generator-demo.mp4",
+  "publicCover": "apps/tanstack-app/public/images/dance/generator-demo-cover.jpg",
+  "sourceWidth": 1344,
+  "sourceHeight": 768,
+  "sourceDurationSeconds": 10.125,
+  "sourceAudio": "AAC stream present",
+  "presentation": "Preserve the full landscape scene on a portrait canvas with a blurred extension of the same scene; trim to ten seconds",
+  "demoWidth": 720,
+  "demoHeight": 1280,
+  "demoDurationSeconds": 10,
+  "demoAspectRatio": "9:16",
+  "demoAudio": "Preserved provider audio, no song added",
+  "newProviderJobs": 0
+}

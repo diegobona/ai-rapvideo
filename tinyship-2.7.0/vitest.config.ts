@@ -12,6 +12,7 @@ export default defineConfig({
     alias: {
       // This route-level test exercises the real TanStack server-owned prompt.
       '@/lib/dance-template': resolve(__dirname, './apps/tanstack-app/src/lib/dance-template.ts'),
+      '@': resolve(__dirname, './apps/tanstack-app/src'),
       '@config': resolve(__dirname, './config.ts'),
       '@libs': resolve(__dirname, './libs'),
       '@tests': resolve(__dirname, './tests'),

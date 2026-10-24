@@ -6,11 +6,12 @@ const siteMiddleware = createMiddleware({ type: 'request' }).server(async ({ req
   const primaryHostname = new URL(SITE_ORIGIN).hostname
   const hostname = (request.headers.get('host') || url.host).split(':')[0].toLowerCase()
   const isPublicHost = hostname === primaryHostname || hostname === `www.${primaryHostname}`
-  const pathname = normalizePath(url.pathname)
+  const isApiRequest = url.pathname === '/api' || url.pathname.startsWith('/api/')
+  const pathname = isApiRequest ? url.pathname : normalizePath(url.pathname)
 
   if (isPublicHost && (hostname !== primaryHostname || url.protocol !== 'https:' || url.pathname !== pathname)) {
     return new Response(null, {
-      status: 301,
+      status: isApiRequest ? 308 : 301,
       headers: { Location: `${SITE_ORIGIN}${pathname}${url.search}` },
     })
   }

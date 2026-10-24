@@ -10,14 +10,14 @@ const executeFile = promisify(execFile)
 const repository = fileURLToPath(new URL('../../', import.meta.url))
 const origin = 'https://rumpelstiltskin-ai.co'
 const publicPages = Object.values(pageRegistry)
-const resourcePaths = ['/signin', '/signup', '/forgot-password', '/reset-password', '/cellphone', '/wechat', '/payment-success', '/payment-cancel', '/privacy-policy', '/terms-of-service']
+const resourcePaths = ['/payment-success', '/payment-cancel', '/privacy-policy', '/terms-of-service']
 const slug = (pathname) => pathname === '/' ? 'home' : pathname.slice(1).replaceAll('/', '-')
 const same = (left, right) => JSON.stringify(left) === JSON.stringify(right)
 
 async function activeHtmlRoutes(directory) {
   const routes = []
   for (const entry of await readdir(directory, { withFileTypes: true })) {
-    if (entry.name.startsWith('-') || entry.name === 'api') continue
+    if (entry.name.startsWith('-') || entry.name === 'api' || entry.name === '(auth)') continue
     const fullPath = path.join(directory, entry.name)
     if (entry.isDirectory()) routes.push(...await activeHtmlRoutes(fullPath))
     else if (/\.tsx?$/.test(entry.name) && entry.name !== '__root.tsx') {

@@ -25,11 +25,13 @@ export {
   queryVideoTask,
   calculateVideoCreditCost,
   validateVideoGenerationOptions,
+  isVideoGenerationConfigured,
   getAliyunResolution,
   getVideoSizesForProvider,
   getVideoDurationsForProvider,
 } from './video';
 export { isAutodlVideoConfigured } from './autodl-video';
+export { isCompshareVideoConfigured } from './compshare-video';
 
 // Re-export image config from config folder
 export { aiImageConfig } from '../../config/aiImage';

@@ -49,6 +49,10 @@ const PROVIDER_ENV_KEYS: Record<AllProviderName, {
     apiKey: 'AUTODL_API_KEY',
     capabilities: ['video'],
   },
+  compshare: {
+    apiKey: 'COMPSHARE_API_KEY',
+    capabilities: ['video'],
+  },
   // Google Gemini - Image generation
   gemini: {
     apiKey: 'GOOGLE_GENERATIVE_AI_API_KEY',

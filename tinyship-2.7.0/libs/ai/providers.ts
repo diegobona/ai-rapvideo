@@ -150,6 +150,7 @@ export function createVideoProvider(
     }
     case 'volcengine':
     case 'autodl':
+    case 'compshare':
     case 'aliyun': {
       // These providers use native HTTP calls, not AI SDK
       // Return null to indicate direct API usage is required

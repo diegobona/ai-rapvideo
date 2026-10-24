@@ -1,5 +1,6 @@
 import { memeArticleCopy, memeSources, movieArticleCopy } from '@/lib/meme-article-copy'
 import { pageRegistry } from '@/lib/page-registry'
+import { danceFactSources } from '@/lib/dance-fact-sources'
 
 function Source({ source }: { source: { href: string; label: string } }) {
   return <> <a href={source.href} rel="nofollow">{source.label}</a>.</>
@@ -16,7 +17,7 @@ export function MemeArticle() {
       </section>
       <section className="article-section" aria-labelledby="meme-origin">
         <h2 id="meme-origin">{copy.origin.heading}</h2>
-        {copy.origin.paragraphs.map((text) => <p key={text}>{text}<Source source={memeSources.history} /></p>)}
+        {copy.origin.paragraphs.map((text, index) => <p key={text}>{text}<Source source={index === 0 ? memeSources.reporting : memeSources.history} /></p>)}
         <p>{copy.origin.more} <a href={copy.origin.link.path}>{copy.origin.link.anchorText}</a>.</p>
       </section>
       <section className="article-section" aria-labelledby="meme-make">
@@ -45,15 +46,23 @@ export function MovieArticle() {
     <>
       <section className="article-section" aria-labelledby="movie-scene">
         <h2 id="movie-scene">{copy.scene.heading}</h2>
-        <p>{copy.scene.correction}<Source source={memeSources.reporting} /></p>
-        <p>{copy.scene.film}<Source source={memeSources.afi} /></p>
+        <p>{copy.scene.correction}<Source source={danceFactSources.reporting} /></p>
         <p>{copy.scene.distinction}</p>
       </section>
-      <section className="article-section" aria-labelledby="movie-revival">
-        <h2 id="movie-revival">{copy.revival.heading}</h2>
-        <p>{copy.revival.timeline}<Source source={memeSources.history} /></p>
-        <p>{copy.revival.mechanism}<Source source={memeSources.reporting} /></p>
-        <p>{copy.revival.more} <a href={copy.revival.link.path}>{copy.revival.link.anchorText}</a>.</p>
+      <section className="article-section" aria-labelledby="movie-films">
+        <h2 id="movie-films">{copy.films.heading}</h2>
+        {copy.films.items.map((film) => (
+          <div key={film.heading}>
+            <h3>{film.heading}</h3>
+            <p>{film.body}<Source source={film.source} /></p>
+          </div>
+        ))}
+        <p>{copy.films.distinction}<Source source={danceFactSources.reporting} /></p>
+      </section>
+      <section className="article-section" aria-labelledby="movie-music">
+        <h2 id="movie-music">{copy.music.heading}</h2>
+        <p>{copy.music.body}<Source source={danceFactSources.meme} /><Source source={danceFactSources.song} /></p>
+        <p>{copy.music.more} <a href={copy.music.link.path}>{copy.music.link.anchorText}</a>.</p>
       </section>
       <section className="article-section" aria-labelledby="movie-make">
         <h2 id="movie-make">{copy.make.heading}</h2>

@@ -9,3 +9,4 @@ export * from './blog-post';
 export * from './pricing-plan';
 export * from './video-task';
 export * from './video-trial';
+export * from './video-purchase';

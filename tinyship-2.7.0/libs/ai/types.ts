@@ -1,9 +1,10 @@
 import type { DeepSeekProviderSettings } from '@ai-sdk/deepseek';
 import type { OpenAIProviderSettings } from '@ai-sdk/openai';
 import type { UIMessage } from 'ai';
+import type { DanceCustomization } from './dance-customization';
 
 // All supported providers (including video-only providers)
-export type AllProviderName = 'qwen' | 'openai' | 'deepseek' | 'fal' | 'volcengine' | 'aliyun' | 'gemini' | 'autodl';
+export type AllProviderName = 'qwen' | 'openai' | 'deepseek' | 'fal' | 'volcengine' | 'aliyun' | 'gemini' | 'autodl' | 'compshare';
 
 // Chat-capable providers (excludes fal which is image-only)
 export type ChatProviderName = 'qwen' | 'openai' | 'deepseek';
@@ -45,6 +46,7 @@ export type ProviderConfig = {
   volcengine: VolcengineConfig;
   aliyun: AliyunConfig;
   autodl: AutodlConfig;
+  compshare: { apiKey: string };
   gemini: GeminiConfig;
 };
 
@@ -142,7 +144,7 @@ export interface QwenImageResponse {
 // ============================================================
 
 /** Supported video generation providers */
-export type VideoProviderName = 'fal' | 'volcengine' | 'aliyun' | 'autodl';
+export type VideoProviderName = 'fal' | 'volcengine' | 'aliyun' | 'autodl' | 'compshare';
 
 /** Video providers whose tasks are created and queried separately. */
 export type AsyncVideoProviderName = Exclude<VideoProviderName, 'fal'>;
@@ -155,6 +157,8 @@ export interface VideoGenerationOptions {
   prompt: string;
   provider: VideoProviderName;
   model?: string;
+  /** Server-frozen AutoDL workflow; omitted on historical tasks using legacy configuration. */
+  workflowId?: string;
   /** Video size/resolution (e.g., '1280*720', '1920x1080') */
   size?: string;
   /** Aspect ratio (for fal, e.g., '16:9') */
@@ -180,6 +184,12 @@ export interface VideoGenerationOptions {
   firstFrameUrl?: string;
   /** Ordered public reference image URLs (AutoDL H3: 1–9 images; overrides firstFrameUrl). */
   referenceImageUrls?: string[];
+  /** Ordered reference videos for providers that support continuous motion input. */
+  referenceVideoUrls?: string[];
+  /** Stable server-owned submission key, scoped to a paid purchase when present. */
+  idempotencyKey?: string;
+  /** Saved creator inputs for owned-order UI restoration; never sent as provider fields. */
+  danceCustomization?: DanceCustomization;
   /** Last frame image URL for first-last-frame generation */
   lastFrameUrl?: string;
 }
@@ -187,6 +197,10 @@ export interface VideoGenerationOptions {
 /** Result of a completed video generation */
 export interface VideoGenerationResult {
   videoUrl: string;
+  /** Expiry of the managed R2 copy, in epoch milliseconds. */
+  expiresAt?: number;
+  /** Server-owned key for managed output; retained internally for expiry and delivery. */
+  storageKey?: string;
   /** Duration of the generated video in seconds */
   duration?: number;
   provider: VideoProviderName;

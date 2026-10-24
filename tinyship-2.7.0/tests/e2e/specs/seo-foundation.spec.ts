@@ -2,6 +2,12 @@ import { expect, test } from '@playwright/test'
 import { homeCopy } from '../../../apps/tanstack-app/src/lib/home-copy'
 import { pageRegistry } from '../../../apps/tanstack-app/src/lib/page-registry'
 
+test('video submission reaches the POST handler without a page canonical redirect', async ({ request }) => {
+  const response = await request.post('/api/video-generate/', { data: {}, maxRedirects: 0 })
+  expect(response.status()).toBe(401)
+  expect((await response.json()).error).toMatch(/^unauthorized$/i)
+})
+
 const origin = 'https://rumpelstiltskin-ai.co'
 
 test('homepage serves its heading, body and one query-free canonical in raw HTML', async ({ request }) => {
@@ -49,7 +55,7 @@ test('sitemap contains only the currently published public pages', async ({ requ
   for (const entry of pages) expect(xml).toContain(`<loc>${origin}${entry.path}</loc>`)
 })
 
-for (const path of ['/signin', '/signup', '/forgot-password', '/reset-password', '/payment-success', '/payment-cancel']) {
+for (const path of ['/payment-success', '/payment-cancel']) {
   test(`${path} is SSR, canonical and noindex`, async ({ request }) => {
     const response = await request.get(`${path}?utm_source=verification`)
     expect(response.status()).toBe(200)
@@ -61,6 +67,19 @@ for (const path of ['/signin', '/signup', '/forgot-password', '/reset-password',
     expect(html).not.toMatch(/<meta\b[^>]*name="keywords"/i)
   })
 }
+
+test('retired account pages redirect home and account endpoints are disabled', async ({ request }) => {
+  for (const pathname of ['/signin', '/signup', '/forgot-password', '/reset-password', '/cellphone', '/wechat']) {
+    const response = await request.get(pathname, { maxRedirects: 0 })
+    expect(response.status()).toBe(301)
+    expect(response.headers().location).toBe('/')
+  }
+  for (const endpoint of ['sign-up/email', 'sign-in/email', 'sign-in/social', 'forget-password', 'sign-out']) {
+    const response = await request.post(`/api/auth/${endpoint}`, { data: {} })
+    expect(response.status()).toBe(404)
+    expect(await response.json()).toEqual({ error: 'accounts_disabled' })
+  }
+})
 
 test('unknown pages return a server-rendered 404 and a home link', async ({ request }) => {
   const response = await request.get('/does-not-exist?query=ignored')

@@ -57,6 +57,13 @@
       "when": 1791974532079,
       "tag": "0007_anonymous_video_trial",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1792454400000,
+      "tag": "0008_video_purchase",
+      "breakpoints": true
     }
   ]
 }

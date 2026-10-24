@@ -18,6 +18,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as PaymentSuccessRouteImport } from './routes/payment-success'
 import { Route as PaymentCancelRouteImport } from './routes/payment-cancel'
+import { Route as IsRumpelstiltskin1987RealRouteImport } from './routes/is-rumpelstiltskin-1987-real'
 import { Route as HowToMakeRumpelstiltskinAiVideoRouteImport } from './routes/how-to-make-rumpelstiltskin-ai-video'
 import { Route as BestRumpelstiltskinAiGeneratorsRouteImport } from './routes/best-rumpelstiltskin-ai-generators'
 import { Route as R1987RumpelstiltskinRouteImport } from './routes/1987-rumpelstiltskin'
@@ -35,11 +36,14 @@ import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-pas
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as authCellphoneRouteImport } from './routes/(auth)/cellphone'
 import { Route as ApiVideoGenerateIndexRouteImport } from './routes/api/video-generate/index'
+import { Route as ApiVideoCheckoutIndexRouteImport } from './routes/api/video-checkout/index'
 import { Route as ApiBlogIndexRouteImport } from './routes/api/blog/index'
 import { Route as ApiWithdrawalRequestRouteImport } from './routes/api/withdrawal/request'
 import { Route as ApiWithdrawalHistoryRouteImport } from './routes/api/withdrawal/history'
 import { Route as ApiVideoGenerateStatusRouteImport } from './routes/api/video-generate/status'
 import { Route as ApiVideoGenerateDownloadRouteImport } from './routes/api/video-generate/download'
+import { Route as ApiVideoCheckoutWebhookRouteImport } from './routes/api/video-checkout/webhook'
+import { Route as ApiVideoCheckoutVerifyRouteImport } from './routes/api/video-checkout/verify'
 import { Route as ApiUsersIdRouteImport } from './routes/api/users/$id'
 import { Route as ApiSubscriptionStatusRouteImport } from './routes/api/subscription/status'
 import { Route as ApiSubscriptionPortalRouteImport } from './routes/api/subscription/portal'
@@ -130,6 +134,12 @@ const PaymentCancelRoute = PaymentCancelRouteImport.update({
   path: '/payment-cancel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IsRumpelstiltskin1987RealRoute =
+  IsRumpelstiltskin1987RealRouteImport.update({
+    id: '/is-rumpelstiltskin-1987-real',
+    path: '/is-rumpelstiltskin-1987-real',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const HowToMakeRumpelstiltskinAiVideoRoute =
   HowToMakeRumpelstiltskinAiVideoRouteImport.update({
     id: '/how-to-make-rumpelstiltskin-ai-video',
@@ -216,6 +226,11 @@ const ApiVideoGenerateIndexRoute = ApiVideoGenerateIndexRouteImport.update({
   path: '/api/video-generate/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiVideoCheckoutIndexRoute = ApiVideoCheckoutIndexRouteImport.update({
+  id: '/api/video-checkout/',
+  path: '/api/video-checkout/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiBlogIndexRoute = ApiBlogIndexRouteImport.update({
   id: '/api/blog/',
   path: '/api/blog/',
@@ -242,6 +257,16 @@ const ApiVideoGenerateDownloadRoute =
     path: '/api/video-generate/download',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiVideoCheckoutWebhookRoute = ApiVideoCheckoutWebhookRouteImport.update({
+  id: '/api/video-checkout/webhook',
+  path: '/api/video-checkout/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVideoCheckoutVerifyRoute = ApiVideoCheckoutVerifyRouteImport.update({
+  id: '/api/video-checkout/verify',
+  path: '/api/video-checkout/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiUsersIdRoute = ApiUsersIdRouteImport.update({
   id: '/api/users/$id',
   path: '/api/users/$id',
@@ -466,6 +491,7 @@ export interface FileRoutesByFullPath {
   '/1987-rumpelstiltskin': typeof R1987RumpelstiltskinRoute
   '/best-rumpelstiltskin-ai-generators': typeof BestRumpelstiltskinAiGeneratorsRoute
   '/how-to-make-rumpelstiltskin-ai-video': typeof HowToMakeRumpelstiltskinAiVideoRoute
+  '/is-rumpelstiltskin-1987-real': typeof IsRumpelstiltskin1987RealRoute
   '/payment-cancel': typeof PaymentCancelRoute
   '/payment-success': typeof PaymentSuccessRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -503,11 +529,14 @@ export interface FileRoutesByFullPath {
   '/api/subscription/portal': typeof ApiSubscriptionPortalRoute
   '/api/subscription/status': typeof ApiSubscriptionStatusRoute
   '/api/users/$id': typeof ApiUsersIdRoute
+  '/api/video-checkout/verify': typeof ApiVideoCheckoutVerifyRoute
+  '/api/video-checkout/webhook': typeof ApiVideoCheckoutWebhookRoute
   '/api/video-generate/download': typeof ApiVideoGenerateDownloadRoute
   '/api/video-generate/status': typeof ApiVideoGenerateStatusRoute
   '/api/withdrawal/history': typeof ApiWithdrawalHistoryRoute
   '/api/withdrawal/request': typeof ApiWithdrawalRequestRoute
   '/api/blog/': typeof ApiBlogIndexRoute
+  '/api/video-checkout/': typeof ApiVideoCheckoutIndexRoute
   '/api/video-generate/': typeof ApiVideoGenerateIndexRoute
   '/api/admin/blog/$id': typeof ApiAdminBlogIdRoute
   '/api/admin/pricing-plans/import': typeof ApiAdminPricingPlansImportRoute
@@ -540,6 +569,7 @@ export interface FileRoutesByTo {
   '/1987-rumpelstiltskin': typeof R1987RumpelstiltskinRoute
   '/best-rumpelstiltskin-ai-generators': typeof BestRumpelstiltskinAiGeneratorsRoute
   '/how-to-make-rumpelstiltskin-ai-video': typeof HowToMakeRumpelstiltskinAiVideoRoute
+  '/is-rumpelstiltskin-1987-real': typeof IsRumpelstiltskin1987RealRoute
   '/payment-cancel': typeof PaymentCancelRoute
   '/payment-success': typeof PaymentSuccessRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -577,11 +607,14 @@ export interface FileRoutesByTo {
   '/api/subscription/portal': typeof ApiSubscriptionPortalRoute
   '/api/subscription/status': typeof ApiSubscriptionStatusRoute
   '/api/users/$id': typeof ApiUsersIdRoute
+  '/api/video-checkout/verify': typeof ApiVideoCheckoutVerifyRoute
+  '/api/video-checkout/webhook': typeof ApiVideoCheckoutWebhookRoute
   '/api/video-generate/download': typeof ApiVideoGenerateDownloadRoute
   '/api/video-generate/status': typeof ApiVideoGenerateStatusRoute
   '/api/withdrawal/history': typeof ApiWithdrawalHistoryRoute
   '/api/withdrawal/request': typeof ApiWithdrawalRequestRoute
   '/api/blog': typeof ApiBlogIndexRoute
+  '/api/video-checkout': typeof ApiVideoCheckoutIndexRoute
   '/api/video-generate': typeof ApiVideoGenerateIndexRoute
   '/api/admin/blog/$id': typeof ApiAdminBlogIdRoute
   '/api/admin/pricing-plans/import': typeof ApiAdminPricingPlansImportRoute
@@ -616,6 +649,7 @@ export interface FileRoutesById {
   '/1987-rumpelstiltskin': typeof R1987RumpelstiltskinRoute
   '/best-rumpelstiltskin-ai-generators': typeof BestRumpelstiltskinAiGeneratorsRoute
   '/how-to-make-rumpelstiltskin-ai-video': typeof HowToMakeRumpelstiltskinAiVideoRoute
+  '/is-rumpelstiltskin-1987-real': typeof IsRumpelstiltskin1987RealRoute
   '/payment-cancel': typeof PaymentCancelRoute
   '/payment-success': typeof PaymentSuccessRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -653,11 +687,14 @@ export interface FileRoutesById {
   '/api/subscription/portal': typeof ApiSubscriptionPortalRoute
   '/api/subscription/status': typeof ApiSubscriptionStatusRoute
   '/api/users/$id': typeof ApiUsersIdRoute
+  '/api/video-checkout/verify': typeof ApiVideoCheckoutVerifyRoute
+  '/api/video-checkout/webhook': typeof ApiVideoCheckoutWebhookRoute
   '/api/video-generate/download': typeof ApiVideoGenerateDownloadRoute
   '/api/video-generate/status': typeof ApiVideoGenerateStatusRoute
   '/api/withdrawal/history': typeof ApiWithdrawalHistoryRoute
   '/api/withdrawal/request': typeof ApiWithdrawalRequestRoute
   '/api/blog/': typeof ApiBlogIndexRoute
+  '/api/video-checkout/': typeof ApiVideoCheckoutIndexRoute
   '/api/video-generate/': typeof ApiVideoGenerateIndexRoute
   '/api/admin/blog/$id': typeof ApiAdminBlogIdRoute
   '/api/admin/pricing-plans/import': typeof ApiAdminPricingPlansImportRoute
@@ -692,6 +729,7 @@ export interface FileRouteTypes {
     | '/1987-rumpelstiltskin'
     | '/best-rumpelstiltskin-ai-generators'
     | '/how-to-make-rumpelstiltskin-ai-video'
+    | '/is-rumpelstiltskin-1987-real'
     | '/payment-cancel'
     | '/payment-success'
     | '/privacy-policy'
@@ -729,11 +767,14 @@ export interface FileRouteTypes {
     | '/api/subscription/portal'
     | '/api/subscription/status'
     | '/api/users/$id'
+    | '/api/video-checkout/verify'
+    | '/api/video-checkout/webhook'
     | '/api/video-generate/download'
     | '/api/video-generate/status'
     | '/api/withdrawal/history'
     | '/api/withdrawal/request'
     | '/api/blog/'
+    | '/api/video-checkout/'
     | '/api/video-generate/'
     | '/api/admin/blog/$id'
     | '/api/admin/pricing-plans/import'
@@ -766,6 +807,7 @@ export interface FileRouteTypes {
     | '/1987-rumpelstiltskin'
     | '/best-rumpelstiltskin-ai-generators'
     | '/how-to-make-rumpelstiltskin-ai-video'
+    | '/is-rumpelstiltskin-1987-real'
     | '/payment-cancel'
     | '/payment-success'
     | '/privacy-policy'
@@ -803,11 +845,14 @@ export interface FileRouteTypes {
     | '/api/subscription/portal'
     | '/api/subscription/status'
     | '/api/users/$id'
+    | '/api/video-checkout/verify'
+    | '/api/video-checkout/webhook'
     | '/api/video-generate/download'
     | '/api/video-generate/status'
     | '/api/withdrawal/history'
     | '/api/withdrawal/request'
     | '/api/blog'
+    | '/api/video-checkout'
     | '/api/video-generate'
     | '/api/admin/blog/$id'
     | '/api/admin/pricing-plans/import'
@@ -841,6 +886,7 @@ export interface FileRouteTypes {
     | '/1987-rumpelstiltskin'
     | '/best-rumpelstiltskin-ai-generators'
     | '/how-to-make-rumpelstiltskin-ai-video'
+    | '/is-rumpelstiltskin-1987-real'
     | '/payment-cancel'
     | '/payment-success'
     | '/privacy-policy'
@@ -878,11 +924,14 @@ export interface FileRouteTypes {
     | '/api/subscription/portal'
     | '/api/subscription/status'
     | '/api/users/$id'
+    | '/api/video-checkout/verify'
+    | '/api/video-checkout/webhook'
     | '/api/video-generate/download'
     | '/api/video-generate/status'
     | '/api/withdrawal/history'
     | '/api/withdrawal/request'
     | '/api/blog/'
+    | '/api/video-checkout/'
     | '/api/video-generate/'
     | '/api/admin/blog/$id'
     | '/api/admin/pricing-plans/import'
@@ -917,6 +966,7 @@ export interface RootRouteChildren {
   R1987RumpelstiltskinRoute: typeof R1987RumpelstiltskinRoute
   BestRumpelstiltskinAiGeneratorsRoute: typeof BestRumpelstiltskinAiGeneratorsRoute
   HowToMakeRumpelstiltskinAiVideoRoute: typeof HowToMakeRumpelstiltskinAiVideoRoute
+  IsRumpelstiltskin1987RealRoute: typeof IsRumpelstiltskin1987RealRoute
   PaymentCancelRoute: typeof PaymentCancelRoute
   PaymentSuccessRoute: typeof PaymentSuccessRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
@@ -948,11 +998,14 @@ export interface RootRouteChildren {
   ApiSubscriptionPortalRoute: typeof ApiSubscriptionPortalRoute
   ApiSubscriptionStatusRoute: typeof ApiSubscriptionStatusRoute
   ApiUsersIdRoute: typeof ApiUsersIdRoute
+  ApiVideoCheckoutVerifyRoute: typeof ApiVideoCheckoutVerifyRoute
+  ApiVideoCheckoutWebhookRoute: typeof ApiVideoCheckoutWebhookRoute
   ApiVideoGenerateDownloadRoute: typeof ApiVideoGenerateDownloadRoute
   ApiVideoGenerateStatusRoute: typeof ApiVideoGenerateStatusRoute
   ApiWithdrawalHistoryRoute: typeof ApiWithdrawalHistoryRoute
   ApiWithdrawalRequestRoute: typeof ApiWithdrawalRequestRoute
   ApiBlogIndexRoute: typeof ApiBlogIndexRoute
+  ApiVideoCheckoutIndexRoute: typeof ApiVideoCheckoutIndexRoute
   ApiVideoGenerateIndexRoute: typeof ApiVideoGenerateIndexRoute
   ApiAdminBlogIdRoute: typeof ApiAdminBlogIdRoute
   ApiAdminPricingPlansImportRoute: typeof ApiAdminPricingPlansImportRoute
@@ -1044,6 +1097,13 @@ declare module '@tanstack/react-router' {
       path: '/payment-cancel'
       fullPath: '/payment-cancel'
       preLoaderRoute: typeof PaymentCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/is-rumpelstiltskin-1987-real': {
+      id: '/is-rumpelstiltskin-1987-real'
+      path: '/is-rumpelstiltskin-1987-real'
+      fullPath: '/is-rumpelstiltskin-1987-real'
+      preLoaderRoute: typeof IsRumpelstiltskin1987RealRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/how-to-make-rumpelstiltskin-ai-video': {
@@ -1165,6 +1225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVideoGenerateIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/video-checkout/': {
+      id: '/api/video-checkout/'
+      path: '/api/video-checkout'
+      fullPath: '/api/video-checkout/'
+      preLoaderRoute: typeof ApiVideoCheckoutIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/blog/': {
       id: '/api/blog/'
       path: '/api/blog'
@@ -1198,6 +1265,20 @@ declare module '@tanstack/react-router' {
       path: '/api/video-generate/download'
       fullPath: '/api/video-generate/download'
       preLoaderRoute: typeof ApiVideoGenerateDownloadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/video-checkout/webhook': {
+      id: '/api/video-checkout/webhook'
+      path: '/api/video-checkout/webhook'
+      fullPath: '/api/video-checkout/webhook'
+      preLoaderRoute: typeof ApiVideoCheckoutWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/video-checkout/verify': {
+      id: '/api/video-checkout/verify'
+      path: '/api/video-checkout/verify'
+      fullPath: '/api/video-checkout/verify'
+      preLoaderRoute: typeof ApiVideoCheckoutVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/users/$id': {
@@ -1525,6 +1606,7 @@ const rootRouteChildren: RootRouteChildren = {
   R1987RumpelstiltskinRoute: R1987RumpelstiltskinRoute,
   BestRumpelstiltskinAiGeneratorsRoute: BestRumpelstiltskinAiGeneratorsRoute,
   HowToMakeRumpelstiltskinAiVideoRoute: HowToMakeRumpelstiltskinAiVideoRoute,
+  IsRumpelstiltskin1987RealRoute: IsRumpelstiltskin1987RealRoute,
   PaymentCancelRoute: PaymentCancelRoute,
   PaymentSuccessRoute: PaymentSuccessRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
@@ -1556,11 +1638,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSubscriptionPortalRoute: ApiSubscriptionPortalRoute,
   ApiSubscriptionStatusRoute: ApiSubscriptionStatusRoute,
   ApiUsersIdRoute: ApiUsersIdRoute,
+  ApiVideoCheckoutVerifyRoute: ApiVideoCheckoutVerifyRoute,
+  ApiVideoCheckoutWebhookRoute: ApiVideoCheckoutWebhookRoute,
   ApiVideoGenerateDownloadRoute: ApiVideoGenerateDownloadRoute,
   ApiVideoGenerateStatusRoute: ApiVideoGenerateStatusRoute,
   ApiWithdrawalHistoryRoute: ApiWithdrawalHistoryRoute,
   ApiWithdrawalRequestRoute: ApiWithdrawalRequestRoute,
   ApiBlogIndexRoute: ApiBlogIndexRoute,
+  ApiVideoCheckoutIndexRoute: ApiVideoCheckoutIndexRoute,
   ApiVideoGenerateIndexRoute: ApiVideoGenerateIndexRoute,
   ApiAdminBlogIdRoute: ApiAdminBlogIdRoute,
   ApiAdminPricingPlansImportRoute: ApiAdminPricingPlansImportRoute,

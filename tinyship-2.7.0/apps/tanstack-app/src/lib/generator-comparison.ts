@@ -5,10 +5,10 @@ export const generatorComparison = [
   {
     name: pageRegistry.home.anchorText,
     href: pageRegistry.home.path,
-    freeAllowance: 'One successful 10-second video per browser/account; failed generation restores the trial.',
-    login: 'No. Signup is optional and does not grant an extra trial.',
-    speed: 'Allow several minutes. Queue time varies; no guaranteed completion time.',
-    useCase: 'Your dancer photo, an optional princess photo and a fixed straw corner, with a prepared five-shot dance prompt.',
+    freeAllowance: 'No free generation. $4.99 USD per video.',
+    login: 'No login required.',
+    speed: 'Generation can take a few minutes.',
+    useCase: 'Upload a photo to generate, preview and download a Rumpelstiltskin dance video.',
     source: { href: pageRegistry.videoGenerator.path, label: pageRegistry.videoGenerator.anchorText },
   },
   {
@@ -71,6 +71,6 @@ export const comparisonCopy = {
     'For a character-led remake, look for separate dancer and spectator inputs and a motion template that describes the shush gesture, reaction and tiptoe steps. A background-compositing tool serves a different purpose: it places an existing dancer in a scene rather than turning your portrait into the dancer.',
     'Check what a free preview actually includes. A short, low-resolution or watermarked preview is different from a full-resolution export, and free allowances do not establish how closely a tool follows the original choreography. The listed generation times are estimates where published; a busy queue can change the wait.',
   ],
-  sitePosition: 'Our tool is an option for a 10-second remake using your dancer photo, an optional princess reference and a fixed vintage straw corner. One video is free without signup, and registration does not reset the allowance. Open',
+  sitePosition: 'Our tool uses your dancer photo, an optional princess reference and a fixed vintage straw corner with a 10-second dance template. Each video costs $4.99 USD, with no account or subscription required. Open',
   entrySuffix: 'to upload your photo and try the prepared dance sequence.',
 } as const

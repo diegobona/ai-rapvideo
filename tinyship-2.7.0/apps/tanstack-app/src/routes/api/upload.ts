@@ -46,18 +46,11 @@ export const Route = createFileRoute('/api/upload')({
       POST: withCfDb(async ({ request }) => {
         try {
           const { auth } = await import('@libs/auth')
-          const { readVideoVisitor, sameOriginMutation, limitTrialIp } = await import('@/lib/video-visitor')
-          const { getVideoTrial, trialKeys, ensureTrialScopes, VideoTrialError } = await import('@libs/ai/video-trial')
+          const { sameOriginMutation, limitTrialIp } = await import('@/lib/video-visitor')
           if (!sameOriginMutation(request)) return Response.json({ error: 'invalid_origin' }, { status: 403 })
 
           const session = await auth.api.getSession({ headers: new Headers(request.headers) })
           if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
-          const visitorId = await readVideoVisitor(request)
-          if (!visitorId) return Response.json({ error: 'visitor_required' }, { status: 400 })
-          const keys = trialKeys(visitorId, session.user.id)
-          await ensureTrialScopes(keys, session.user.id)
-          const trial = await getVideoTrial(keys)
-          if (trial.state !== 'available') throw new VideoTrialError(trial.state === 'used' ? 'trial_used' : 'trial_processing', trial.state === 'used' ? 403 : 409)
           await limitTrialIp(request, 'upload')
 
           const formData = await request.formData()
@@ -93,11 +86,11 @@ export const Route = createFileRoute('/api/upload')({
               import('@libs/storage/providers/r2-binding'),
               import('cloudflare:workers'),
             ])
-            const bucket = (env as Record<string, unknown>).R2_BUCKET
+            const bucket = env.R2_BUCKET
             if (!bucket) {
               throw new Error('R2_BUCKET binding is not configured. Add it to apps/tanstack-app/wrangler.jsonc.')
             }
-            const publicUrl = resolveWorkersR2PublicUrl((env as Record<string, unknown>).R2_PUBLIC_URL)
+            const publicUrl = resolveWorkersR2PublicUrl(env.R2_PUBLIC_URL)
             if (!publicUrl) {
               return Response.json(
                 {

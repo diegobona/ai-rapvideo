@@ -1,0 +1,62 @@
+import { chromium, request, expect } from '@playwright/test';
+import { readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+
+const origin = 'https://rumpelstiltskin-ai.co';
+const api = await request.newContext({ baseURL: origin, extraHTTPHeaders: { Origin: origin } });
+const checks = [];
+let uploadedKey;
+let browser;
+try {
+  const ownership = await api.get('/api/video-generate/', { maxRedirects: 0 });
+  expect(ownership.status()).toBe(200);
+  expect((await ownership.json()).data.purchase).toBeNull();
+  checks.push('Owned-purchase GET works without a redirect');
+  const signIn = await api.post('/api/auth/sign-in/anonymous', { data: {} });
+  expect(signIn.status()).toBe(200);
+  expect((await signIn.json()).user.id).toBeTruthy();
+  const session = await api.get('/api/auth/get-session');
+  expect((await session.json()).user.isAnonymous).toBe(true);
+  checks.push('Anonymous session works with the production database and cookies');
+  const sample = path.resolve('apps/tanstack-app/public/images/dance/example-barn.png');
+  const upload = await api.post('/api/upload', { multipart: { provider: 'r2', file: { name: 'production-smoke.png', mimeType: 'image/png', buffer: await readFile(sample) } } });
+  expect(upload.status()).toBe(200);
+  const data = (await upload.json()).data;
+  uploadedKey = data.key;
+  expect(data.url).toBe(`https://media.rumpelstiltskin-ai.co/${uploadedKey}`);
+  expect((await api.get(data.url)).status()).toBe(200);
+  checks.push('Generic sample uploads to R2 and is accessible on the media domain');
+  // Both the removed free-input contract and forged purchases stop before any provider call.
+  const invalid = await api.post('/api/video-generate/', { data: {}, maxRedirects: 0 });
+  expect(invalid.status()).toBe(400);
+  expect((await invalid.json()).error).toBe('invalid_video_request');
+  const forged = await api.post('/api/video-generate/', { data: { purchaseId: crypto.randomUUID() }, maxRedirects: 0 });
+  expect(forged.status()).toBe(404);
+  expect((await (await api.get('/api/video-generate/')).json()).data.purchase).toBeNull();
+  checks.push('Invalid and forged purchase requests are rejected without generating');
+  browser = await chromium.launch({ channel: 'msedge', headless: true });
+  const context = await browser.newContext({ storageState: await api.storageState(), viewport: { width: 1440, height: 1080 } });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto(origin, { waitUntil: 'networkidle' });
+  await expect(page.getByRole('button', { name: 'Choose dancer photo', exact: true })).toBeEnabled();
+  await page.locator('input[type=file]').first().setInputFiles(sample);
+  await page.getByRole('checkbox', { name: 'I have permission to use the photos I upload.' }).check();
+  await expect(page.getByRole('button', { name: 'Generate video', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: 'Generate video', exact: true }).click();
+  await expect(page.getByTestId('dance-checkout-dialog')).toBeVisible();
+  await expect(page.getByTestId('dance-checkout-dialog')).toContainText('$4.99');
+  await page.screenshot({ path: 'test-results/production-stripe-dialog.png' });
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('dance-maker')).not.toContainText('Open video');
+  await expect(page.locator('a[href^="/signin"],a[href^="/signup"]')).toHaveCount(0);
+  expect(errors).toEqual([]);
+  await page.screenshot({ path: 'test-results/production-home.png' });
+  checks.push('Live browser hydrates; photo preview, permission and generate controls work');
+} finally {
+  if (browser) await browser.close();
+  await api.dispose();
+  await writeFile('test-results/production-smoke.json', JSON.stringify({ checks, uploadedKey, providerJobs: 0, sampleContainsUserPhoto: false }, null, 2));
+}
+console.log(JSON.stringify({ checks, providerJobs: 0, uploadedSampleNeedsCleanup: Boolean(uploadedKey) }));

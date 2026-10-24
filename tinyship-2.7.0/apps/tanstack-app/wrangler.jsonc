@@ -1,11 +1,16 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "rumpelstiltskin-ai",
+	"account_id": "c686d583b6d595875de1b8b73462fe42",
 	"compatibility_date": "2026-03-17",
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
-	"main": "@tanstack/react-start/server-entry",
+	"main": "src/worker.ts",
+	"durable_objects": {
+		"bindings": [{ "name": "PAID_VIDEO_RECOVERY", "class_name": "PaidVideoRecovery" }]
+	},
+	"migrations": [{ "tag": "paid-video-recovery-v1", "new_sqlite_classes": ["PaidVideoRecovery"] }],
 	"observability": {
 		"enabled": true,
 		"traces": { "enabled": true }
@@ -20,7 +25,7 @@
 		"APP_BASE_URL": "https://rumpelstiltskin-ai.co",
 		"BETTER_AUTH_URL": "https://rumpelstiltskin-ai.co",
 		"VITE_STORAGE_PROVIDER": "r2",
-		"R2_PUBLIC_URL": "https://pub-7344a28ff09f475d9e99f883230bb927.r2.dev"
+		"R2_PUBLIC_URL": "https://media.rumpelstiltskin-ai.co"
 	},
 	"r2_buckets": [
 		{
@@ -32,8 +37,8 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "tinyship-db",
-			"database_id": "87ee7e74-c45a-447a-aa14-1a66130c306f",
+			"database_name": "rumpelstiltskin-ai-db",
+			"database_id": "76c8361b-6e97-4b4b-a77f-52dff0dd7126",
 			"migrations_dir": "../../libs/database/drizzle-sqlite"
 		}
 	],
