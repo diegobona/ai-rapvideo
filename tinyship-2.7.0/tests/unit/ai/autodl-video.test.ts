@@ -149,6 +149,56 @@ describe('AutoDL multi-image MiniMax H3 video', () => {
     expect(JSON.parse(fetch.mock.calls[0][1].body).resolution).toBe('1080p横');
   });
 
+  test('submits the frozen rap workflow at twelve seconds in high-quality portrait mode', async () => {
+    const fetch = mockResponse({ code: 'Success', data: { task_id: 'rap-task' } });
+    vi.stubGlobal('fetch', fetch);
+    const references = ['https://media.example/one.png', 'https://media.example/two.png'];
+    await createVideoTask({ ...options, workflowId: 'minimax_h3_803', duration: 12, size: '768p竖(768*1376)', referenceImageUrls: references });
+    expect(fetch.mock.calls[0][0]).toBe('https://autodl.art/api/v1/comfyui/comfyui_workflow/minimax_h3_803');
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
+      prompt: options.prompt, duration: 12, resolution: '768p竖(768*1376)', mode: '高质模式',
+      ref_image_0: references[0], ref_image_1: references[1],
+    });
+  });
+
+  test('rejects invalid rap workflow dimensions before submission', async () => {
+    const fetch = mockResponse({ code: 'Success', data: { task_id: 'never-created' } });
+    vi.stubGlobal('fetch', fetch);
+    await expect(createVideoTask({ ...options, workflowId: 'minimax_h3_803', duration: 12, size: '768p竖' })).rejects.toThrow('resolution');
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  test.each([2, 3])('sends %i ordered voice references only in the documented 803 audio fields', async count => {
+    const fetch = mockResponse({ code: 'Success', data: { task_id: 'voiced-rap-task' } });
+    vi.stubGlobal('fetch', fetch);
+    const referenceAudioUrls = Array.from({ length: count }, (_, index) => `https://media.example/voice-${index}.mp3`);
+    await createVideoTask({ ...options, workflowId: 'minimax_h3_803', duration: 12, size: '768p竖(768*1376)', referenceAudioUrls });
+    const body = JSON.parse(fetch.mock.calls[0][1].body);
+    referenceAudioUrls.forEach((url, index) => expect(body[`ref_audio_${index}`]).toBe(url));
+    expect(Object.keys(body).filter(key => key.startsWith('ref_audio_'))).toHaveLength(count);
+    expect(body).not.toHaveProperty('audio_url');
+    expect(body).not.toHaveProperty('referenceAudioUrls');
+  });
+
+  test('rejects invalid or unsupported audio references before a chargeable upstream request', async () => {
+    const fetch = mockResponse({ code: 'Success', data: { task_id: 'never-created' } });
+    vi.stubGlobal('fetch', fetch);
+    const rapOptions = { ...options, workflowId: 'minimax_h3_803', duration: 12, size: '768p竖(768*1376)' };
+    const invalidReferences = [
+      [],
+      Array.from({ length: 4 }, (_, index) => `https://media.example/${index}.mp3`),
+      ['data:audio/mp3;base64,abc'],
+      ['https://user:secret@media.example/voice.mp3'],
+      ['https://media.example/voice.mp3', ''],
+      'https://media.example/voice.mp3',
+    ];
+    for (const referenceAudioUrls of invalidReferences) {
+      await expect(createVideoTask({ ...rapOptions, referenceAudioUrls } as VideoGenerationOptions)).rejects.toThrow('referenceAudioUrls');
+    }
+    await expect(createVideoTask({ ...options, referenceAudioUrls: ['https://media.example/voice.mp3'] })).rejects.toThrow('referenceAudioUrls');
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   test('queries queued or running tasks without depending on workflow configuration', async () => {
     vi.stubEnv('AUTODL_VIDEO_WORKFLOW_ID', '');
     const fetch = mockResponse({ code: 'Success', data: { task_id: 'remote-task', status: 'RUNNING' } });

@@ -1,0 +1,19 @@
+Original AI-generated rap voice references, version rap-v2
+
+Created for AI Rap Video using AutoDL's MiniMax H3 text-to-video workflow
+(minimax_h3_z0901). The source performances use four fictional solo MCs,
+two male voices and two female voices, with original English rap bars.
+No uploaded user portrait, human reference recording or named artist is used
+to create these stock voices.
+
+The production prompts request isolated acapella rap: clipped consonants,
+syncopated rhythmic speech and a 96 BPM pulse, without instruments or vocals
+from a second performer. Reference words are not copied into user videos.
+
+The source soundtracks are extracted, normalized, capped at 10 seconds and
+encoded as 24 kHz mono MP3. These assets supply both voice identity and rap
+delivery; they are not the previous Piper reading samples.
+
+The generated delivery has not been independently verified by listening in
+this environment. Actual performance and final video results are subject
+to the user's manual listening review.

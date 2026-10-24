@@ -147,19 +147,19 @@ body:has(.motion-home) header nav > a::before {
 }
 .motion-home .home-maker form > * { margin: 0; min-width: 0; }
 .motion-home .home-maker form > p,
-.motion-home .home-maker .dance-scene,
-.motion-home .home-maker .dance-orientation,
-.motion-home .home-maker .dance-customization,
+.motion-home .home-maker .rap-scene,
+.motion-home .home-maker .rap-orientation,
+.motion-home .home-maker .rap-customization,
 .motion-home .home-maker form > div:last-child { grid-column: 1 / -1; }
-.motion-home .home-maker .dance-customization { margin: 0; }
-.motion-home .home-maker .dance-scene-card { border-color: #4b435f; background: #0d1020; }
-.motion-home .home-maker .dance-scene .dance-scene-restore { min-height: 20px; padding: 0; background: transparent; border: 0; }
-.motion-home .home-maker .dance-orientation-option { border-color: #4b435f; background: #0d1020; color: #c8bfe2; }
-.motion-home .home-maker .dance-orientation-option:has(:checked) { border-color: #b39aff; background: #352654; color: white; box-shadow: 0 0 12px #7850e52b; }
-.motion-home .home-maker .dance-customization textarea { background: #0d1020; border-color: #4b435f; color: #eeeaff; }
-.motion-home .home-maker .dance-customization .dance-quick-tag { min-height: 30px; border-radius: 20px; padding: 5px 10px; background: #211e38; color: #c8bfe2; }
-.motion-home .home-maker .dance-customization .dance-quick-tag[aria-pressed=true] { border-color: #b39aff; background: #7451da; color: white; box-shadow: 0 0 12px #7850e52b; }
-.motion-home .home-maker .dance-customization .dance-custom-clear { min-height: 20px; padding: 0; background: transparent; border: 0; }
+.motion-home .home-maker .rap-customization { margin: 0; }
+.motion-home .home-maker .rap-scene-card { border-color: #4b435f; background: #0d1020; }
+.motion-home .home-maker .rap-scene .rap-scene-restore { min-height: 20px; padding: 0; background: transparent; border: 0; }
+.motion-home .home-maker .rap-orientation-option { border-color: #4b435f; background: #0d1020; color: #c8bfe2; }
+.motion-home .home-maker .rap-orientation-option:has(:checked) { border-color: #b39aff; background: #352654; color: white; box-shadow: 0 0 12px #7850e52b; }
+.motion-home .home-maker .rap-customization textarea { background: #0d1020; border-color: #4b435f; color: #eeeaff; }
+.motion-home .home-maker .rap-customization .rap-quick-tag { min-height: 30px; border-radius: 20px; padding: 5px 10px; background: #211e38; color: #c8bfe2; }
+.motion-home .home-maker .rap-customization .rap-quick-tag[aria-pressed=true] { border-color: #b39aff; background: #7451da; color: white; box-shadow: 0 0 12px #7850e52b; }
+.motion-home .home-maker .rap-customization .rap-custom-clear { min-height: 20px; padding: 0; background: transparent; border: 0; }
 .motion-home .home-maker form > p {
   padding: 10px 12px;
   border-color: #5b54833d;
@@ -215,10 +215,10 @@ body:has(.motion-home) header nav > a::before {
 .motion-home .home-maker button { transition: background .18s, box-shadow .18s, opacity .18s; }
 .motion-home .home-maker button:focus-visible { outline: 2px solid #b7a5ff; outline-offset: 4px; }
 .motion-home .home-maker button[type=submit]:hover:not(:disabled) { box-shadow: 0 5px 32px #7351ff70; }
-.motion-home .home-maker form p.dance-refund-guarantee { font-size: 14px; font-weight: 700; line-height: 1.5; color: #a7f3d0; }
-.motion-home .home-maker form > div:last-child > .dance-media-privacy { min-height: 0; flex-direction: row; align-items: flex-start; border: 1px solid #8d7ab547; border-radius: 12px; padding: 12px; background: #8c6cff0a; }
-.motion-home .home-maker .dance-media-privacy p { font-size: 12px; line-height: 1.5; color: #bcb8d0; }
-.motion-home .home-maker .dance-media-privacy p:first-child { font-size: 13px; font-weight: 600; color: #e9e3ff; }
+.motion-home .home-maker form p.rap-refund-guarantee { font-size: 14px; font-weight: 700; line-height: 1.5; color: #a7f3d0; }
+.motion-home .home-maker form > div:last-child > .rap-media-privacy { min-height: 0; flex-direction: row; align-items: flex-start; border: 1px solid #8d7ab547; border-radius: 12px; padding: 12px; background: #8c6cff0a; }
+.motion-home .home-maker .rap-media-privacy p { font-size: 12px; line-height: 1.5; color: #bcb8d0; }
+.motion-home .home-maker .rap-media-privacy p:first-child { font-size: 13px; font-weight: 600; color: #e9e3ff; }
 .motion-home .home-maker > div:last-of-type {
   min-width: 0;
   gap: 12px;
@@ -250,10 +250,10 @@ body:has(.motion-home) header nav > a::before {
   color: #e8e0ff;
 }
 .motion-home .home-section { margin-top: 54px; }
-.motion-home .section-examples { order: 3; margin-top: 28px; }
 .motion-home .section-how { order: 4; }
-.motion-home .section-faq { order: 5; }
-.motion-home .section-related { order: 6; }
+.motion-home .section-examples { order: 3; margin-top: 28px; }
+.motion-home .section-faq { order: 6; }
+.motion-home .section-related { order: 7; }
 .motion-home .home-section h2 {
   margin-bottom: 20px;
   color: #f4f3ff;
@@ -279,26 +279,26 @@ body:has(.motion-home) header nav > a::before {
 .motion-home .related-card:hover { border-color: #7760c4; background: #17192b; }
 body:has(.motion-home) footer { border-color: #27283d; background: #080b14; color: #a5abc2; }
 body:has(.motion-home) footer > p { color: #e5e2f5; font-weight: 600; }
-body:has(.motion-home) [data-testid=dance-checkout-dialog] {
+body:has(.motion-home) [data-testid=rap-checkout-dialog] {
   border-color: #8d76d873;
   border-radius: 24px;
   background: radial-gradient(ellipse at 0 0, #302147, transparent 60%), #101321;
   color: #f4f2ff;
   box-shadow: 0 0 80px #5740c52b, 0 25px 100px #0009;
 }
-body:has(.motion-home) [data-testid=dance-checkout-dialog] h2 { font-family: var(--font-sans); font-weight: 700; }
-body:has(.motion-home) [data-testid=dance-checkout-dialog] > div { border-color: #8f78d440; background: #8c6cff0c; }
-body:has(.motion-home) [data-testid=dance-checkout-dialog] > div:first-of-type { color: #cab8ff; }
-body:has(.motion-home) [data-testid=dance-checkout-dialog] p { color: #b6b9d0; }
-body:has(.motion-home) [data-testid=dance-checkout-dialog] li { color: #e4e2f3; }
-body:has(.motion-home) [data-testid=dance-checkout-dialog] li svg,
-body:has(.motion-home) [data-testid=dance-checkout-dialog] .text-5xl { color: #c4afff; }
-body:has(.motion-home) [data-testid=dance-checkout-pay] {
+body:has(.motion-home) [data-testid=rap-checkout-dialog] h2 { font-family: var(--font-sans); font-weight: 700; }
+body:has(.motion-home) [data-testid=rap-checkout-dialog] > div { border-color: #8f78d440; background: #8c6cff0c; }
+body:has(.motion-home) [data-testid=rap-checkout-dialog] > div:first-of-type { color: #cab8ff; }
+body:has(.motion-home) [data-testid=rap-checkout-dialog] p { color: #b6b9d0; }
+body:has(.motion-home) [data-testid=rap-checkout-dialog] li { color: #e4e2f3; }
+body:has(.motion-home) [data-testid=rap-checkout-dialog] li svg,
+body:has(.motion-home) [data-testid=rap-checkout-dialog] .text-5xl { color: #c4afff; }
+body:has(.motion-home) [data-testid=rap-checkout-pay] {
   background: linear-gradient(110deg, #9562ff, #5148ff);
   color: white;
   box-shadow: 0 4px 25px #7953ff38;
 }
-body:has(.motion-home) [data-testid=dance-checkout-dialog] button:focus-visible { outline-color: #c0acff; }
+body:has(.motion-home) [data-testid=rap-checkout-dialog] button:focus-visible { outline-color: #c0acff; }
 @media (max-width: 1050px) {
   .motion-home .home-maker { grid-template-columns: minmax(310px, 1fr) minmax(0, 1.4fr); }
   .motion-home .home-maker form { padding: 16px; gap: 16px 10px; }

@@ -1,21 +1,23 @@
 import { homeCopy } from '@/lib/home-copy'
-import { moreAiVideoTools } from '@/lib/page-registry'
 import { VideoExamples } from './video-examples'
 
 type RelatedTool = {
   category: string
   href: string
   anchorText: string
+  description: string
 }
 
 type HomeContentProps = {
   relatedTools?: readonly RelatedTool[]
 }
 
-export function HomeContent({ relatedTools = moreAiVideoTools }: HomeContentProps) {
+export function HomeContent({ relatedTools = homeCopy.related.items }: HomeContentProps) {
   return (
     <div className="home-content">
       <p className="home-intro">{homeCopy.intro}</p>
+
+      <VideoExamples heading={homeCopy.examplesHeading} />
 
       <section className="home-section section-how" aria-labelledby="how-to-make">
         <h2 id="how-to-make">{homeCopy.how.heading}</h2>
@@ -32,7 +34,20 @@ export function HomeContent({ relatedTools = moreAiVideoTools }: HomeContentProp
         </ol>
       </section>
 
-      <VideoExamples />
+      <section className="home-section section-editorial" aria-labelledby="what-is-rap-video">
+        <h2 id="what-is-rap-video">{homeCopy.editorial.whatIs.heading}</h2>
+        <p>{homeCopy.editorial.whatIs.body}</p>
+      </section>
+
+      <section className="home-section section-editorial" aria-labelledby="who-it-is-for">
+        <h2 id="who-it-is-for">{homeCopy.editorial.audience.heading}</h2>
+        {homeCopy.editorial.audience.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+      </section>
+
+      <section className="home-section section-editorial" aria-labelledby="why-two-photos">
+        <h2 id="why-two-photos">{homeCopy.editorial.twoPhotos.heading}</h2>
+        <p>{homeCopy.editorial.twoPhotos.body}</p>
+      </section>
 
       <section className="home-section section-faq" aria-labelledby="video-faq">
         <h2 id="video-faq">{homeCopy.faq.heading}</h2>
@@ -42,7 +57,6 @@ export function HomeContent({ relatedTools = moreAiVideoTools }: HomeContentProp
               <h3>{item.question}</h3>
               <p>
                 {item.answer}
-                {item.source && <> <a href={item.source.href} rel="nofollow">{item.source.label}</a>.</>}
               </p>
             </div>
           ))}
@@ -56,6 +70,7 @@ export function HomeContent({ relatedTools = moreAiVideoTools }: HomeContentProp
             <article className="related-card" key={tool.href}>
               <p className="related-category">{tool.category}</p>
               <h3><a href={tool.href}>{tool.anchorText}</a></h3>
+              <p className="related-description">{tool.description}</p>
             </article>
           ))}
         </div>

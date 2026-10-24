@@ -2,17 +2,14 @@ import { PaidVideoError, PaidVideoInputMissing } from '@libs/ai/paid-video';
 import { createTemporaryVideo } from '@libs/ai/temporary-video';
 import type { VideoGenerationOptions } from '@libs/ai/types';
 import { validateOwnedVideoImage } from '@libs/payment/video-stripe';
-import { createDanceVideoOptions } from './dance-template';
+import { createRapVideoOptions } from './rap-template';
 import { paidDanceDependencies } from './paid-dance-service';
 
-/** Temporary direct generation uses the same server template and owned-photo checks. */
-export async function createTemporaryDance(input: unknown, userId: string, visitorId: string) {
+/** Repeatable rap generation reuses durable temporary admission and owned photos. */
+export async function createTemporaryRap(input: unknown, userId: string, visitorId: string) {
   if (!input || typeof input !== 'object' || Array.isArray(input))
     throw new PaidVideoError('invalid_video_request', 400);
   const body = input as Record<string, unknown>;
-  if (Object.keys(body).some(key => ![
-    'danceTemplate', 'dancerImageUrl', 'princessImageUrl', 'customDescription', 'quickTags', 'orientation',
-  ].includes(key))) throw new PaidVideoError('invalid_video_request', 400);
   let publicUrl = process.env.R2_PUBLIC_URL || '';
   try {
     const { env } = await import('cloudflare:workers');
@@ -20,10 +17,9 @@ export async function createTemporaryDance(input: unknown, userId: string, visit
   } catch { /* Node uses the configured public storage origin. */ }
   let options: VideoGenerationOptions;
   try {
-    validateOwnedVideoImage(body.dancerImageUrl, userId, publicUrl);
-    if (body.princessImageUrl !== undefined)
-      validateOwnedVideoImage(body.princessImageUrl, userId, publicUrl);
-    options = createDanceVideoOptions(body, publicUrl);
+    validateOwnedVideoImage(body.personOneImageUrl, userId, publicUrl);
+    validateOwnedVideoImage(body.personTwoImageUrl, userId, publicUrl);
+    options = createRapVideoOptions(body);
   } catch {
     throw new PaidVideoError('invalid_video_request', 400);
   }
@@ -36,5 +32,5 @@ export async function createTemporaryDance(input: unknown, userId: string, visit
       error instanceof PaidVideoInputMissing ? 400 : 503,
     );
   }
-  return createTemporaryVideo(options, userId, visitorId);
+  return createTemporaryVideo(options, userId, visitorId, { resultStorage: dependencies.resultStorage });
 }

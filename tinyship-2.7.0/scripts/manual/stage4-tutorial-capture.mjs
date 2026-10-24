@@ -25,7 +25,7 @@ await page.route('**/api/auth/get-session**', route => route.fulfill({ json: {
 await page.route('**/api/credits/balance', route => route.fulfill({ json: { balance: 40 } }))
 await page.route('**/api/upload**', async (route) => {
   intercepted.push({ path: '/api/upload', state: 'mocked', method: route.request().method() })
-  await route.fulfill({ json: { success: true, data: { url: `${base}/images/dance/example-barn.png` } } })
+  await route.fulfill({ json: { success: true, data: { url: `${base}/images/rap/step-person-1.png` } } })
 })
 await page.route('**/api/video-generate/**', async (route) => {
   const pathname = new URL(route.request().url()).pathname
@@ -44,9 +44,9 @@ await page.route('**/api/video-checkout/verify', route => route.fulfill({ json: 
 await page.goto(base, { waitUntil: 'networkidle' })
 await page.getByRole('button', { name: 'Choose dancer photo', exact: true }).waitFor()
 await page.waitForFunction(() => !document.querySelector('input[type=file]')?.disabled)
-await page.locator('input[type=file]').first().setInputFiles(path.join(repository, 'apps/tanstack-app/public/images/dance/example-barn.png'))
+await page.locator('input[type=file]').first().setInputFiles(path.join(repository, 'apps/tanstack-app/public/images/rap/step-person-1.png'))
 await page.getByAltText('Preview of the dancer photo selected for your video').waitFor()
-const maker = page.getByTestId('dance-maker')
+const maker = page.getByTestId('rap-maker')
 const blocks = maker.locator('form > div')
 const images = []
 async function captureClip(name, elements, padding = 16, minHeight = 300) {
@@ -67,20 +67,20 @@ await captureClip('01-choose-photo.png', [blocks.nth(0)])
 await captureClip('02-dance-setting.png', [blocks.nth(1)])
 await page.getByRole('checkbox', { name: 'I have permission to use the photos I upload.' }).check()
 await page.getByRole('button', { name: 'Generate video', exact: true }).click()
-const dialog = page.getByTestId('dance-checkout-dialog')
+const dialog = page.getByTestId('rap-checkout-dialog')
 await dialog.waitFor()
 await dialog.screenshot({ path: path.join(output, '03-generate-video.png'), animations: 'disabled' })
 const dialogBounds = await dialog.boundingBox()
 images.push({ name: '03-generate-video.png', width: Math.round(dialogBounds.width), height: Math.round(dialogBounds.height) })
 // The next view is a mocked verified return; no checkout or job is submitted.
-await page.goto(`${base}/?checkout_session_id=cs_test_tutorial#dance-maker`)
+await page.goto(`${base}/?checkout_session_id=cs_test_tutorial#rap-maker`)
 await page.getByRole('status').filter({ hasText: 'Your video is ready.' }).waitFor({ timeout: 20000 })
 const resultPanel = maker.locator(':scope > div').last()
 await captureClip('04-download-video.png', [resultPanel.locator('[role=status]'), resultPanel.locator(':scope > div').last()], 18)
 await browser.close()
 const audit = {
   screenshots: images,
-  input: 'Existing generic illustrative still: /images/dance/example-barn.png',
+  input: 'Existing generic illustrative still: /images/rap/step-person-1.png',
   paymentAndReadyStates: 'Real checkout dialog and locally mocked verified-return response; no card entry or generated output is shown.',
   realUploads: 0, paidJobs: 0, accountChanges: 0, intercepted,
 }

@@ -1,7 +1,11 @@
 import { createMiddleware, createStart } from '@tanstack/react-start'
 import { SITE_ORIGIN, isResourcePath, normalizePath } from '@/lib/site'
+import { retiredPageResponse } from '@/lib/retired-pages'
 
 const siteMiddleware = createMiddleware({ type: 'request' }).server(async ({ request, next }) => {
+  const retired = retiredPageResponse(request)
+  if (retired) return retired
+
   const url = new URL(request.url)
   const primaryHostname = new URL(SITE_ORIGIN).hostname
   const hostname = (request.headers.get('host') || url.host).split(':')[0].toLowerCase()

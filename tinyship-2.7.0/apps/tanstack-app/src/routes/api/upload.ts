@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { withCfDb } from '@/lib/with-request-db'
 import type { StorageProvider } from '@libs/storage/types'
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024
+const MAX_FILE_SIZE = 20 * 1024 * 1024
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp']
 const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp']
 const SUPPORTED_PROVIDERS = ['oss', 's3', 'r2', 'cos'] as const

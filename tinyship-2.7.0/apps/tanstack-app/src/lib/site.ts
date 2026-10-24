@@ -1,5 +1,5 @@
-export const SITE_ORIGIN = 'https://rumpelstiltskin-ai.co'
-export const SITE_NAME = 'Rumpelstiltskin AI'
+export const SITE_ORIGIN = 'https://ai-rapvideo.co'
+export const SITE_NAME = 'AI Rap Video'
 
 /** A pathname shared by canonical links, redirects and sitemap entries. */
 export function normalizePath(input: string): string {
@@ -8,7 +8,7 @@ export function normalizePath(input: string): string {
 
   if (/^https?:\/\//i.test(value)) {
     pathname = new URL(value).pathname
-  } else if (/^\/\/(?:www\.)?rumpelstiltskin-ai\.co(?:[/?#]|$)/i.test(value)) {
+  } else if (/^\/\/(?:www\.)?ai-rapvideo\.co(?:[/?#]|$)/i.test(value)) {
     pathname = new URL(`https:${value}`).pathname
   } else {
     pathname = value.split(/[?#]/, 1)[0]

@@ -35,7 +35,7 @@ export const config = {
      * Application Name
      * This will be used throughout the application for branding
      */
-    name: 'Rumpelstiltskin AI',
+    name: 'AI Rap Video',
 
     /**
      * Logo Configuration

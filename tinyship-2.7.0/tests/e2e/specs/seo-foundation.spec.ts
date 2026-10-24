@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test'
 import { homeCopy } from '../../../apps/tanstack-app/src/lib/home-copy'
-import { pageRegistry } from '../../../apps/tanstack-app/src/lib/page-registry'
 
 test('video submission reaches the POST handler without a page canonical redirect', async ({ request }) => {
   const response = await request.post('/api/video-generate/', { data: {}, maxRedirects: 0 })
@@ -8,13 +7,13 @@ test('video submission reaches the POST handler without a page canonical redirec
   expect((await response.json()).error).toMatch(/^unauthorized$/i)
 })
 
-const origin = 'https://rumpelstiltskin-ai.co'
+const origin = 'https://ai-rapvideo.co'
 
 test('homepage serves its heading, body and one query-free canonical in raw HTML', async ({ request }) => {
   const response = await request.get('/?utm_source=verification')
   expect(response.status()).toBe(200)
   const html = await response.text()
-  expect(html).toMatch(/<h1\b[^>]*>Rumpelstiltskin AI Video Maker<\/h1>/)
+  expect(html).toMatch(/<h1\b[^>]*>AI Rap Video Generator<\/h1>/)
   expect(html).toContain(homeCopy.intro)
   expect(html).toContain('<html lang="en"')
   expect(html.match(/<link\b[^>]*rel="canonical"[^>]*>/g)).toHaveLength(1)
@@ -23,12 +22,14 @@ test('homepage serves its heading, body and one query-free canonical in raw HTML
   expect(html).toMatch(/<meta\b[^>]*name="robots"[^>]*content="index, follow"/)
 })
 
-test('www requests permanently redirect to the apex and preserve path and query', async ({ request }) => {
+test('www requests permanently redirect to the apex and preserve path and query', async ({ request, baseURL }) => {
   // Wrangler rewrites Host in local preview. A second local upstream exercises
   // the production www host without deploying or depending on public DNS.
   const wwwBase = process.env.SEO_TEST_WWW_BASE_URL || ''
-  const response = await request.get(`${wwwBase}/signin?returnTo=%2Faccount`, {
-    headers: { Host: 'www.rumpelstiltskin-ai.co' },
+  const production = new URL(baseURL || 'http://localhost:7001').hostname.endsWith('ai-rapvideo.co')
+  test.skip(!production && !wwwBase, 'www canonical routing requires the production host or a dedicated local www upstream.')
+  const response = await request.get(`${production ? 'https://www.ai-rapvideo.co' : wwwBase}/signin?returnTo=%2Faccount`, {
+    headers: { Host: 'www.ai-rapvideo.co' },
     maxRedirects: 0,
   })
   expect(response.status()).toBe(301)
@@ -42,17 +43,17 @@ test('robots allows every directory and points at the canonical sitemap', async 
   expect(text).toContain('User-agent: *')
   expect(text).toContain('Allow: /')
   expect(text).not.toMatch(/Disallow:\s*\S/)
-  expect(text).toContain(`Sitemap: ${origin}/sitemap.xml`)
+  expect(text).toContain('Sitemap: https://ai-rapvideo.co/sitemap.xml')
 })
 
-test('sitemap contains only the currently published public pages', async ({ request }) => {
+test('sitemap contains only the AI Rap Video homepage and excludes legacy pages', async ({ request }) => {
   const response = await request.get('/sitemap.xml')
   expect(response.status()).toBe(200)
   const xml = await response.text()
   expect(response.headers()['content-type']).toContain('xml')
-  const pages = Object.values(pageRegistry)
-  expect(xml.match(/<loc>/g)).toHaveLength(pages.length)
-  for (const entry of pages) expect(xml).toContain(`<loc>${origin}${entry.path}</loc>`)
+  const locations = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1])
+  expect(locations).toEqual(['https://ai-rapvideo.co/'])
+  expect(xml).not.toMatch(/rumpelstiltskin/i)
 })
 
 for (const path of ['/payment-success', '/payment-cancel']) {
@@ -86,7 +87,7 @@ test('unknown pages return a server-rendered 404 and a home link', async ({ requ
   expect(response.status()).toBe(404)
   const html = await response.text()
   expect(html).toMatch(/<h1\b[^>]*>Page not found<\/h1>/)
-  expect(html).toContain('Rumpelstiltskin AI')
+  expect(html).toContain('AI Rap Video')
   expect(html).toContain(`href="${origin}/does-not-exist"`)
   expect(html).toMatch(/name="robots"[^>]*content="noindex, follow"/)
 })

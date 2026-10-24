@@ -4,11 +4,12 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { promisify } from 'node:util'
-import { pageRegistry, moreAiVideoTools } from '../../apps/tanstack-app/src/lib/page-registry.ts'
+import { pageRegistry } from '../../apps/tanstack-app/src/lib/page-registry.ts'
+import { homeCopy } from '../../apps/tanstack-app/src/lib/home-copy.ts'
 
 const executeFile = promisify(execFile)
 const repository = fileURLToPath(new URL('../../', import.meta.url))
-const origin = 'https://rumpelstiltskin-ai.co'
+const origin = 'https://ai-rapvideo.co'
 const publicPages = Object.values(pageRegistry)
 const resourcePaths = ['/payment-success', '/payment-cancel', '/privacy-policy', '/terms-of-service']
 const slug = (pathname) => pathname === '/' ? 'home' : pathname.slice(1).replaceAll('/', '-')
@@ -43,7 +44,7 @@ export async function auditSite({ browser, baseURL = process.env.SEO_TEST_BASE_U
   const linkChecks = []
   const register = (collection, id, label, failures, evidence) => collection.push({ id, label, passed: failures.length === 0, failures, evidence })
   const localURL = (url) => `${base.origin}${url.pathname}${url.search}`
-  const isInternal = (url) => url.origin === base.origin || url.origin === origin || url.hostname === 'www.rumpelstiltskin-ai.co'
+  const isInternal = (url) => url.origin === base.origin || url.origin === origin || url.hostname === 'www.ai-rapvideo.co'
   const expectedPaths = [...publicPages.map(({ path }) => path), ...resourcePaths]
   const registeredRoutes = await activeHtmlRoutes(path.join(repository, 'apps/tanstack-app/src/routes'))
 
@@ -121,22 +122,22 @@ export async function auditSite({ browser, baseURL = process.env.SEO_TEST_BASE_U
     const robots = await robotsResponse.text()
     await writeFile(path.join(outputDir, 'sitemap.xml'), sitemap)
     await writeFile(path.join(outputDir, 'robots.txt'), robots)
-    register(checks, 'discovery', 'Sitemap includes all seven indexable pages and robots allows crawling', [
-      ...(!same([...locations].sort(), publicPages.map(({ path }) => origin + path).sort()) ? [{ locations }] : []),
+    register(checks, 'discovery', 'Sitemap includes only the AI Rap Video homepage and robots allows crawling', [
+      ...(!same(locations, ['https://ai-rapvideo.co/']) || /rumpelstiltskin/i.test(sitemap) ? [{ locations }] : []),
       ...(sitemapResponse.status() !== 200 || robotsResponse.status() !== 200 ? [{ sitemapStatus: sitemapResponse.status(), robotsStatus: robotsResponse.status() }] : []),
-      ...(!/^User-agent:\s*\*\s*$/m.test(robots) || !/^Allow:\s*\/\s*$/m.test(robots) || /^Disallow:\s*\S/m.test(robots) || !robots.includes(`Sitemap: ${origin}/sitemap.xml`) ? [{ robots }] : []),
-    ], { locations, robots, note: 'Noindex resource pages are intentionally excluded from the sitemap, while robots allows their URLs to be fetched.' })
+      ...(!/^User-agent:\s*\*\s*$/m.test(robots) || !/^Allow:\s*\/\s*$/m.test(robots) || /^Disallow:\s*\S/m.test(robots) || !robots.includes('Sitemap: https://ai-rapvideo.co/sitemap.xml') ? [{ robots }] : []),
+    ], { locations, robots, note: 'Legacy Rumpelstiltskin and noindex resource pages are excluded from the sitemap, while robots allows their URLs to be fetched.' })
     register(checks, 'keywords', 'No keywords meta tags', errorsFor((item) => item.keywords > 0, (item) => ({ count: item.keywords })), { pages: documents.length, total: documents.reduce((sum, item) => sum + item.keywords, 0) })
     const imageFailures = documents.flatMap(({ path, images }) => images.filter((image) => !image.alt?.trim() || image.width < 300 || image.height < 300 || image.naturalWidth < 300 || image.naturalHeight < 300 || !image.complete).map((image) => ({ path, ...image })))
     register(checks, 'images', 'Every published image has alt and dimensions of at least 300 by 300', imageFailures, { count: documents.reduce((sum, item) => sum + item.images.length, 0), images: documents.filter(({ images }) => images.length).map(({ path, images }) => ({ path, images })), note: 'Checks fixed images delivered in SSR HTML, both intrinsic asset dimensions and width/height attributes; responsive CSS can display smaller thumbnails. User-uploaded previews are not published site assets.' })
 
-    const curlResults = await Promise.all(['/', pageRegistry.howTo.path].map(async (pathname) => {
+    const curlResults = await Promise.all(publicPages.map(({ path }) => path).map(async (pathname) => {
       const { stdout } = await executeFile(process.platform === 'win32' ? 'curl.exe' : 'curl', ['--compressed', '--silent', '--show-error', '--fail', '--max-time', '30', `${base.origin}${pathname}?utm_source=stage5-curl`], { maxBuffer: 4 * 1024 * 1024 })
       await writeFile(path.join(outputDir, `curl-${slug(pathname)}.html`), stdout)
       const h1 = stdout.match(/<h1\b[^>]*>(.*?)<\/h1>/s)?.[1].replace(/<[^>]+>/g, '')
       return { path: pathname, h1, rawParagraphCount: [...stdout.matchAll(/<p(?:\s|>)/g)].length, savedHtml: `curl-${slug(pathname)}.html` }
     }))
-    register(checks, 'ssr', 'curl sees the homepage and tutorial H1 and body without JavaScript', [
+    register(checks, 'ssr', 'curl sees active content H1 and body without JavaScript', [
       ...curlResults.filter((item) => !item.h1 || item.rawParagraphCount === 0),
       ...errorsFor((item) => !item.rawHasBody || item.rawH1Count !== 1, (item) => ({ rawHasBody: item.rawHasBody, rawH1Count: item.rawH1Count })),
     ], { curlResults, javaScriptEnabled: false, pages: documents.length })
@@ -201,13 +202,7 @@ export async function auditSite({ browser, baseURL = process.env.SEO_TEST_BASE_U
       ...(!same(registeredRoutes, [...expectedPaths].sort()) ? [{ registeredRoutes, expectedPaths: [...expectedPaths].sort(), error: 'Unexpected or missing registered HTML route' }] : []),
     ], { occurrences: internalLinks.length, uniqueDestinations: fetched.size, destinations: [...fetched.values()], registeredRoutes })
 
-    register(linkChecks, 'home-six', 'Home lists the exact six registry links under H3', !same(at('/')?.homeRelated, moreAiVideoTools.map(({ anchorText, path }) => ({ text: anchorText, href: path }))) ? [{ actual: at('/')?.homeRelated }] : [], at('/')?.homeRelated)
-    register(linkChecks, 'home-backlinks', 'Every inner page links home as Rumpelstiltskin AI', publicPages.filter(({ path }) => path !== '/').filter(({ path }) => !at(path)?.links.some((link) => link.inMain && link.href === '/' && link.text === pageRegistry.home.anchorText)).map(({ path }) => ({ path })), { pages: 6, anchor: pageRegistry.home.anchorText })
-    const triangle = [pageRegistry.videoGenerator, pageRegistry.danceVideo, pageRegistry.howTo]
-    const bodyEdges = triangle.flatMap((source) => triangle.filter((target) => target.path !== source.path).map((target) => ({ source: source.path, target: target.path, anchor: target.anchorText, found: !!at(source.path)?.links.some((link) => link.inParagraph && link.href === target.path && link.text === target.anchorText) })))
-    register(linkChecks, 'tools-tutorial', 'A, B and E all link to one another in body paragraphs', bodyEdges.filter(({ found }) => !found), bodyEdges)
-    const chainEdges = [[pageRegistry.movie1987, pageRegistry.meme], [pageRegistry.meme, pageRegistry.videoGenerator]].map(([source, target]) => ({ source: source.path, target: target.path, anchor: target.anchorText, found: !!at(source.path)?.links.some((link) => link.inMain && link.href === target.path && link.text === target.anchorText) }))
-    register(linkChecks, 'history-meme-tool', 'F leads to D, and D leads to A', chainEdges.filter(({ found }) => !found), chainEdges)
+    register(linkChecks, 'home-sections', 'Home links to its three current sections', !same(at('/')?.homeRelated, homeCopy.related.items.map(({ anchorText, href }) => ({ text: anchorText, href }))) ? [{ actual: at('/')?.homeRelated }] : [], at('/')?.homeRelated)
 
     const targetByAnchor = new Map()
     for (const link of [...internalLinks, ...externalLinks].filter(({ text }) => text)) {

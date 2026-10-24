@@ -6,7 +6,7 @@ import { publicPaidVideoPurchase, startPaidVideoPurchase } from '@libs/ai/paid-v
 import { latestVideoPurchase } from '@libs/payment/video-purchases';
 import { schedulePaidVideoRecovery } from '@/lib/paid-video-recovery';
 import { VIDEO_PAYMENT_REQUIRED } from '../../../../../../config/videoPurchase';
-import { createTemporaryDance } from '@/lib/temporary-dance-service';
+import { createTemporaryRap } from '@/lib/temporary-dance-service';
 import { readTemporaryVideoTask } from '@libs/ai/temporary-video';
 import { VideoTrialError } from '@libs/ai/video-trial';
 
@@ -25,7 +25,7 @@ export const Route = createFileRoute('/api/video-generate/')({
           const purchase = latest && (VIDEO_PAYMENT_REQUIRED || ['paid', 'starting', 'processing', 'refund_pending'].includes(latest.state))
             ? latest : undefined;
           const directTask = !VIDEO_PAYMENT_REQUIRED && session?.user.id
-            ? await readTemporaryVideoTask(session.user.id, visitor.id) : undefined;
+            ? await readTemporaryVideoTask(session.user.id, visitor.id, await paidDanceDependencies(undefined, false)) : undefined;
           if (purchase && ['pending', 'paid', 'starting', 'processing', 'refund_pending'].includes(purchase.state))
             await schedulePaidVideoRecovery(purchase.id);
           return visitorResponse(
@@ -54,7 +54,7 @@ export const Route = createFileRoute('/api/video-generate/')({
           if (!VIDEO_PAYMENT_REQUIRED && body && typeof body === 'object' && !Array.isArray(body) && !('purchaseId' in body)) {
             await limitTrialIp(request, 'generate');
             const visitor = await videoVisitor(request);
-            const task = await createTemporaryDance(body, session.user.id, visitor.id);
+            const task = await createTemporaryRap(body, session.user.id, visitor.id);
             return visitorResponse(Response.json({ success: true, data: { taskId: task.id, status: task.status } }), visitor.cookie);
           }
           if (

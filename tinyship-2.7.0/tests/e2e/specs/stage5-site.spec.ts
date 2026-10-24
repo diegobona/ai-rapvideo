@@ -28,7 +28,7 @@ for (const [id, description] of [
   ['headings', 'one H1 and semantic heading levels'],
   ['descriptions', 'one non-empty description per page'],
   ['canonicals', 'one self-referencing canonical without query parameters'],
-  ['discovery', 'seven sitemap pages and unrestricted robots'],
+  ['discovery', 'AI Rap Video homepage-only sitemap and unrestricted robots'],
   ['keywords', 'no keywords meta tags anywhere'],
   ['images', 'all published images have alt and are at least 300×300'],
   ['ssr', 'curl and a JavaScript-disabled browser see H1 and body'],
@@ -43,7 +43,7 @@ for (const [id, description] of [
   })
 }
 
-for (const id of ['home-six', 'home-backlinks', 'tools-tutorial', 'history-meme-tool', 'anchor-policy']) {
+for (const id of ['home-sections', 'anchor-policy']) {
   test(`Stage 5 linking: ${id}`, () => {
     const check = report.linkChecks.find((item: { id: string }) => item.id === id)
     expect(check?.failures, JSON.stringify(check?.failures, null, 2)).toEqual([])

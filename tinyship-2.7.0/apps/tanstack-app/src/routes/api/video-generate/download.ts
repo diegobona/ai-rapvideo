@@ -34,7 +34,7 @@ export const Route = createFileRoute('/api/video-generate/download')({
               }
               return new Response(object.body, { headers: {
                 'Content-Type': 'video/mp4',
-                'Content-Disposition': 'attachment; filename="rumpelstiltskin-ai.mp4"',
+                'Content-Disposition': 'attachment; filename="ai-rap-video.mp4"',
                 'Cache-Control': 'private, no-store',
                 'X-Content-Type-Options': 'nosniff',
               } })
@@ -60,7 +60,7 @@ export const Route = createFileRoute('/api/video-generate/download')({
           return new Response(upstream.body, {
             headers: {
               'Content-Type': contentType,
-              'Content-Disposition': 'attachment; filename="rumpelstiltskin-ai.mp4"',
+              'Content-Disposition': 'attachment; filename="ai-rap-video.mp4"',
               'Cache-Control': 'private, no-store',
               'X-Content-Type-Options': 'nosniff',
             },

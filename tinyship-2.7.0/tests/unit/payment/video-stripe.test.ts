@@ -82,7 +82,7 @@ describe('fixed video Stripe and image validation', () => {
   });
   test('return URLs allow only the three maker paths', () => {
     expect(videoCheckoutUrls('http://localhost:7001', '/').success_url).toContain(
-      'checkout_session_id={CHECKOUT_SESSION_ID}#dance-maker',
+      'checkout_session_id={CHECKOUT_SESSION_ID}#rap-maker',
     );
     for (const path of [
       'https://evil.test',
@@ -140,7 +140,7 @@ describe('fixed video Stripe and image validation', () => {
       expect.objectContaining({
         payment_method_types: ['card'],
         branding_settings: {
-          display_name: 'Rumpelstiltskin AI',
+          display_name: 'AI Rap Video',
           background_color: '#faf9f4',
           button_color: '#304c3e',
         },

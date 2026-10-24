@@ -1,5 +1,5 @@
 import { siteCopy } from '@/lib/site-copy'
-import { legalPages } from '@/lib/legal-copy'
+import { legalDetails, legalPages } from '@/lib/legal-copy'
 
 export function SiteFooter() {
   return (
@@ -8,6 +8,7 @@ export function SiteFooter() {
       <nav aria-label="Legal information" className="mt-3 flex flex-wrap justify-center gap-x-6 gap-y-2">
         {Object.values(legalPages).map((page) => <a key={page.path} href={page.path} className="underline underline-offset-4">{page.label}</a>)}
       </nav>
+      <p className="mt-3"><a href={`mailto:${legalDetails.supportEmail}`} className="underline underline-offset-4">{legalDetails.supportEmail}</a></p>
     </footer>
   )
 }

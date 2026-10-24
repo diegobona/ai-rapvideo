@@ -2,6 +2,7 @@ import type { DeepSeekProviderSettings } from '@ai-sdk/deepseek';
 import type { OpenAIProviderSettings } from '@ai-sdk/openai';
 import type { UIMessage } from 'ai';
 import type { DanceCustomization } from './dance-customization';
+import type { RapLyricsDraft } from './rap-lyrics-types';
 
 // All supported providers (including video-only providers)
 export type AllProviderName = 'qwen' | 'openai' | 'deepseek' | 'fal' | 'volcengine' | 'aliyun' | 'gemini' | 'autodl' | 'compshare';
@@ -184,12 +185,16 @@ export interface VideoGenerationOptions {
   firstFrameUrl?: string;
   /** Ordered public reference image URLs (AutoDL H3: 1–9 images; overrides firstFrameUrl). */
   referenceImageUrls?: string[];
+  /** Ordered voice-timbre references (AutoDL H3 803: up to three speakers). */
+  referenceAudioUrls?: string[];
   /** Ordered reference videos for providers that support continuous motion input. */
   referenceVideoUrls?: string[];
   /** Stable server-owned submission key, scoped to a paid purchase when present. */
   idempotencyKey?: string;
   /** Saved creator inputs for owned-order UI restoration; never sent as provider fields. */
   danceCustomization?: DanceCustomization;
+  /** Approved lyric script, frozen locally and embedded in prompt; not a provider field. */
+  rapLyrics?: RapLyricsDraft;
   /** Last frame image URL for first-last-frame generation */
   lastFrameUrl?: string;
 }
@@ -207,6 +212,8 @@ export interface VideoGenerationResult {
   model: string;
   /** Cover/thumbnail image URL (if available) */
   coverImageUrl?: string;
+  /** Exact submitted script; planned highlighting does not claim measured audio alignment. */
+  rapLyrics?: RapLyricsDraft;
 }
 
 // ============================================================

@@ -19,13 +19,18 @@ BETTER_AUTH_SECRET=replace-with-a-random-32-char-min-secret
 # STRIPE_VIDEO_WEBHOOK_SECRET=
 # OPENAI_API_KEY=
 
-# AutoDL video generation: a token in the ComfyUI group (server-only secret).
+# AI Rap Video: paste a token from the AutoDL ComfyUI group (server-only secret).
 # Create it at https://autodl.art/large-model/tokens. No Bearer prefix is added.
+# Fill AUTODL_API_KEY in apps/tanstack-app/.dev.vars for local Cloudflare development.
+# The homepage fixes minimax_h3_803, 12 seconds, 768p portrait, high-quality mode.
 AUTODL_API_KEY=
-# Optional override; must have the same image-and-prompt input schema.
+# Server-only DeepSeek key for generating editable lyrics before the video.
+# The lyrics endpoint uses DeepSeek's official deepseek-flash model.
+DEEPSEEK_API_KEY=
+# Legacy dashboard override only; it cannot override the homepage rap settings.
 AUTODL_VIDEO_WORKFLOW_ID=minimax_h3_lightx2v_v5
 
-# Active Compshare provider; retain the AutoDL token for older saved orders.
+# Optional legacy provider for historical saved orders; not used by the rap homepage.
 COMPSHARE_API_KEY=
 COMPSHARE_REFERENCE_VIDEO_URL=
 

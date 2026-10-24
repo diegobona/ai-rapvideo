@@ -1,4 +1,5 @@
 import { aiVideoConfig } from '../../config/aiVideo';
+import { RAP_VIDEO_MODE, RAP_VIDEO_RESOLUTION, RAP_VIDEO_WORKFLOW_ID } from '../../config/rapVideo';
 import { getApiKey } from './config';
 import type { VideoGenerationOptions, VideoGenerationResult } from './types';
 
@@ -13,7 +14,8 @@ type AutodlRequest = {
   duration: number;
   resolution: string;
   seed?: number;
-} & Partial<Record<`ref_image_${number}`, string>>;
+  mode?: typeof RAP_VIDEO_MODE;
+} & Partial<Record<`ref_image_${number}` | `ref_audio_${number}`, string>>;
 
 function asObject(value: unknown): JsonObject | undefined {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -82,20 +84,35 @@ function buildRequest(options: VideoGenerationOptions, workflowId: string): Auto
   const images = referenceImageUrls(options);
   if (options.referenceVideoUrls?.length) throw new Error('AutoDL image workflow does not accept reference videos');
   const upgraded = workflowId === aiVideoConfig.autodl.workflowId;
-  const maxDuration = upgraded ? aiVideoConfig.autodl.maxDuration : aiVideoConfig.autodl.legacyMaxDuration;
+  const rap = workflowId === RAP_VIDEO_WORKFLOW_ID;
+  const maxDuration = upgraded || rap ? 15 : aiVideoConfig.autodl.legacyMaxDuration;
   const duration = options.duration ?? aiVideoConfig.defaults.duration;
   if (!Number.isInteger(duration) || duration < 1 || duration > maxDuration) {
     throw new Error(`AutoDL duration must be an integer between 1 and ${maxDuration} seconds`);
   }
-  const resolution = options.size ?? aiVideoConfig.autodl.defaultResolution;
+  const resolution = options.size ?? (rap ? RAP_VIDEO_RESOLUTION : aiVideoConfig.autodl.defaultResolution);
   const sizes = upgraded ? aiVideoConfig.autodlSizes : aiVideoConfig.autodlLegacySizes;
-  if (!sizes.some(size => size.value === resolution)) {
+  // 803 uses explicit dimension labels, unlike both historical H3 workflows.
+  // This product freezes one verified portrait output and high-quality mode.
+  if (rap ? resolution !== RAP_VIDEO_RESOLUTION : !sizes.some(size => size.value === resolution)) {
     throw new Error('Unsupported AutoDL resolution');
   }
   const body: AutodlRequest = { prompt, ref_image_0: images[0], duration, resolution };
+  if (rap) body.mode = RAP_VIDEO_MODE;
   images.forEach((url, index) => { body[`ref_image_${index}`] = url; });
+  if (options.referenceAudioUrls !== undefined) {
+    const audios = options.referenceAudioUrls;
+    if (!rap || !Array.isArray(audios) || audios.length < 1 || audios.length > 3) {
+      throw new Error('AutoDL referenceAudioUrls require 1–3 audio references and workflow 803');
+    }
+    audios.forEach((value, index) => {
+      const url = httpUrl(value);
+      if (!url) throw new Error(`AutoDL referenceAudioUrls[${index}] must be a public HTTP(S) URL`);
+      body[`ref_audio_${index}`] = url;
+    });
+  }
   if (options.seed !== undefined) {
-    const minSeed = upgraded ? 0 : 1;
+    const minSeed = upgraded || rap ? 0 : 1;
     if (!Number.isInteger(options.seed) || options.seed < minSeed || options.seed > 999999999999999) {
       throw new Error(`AutoDL seed must be an integer between ${minSeed} and 999999999999999`);
     }

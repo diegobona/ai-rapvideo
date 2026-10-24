@@ -17,6 +17,7 @@ function ExamplePlayer({ video, poster, title, width, height }: {
         poster={poster}
         width={width}
         height={height}
+        style={{ aspectRatio: `${width} / ${height}` }}
         controls
         playsInline
         preload="none"
@@ -30,19 +31,19 @@ function ExamplePlayer({ video, poster, title, width, height }: {
   )
 }
 
-export function VideoExamples() {
+export function VideoExamples({ heading = copy.heading }: { heading?: string }) {
   return (
     <section className="home-section section-examples" aria-labelledby="video-examples">
-      <h2 id="video-examples">{copy.heading}</h2>
+      <h2 id="video-examples">{heading}</h2>
       <div className="example-grid">
         {copy.items.map((example) => (
           <figure className="example-card" key={example.video}>
             <ExamplePlayer {...example} />
             <figcaption>
-              <span className="example-kind">{copy.referenceLabel}</span>
               <h3>{example.title}</h3>
               <p>{example.body}</p>
               <p className="example-details">{example.details}</p>
+              <p className="example-use-case">{example.useCase}</p>
             </figcaption>
           </figure>
         ))}

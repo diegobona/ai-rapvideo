@@ -18,7 +18,7 @@ try {
   const session = await api.get('/api/auth/get-session');
   expect((await session.json()).user.isAnonymous).toBe(true);
   checks.push('Anonymous session works with the production database and cookies');
-  const sample = path.resolve('apps/tanstack-app/public/images/dance/example-barn.png');
+  const sample = path.resolve('apps/tanstack-app/public/images/rap/step-person-1.png');
   const upload = await api.post('/api/upload', { multipart: { provider: 'r2', file: { name: 'production-smoke.png', mimeType: 'image/png', buffer: await readFile(sample) } } });
   expect(upload.status()).toBe(200);
   const data = (await upload.json()).data;
@@ -45,11 +45,11 @@ try {
   await page.getByRole('checkbox', { name: 'I have permission to use the photos I upload.' }).check();
   await expect(page.getByRole('button', { name: 'Generate video', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Generate video', exact: true }).click();
-  await expect(page.getByTestId('dance-checkout-dialog')).toBeVisible();
-  await expect(page.getByTestId('dance-checkout-dialog')).toContainText('$4.99');
+  await expect(page.getByTestId('rap-checkout-dialog')).toBeVisible();
+  await expect(page.getByTestId('rap-checkout-dialog')).toContainText('$4.99');
   await page.screenshot({ path: 'test-results/production-stripe-dialog.png' });
   await page.keyboard.press('Escape');
-  await expect(page.getByTestId('dance-maker')).not.toContainText('Open video');
+  await expect(page.getByTestId('rap-maker')).not.toContainText('Open video');
   await expect(page.locator('a[href^="/signin"],a[href^="/signup"]')).toHaveCount(0);
   expect(errors).toEqual([]);
   await page.screenshot({ path: 'test-results/production-home.png' });

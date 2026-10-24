@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "rumpelstiltskin-ai",
+	"name": "ai-rapvideo",
 	"account_id": "c686d583b6d595875de1b8b73462fe42",
 	"compatibility_date": "2026-03-17",
 	"compatibility_flags": [
@@ -15,15 +15,16 @@
 		"enabled": true,
 		"traces": { "enabled": true }
 	},
+	"workers_dev": true,
 	"routes": [
-		{ "pattern": "rumpelstiltskin-ai.co", "custom_domain": true },
-		{ "pattern": "www.rumpelstiltskin-ai.co", "custom_domain": true }
+		{ "pattern": "ai-rapvideo.co", "custom_domain": true },
+		{ "pattern": "www.ai-rapvideo.co", "custom_domain": true }
 	],
 	// Non-sensitive environment variables
 	"vars": {
 		"DB_DIALECT": "d1",
-		"APP_BASE_URL": "https://rumpelstiltskin-ai.co",
-		"BETTER_AUTH_URL": "https://rumpelstiltskin-ai.co",
+		"APP_BASE_URL": "https://ai-rapvideo.co",
+		"BETTER_AUTH_URL": "https://ai-rapvideo.co",
 		"VITE_STORAGE_PROVIDER": "r2",
 		"R2_PUBLIC_URL": "https://media.rumpelstiltskin-ai.co"
 	},

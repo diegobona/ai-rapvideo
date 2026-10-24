@@ -35,7 +35,7 @@ export const Route = createFileRoute('/api/video-generate/status')({
           return Response.json(
             {
               success: true,
-              data: { taskId, status: task.status, result: task.result, error: task.errorMessage },
+              data: { taskId, status: task.status, result: task.result, error: task.status === 'failed' ? 'video_generation_failed' : undefined },
             },
             { headers: { 'Cache-Control': 'private, no-store' } },
           );

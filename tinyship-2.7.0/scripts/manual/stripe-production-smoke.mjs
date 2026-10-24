@@ -57,15 +57,15 @@ try {
   page.on('pageerror', error => pageErrors.push(error.name))
   await page.goto(origin, { waitUntil: 'networkidle' })
   await expect(page.getByRole('button', { name: 'Choose dancer photo', exact: true })).toBeEnabled()
-  await page.locator('input[type=file]').first().setInputFiles(path.join(app, 'public/images/dance/example-barn.png'))
+  await page.locator('input[type=file]').first().setInputFiles(path.join(app, 'public/images/rap/step-person-1.png'))
   await page.getByRole('checkbox', { name: 'I have permission to use the photos I upload.' }).check()
   await page.getByRole('button', { name: 'Generate video', exact: true }).click()
-  const dialog = page.getByTestId('dance-checkout-dialog')
+  const dialog = page.getByTestId('rap-checkout-dialog')
   await expect(dialog).toContainText('$4.99')
   await expect(dialog).toContainText('No account or subscription required')
   await page.screenshot({ path: path.join(root, 'test-results/stripe-production-dialog-desktop.png') })
   await page.setViewportSize({ width: 390, height: 844 })
-  await expect(dialog.getByTestId('dance-checkout-pay')).toBeVisible()
+  await expect(dialog.getByTestId('rap-checkout-pay')).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: path.join(root, 'test-results/stripe-production-dialog-mobile.png') })
   report.checks.push('Live $4.99 dialog hydrates and fits desktop/mobile')
@@ -81,7 +81,7 @@ try {
     await route.fulfill({ response })
   })
   const checkoutResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/video-checkout/' && response.request().method() === 'POST')
-  await dialog.getByTestId('dance-checkout-pay').click()
+  await dialog.getByTestId('rap-checkout-pay').click()
   const uploaded = await uploadResponse
   expect(uploaded.status()).toBe(200)
   uploadedKey = (await uploaded.json()).data.key
@@ -125,7 +125,7 @@ try {
   report.checks.push('Owned unpaid purchase returns402 and has no task; production signing secret accepts a signed diagnostic probe')
 
   step = 'cancel and session expiry'
-  await page.goto(`${origin}/?checkout=cancelled#dance-maker`)
+  await page.goto(`${origin}/?checkout=cancelled#rap-maker`)
   await expect(page.getByRole('status').filter({ hasText: 'Payment cancelled. No video was generated.' })).toBeVisible()
   const expired = await stripe.checkout.sessions.expire(sessionId)
   expect(expired.status).toBe('expired')

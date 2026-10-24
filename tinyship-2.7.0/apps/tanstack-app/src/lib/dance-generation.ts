@@ -5,6 +5,7 @@ import { normalizeDanceOrientation } from '@libs/ai/dance-output'
 import { DEFAULT_DANCE_ORIENTATION, type DanceOrientation } from '../../../../config/danceOutput'
 import { readVideoFailureReason, type VideoFailureReason } from '../../../../config/videoFailure'
 import { DANCE_PURCHASE_TIMEOUT_MS } from '../../../../config/danceUi'
+import { normalizeRapLyricsDraft } from '@libs/ai/rap-lyrics-draft'
 
 const paidPolling = { ...aiVideoConfig.polling, maxTimeoutMs: DANCE_PURCHASE_TIMEOUT_MS }
 export type DanceErrorCode = 'fileType' | 'fileSize' | 'photoRequired' | 'consentRequired' | 'upload' | 'generation' | 'credits' | 'status' | 'timeout' | 'download' | 'invalidResponse' | 'unauthorized' | 'expired' | 'trialUsed' | 'trialProcessing' | 'rateLimited' | 'visitor' | 'checkout' | 'paymentRequired' | 'paymentPending' | 'refundPending' | 'refunded'
@@ -55,12 +56,15 @@ function readVideoResult(value: unknown): VideoGenerationResult {
     || !['fal', 'volcengine', 'aliyun', 'autodl', 'compshare'].includes(String(value.provider)) || typeof value.model !== 'string') {
     throw new DanceGenerationError('invalidResponse')
   }
+  let rapLyrics
+  try { if (value.rapLyrics !== undefined) rapLyrics = normalizeRapLyricsDraft(value.rapLyrics) } catch { /* Older videos remain playable without a usable script. */ }
   return {
     videoUrl: value.videoUrl,
     provider: value.provider as VideoProviderName,
     model: value.model,
     ...(typeof value.duration === 'number' ? { duration: value.duration } : {}),
     ...(isHttpUrl(value.coverImageUrl) ? { coverImageUrl: value.coverImageUrl } : {}),
+    ...(rapLyrics ? { rapLyrics } : {}),
   }
 }
 

@@ -45,7 +45,7 @@ export function withCfDb<T extends { request: Request }>(
 ): (ctx: T) => Promise<Response> {
   const guarded = async (ctx: T) => {
     const path = new URL(ctx.request.url).pathname.replace(/\/$/, '')
-    const guestAllowed = path.startsWith('/api/auth/') || ['/api/upload', '/api/video-generate', '/api/video-generate/status', '/api/video-generate/download', '/api/video-checkout', '/api/video-checkout/verify', '/api/video-checkout/webhook', '/api/credits/balance'].includes(path)
+    const guestAllowed = path.startsWith('/api/auth/') || ['/api/upload', '/api/video-generate', '/api/video-generate/status', '/api/video-generate/download', '/api/video-generate/lyrics', '/api/video-checkout', '/api/video-checkout/verify', '/api/video-checkout/webhook', '/api/credits/balance'].includes(path)
     if (!guestAllowed) {
       const { auth } = await import('@libs/auth')
       const session = await auth.api.getSession({ headers: ctx.request.headers })

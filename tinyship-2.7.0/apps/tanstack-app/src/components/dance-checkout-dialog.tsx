@@ -39,7 +39,7 @@ export function DanceCheckoutDialog({ copy, open, preparing, error, onOpenChange
           onOpenAutoFocus={(event) => { event.preventDefault(); payRef.current?.focus() }}
           onCloseAutoFocus={(event) => { event.preventDefault(); returnFocus() }}
           aria-busy={preparing}
-          data-testid="dance-checkout-dialog"
+          data-testid="rap-checkout-dialog"
         >
           <Dialog.Close className="absolute right-4 top-4 rounded-full p-2 text-[#c7d0c6] transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e6c87d]" aria-label={copy.close}>
             <X aria-hidden="true" className="h-4 w-4" />
@@ -60,7 +60,7 @@ export function DanceCheckoutDialog({ copy, open, preparing, error, onOpenChange
             </ul>
           </div>
           {error && <p className="mb-4 rounded-xl border border-[#f1c5a0]/25 bg-[#f1c5a0]/10 p-3 text-sm leading-relaxed text-[#f5d2b8]" role="alert">{error}</p>}
-          <button ref={payRef} type="button" onClick={onPay} disabled={preparing} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#e8cb83] px-4 py-3 text-sm font-bold text-[#182219] transition hover:bg-[#f2d99b] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e8cb83] disabled:cursor-wait disabled:opacity-70" data-testid="dance-checkout-pay">
+          <button ref={payRef} type="button" onClick={onPay} disabled={preparing} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#e8cb83] px-4 py-3 text-sm font-bold text-[#182219] transition hover:bg-[#f2d99b] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e8cb83] disabled:cursor-wait disabled:opacity-70" data-testid="rap-checkout-pay">
             {preparing ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : null}
             {preparing ? copy.preparing : copy.button}
             {!preparing && <ArrowRight aria-hidden="true" className="h-4 w-4" />}

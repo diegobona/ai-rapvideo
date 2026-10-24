@@ -1,13 +1,13 @@
-/** Require checkout for new generations. */
-export const VIDEO_PAYMENT_REQUIRED = true;
+/** New homepage generations are free; historical paid orders remain recoverable. */
+export const VIDEO_PAYMENT_REQUIRED = false;
 
 /** Fixed per-video price; never accept an amount or price identifier from the browser. */
 export const videoPurchaseConfig = {
   amount: 499,
   currency: 'usd',
-  productLabel: 'Rumpelstiltskin AI dance video',
+  productLabel: 'AI Rap Video',
   checkoutBranding: {
-    display_name: 'Rumpelstiltskin AI',
+    display_name: 'AI Rap Video',
     background_color: '#faf9f4',
     button_color: '#304c3e',
   },

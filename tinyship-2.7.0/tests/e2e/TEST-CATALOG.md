@@ -1,5 +1,11 @@
 # E2E 测试流程目录
 
+## Editable lyrics before rap video (2026-10-24)
+
+Acceptance: the first action generates exactly four short lyrics through the server-only DeepSeek API, with English selected by default and Chinese only explicitly selected. Visitors can edit both lines for each person before a separate video-generation action; generating/regenerating lyrics never uploads photos or creates a video. The submitted script is embedded verbatim in H3 lyric tags, frozen with its task, and restored after refresh. Beneath the finished video, show that submitted script with approximate highlighting from the planned line intervals; pause, seeking and replay update the highlight, and editing the next draft never rewrites the existing video's script. Verify failed lyric requests, safe retry, missing-key behavior, input limits, anonymous sessions, task ownership and preservation of existing video/download recovery. No new pages, sitemap changes, payment or login requirements.
+
+Verified: 171 related unit tests, 15 browser tests, type checking, build and deployment passed. Live production lyric drafting returned four English lines, with no video submission or photo upload. Highlighting uses approximate planned intervals; H3 singing fidelity is not certified by these checks.
+
 ## Restore $4.99 checkout, concise maker and 24-hour media retention (2026-10-20)
 
 Acceptance: new videos require a verified $4.99 USD Stripe payment again; block direct free submissions. Clear current free-access copy from all public makers, pricing FAQ and guides. Remove the screenshot-marked expression hint, idle result status and fidelity filler, while preserving progress/errors and the full-refund guarantee. Show concise Cloudflare storage and 24-hour automatic deletion text near the form and a download-before-expiry reminder. Store newly completed AutoDL/Compshare video outputs in the site's R2 bucket and configure scoped 24-hour lifecycle rules for uploads/ and generated-videos/, never references/ or site assets. Preserve provider/model/result ownership, retry transient storage failures without generating another video, and keep historical jobs/refunds recoverable. Reject expired managed media at application access paths. Verify paid dialog/checkout without charge, no free bypass, actual lifecycle configuration, R2 copy idempotency and live responsive UI; no real video generation or customer payment is needed.
@@ -1363,3 +1369,43 @@ Action basis: `src/lib/dance-prompt.ts` shots 1/3/4/5 specify The Shush Gesture 
 Supersedes the earlier login-before-upload and visible-credit-balance behavior above. TanStack English site only. Visitors choose photos and generate without registration; Better Auth anonymous sessions protect uploads, task status and downloads. One successful video per browser/account, with a signed visitor cookie and a database-enforced atomic reservation. Provider failure restores eligibility after refund; status retry/refresh never creates another job. Signup/signin carries the browser/anonymous usage into the account. A new browser cannot reset an existing account's allowance. IP short-window caps use trusted Cloudflare client IP, not a permanent one-IP-one-person rule. Anonymous sessions cannot access unrelated APIs. No new public page, private-media publication or paid provider call in automated checks.
 
 Verified: 114/114 AI unit tests, 42/42 E2E checks, and 6/6 real Better Auth + local D1 integration checks passed. These cover parallel submissions (one provider request), failure restoration, anonymous generation controls, playback/download, registration with task ownership migration, used-account access from a fresh browser, and signout. Four tutorial screenshots were recaptured. Local D1 0007 applied; remote migration/deployment not performed. Evidence: `test-results/anonymous-trial/report.json`, `scripts/manual/anonymous-trial-audit.mjs`; implementation and deployment notes: `docs/implementation/anonymous-video-trial.md`.
+
+# AI Rap Video homepage refresh — 2026-10-24
+
+Scope: deployed TanStack homepage and its shared photo form; Next/Nuxt and backend generation prompts are outside this request.
+
+- Homepage title, H1, intro, instructions, FAQ, branding and navigation use AI Rap Video. Canonical points to https://ai-rapvideo.co/.
+- Preserve existing gallery video URLs, posters and tutorial images. Replace old themed links with working homepage anchors.
+- Both upload controls announce required. With either photo missing, generation stays disabled even after consent. Removing either photo blocks generation and clears saved inputs.
+- Verified SSR, image availability, desktop/mobile layout and both-photo interactions with `homepage.spec.ts` and `launch-maker.spec.ts`: 22 passed, 2 free-mode cases skipped because payment is enabled. AI unit tests: 364 passed; SEO unit tests: 9 passed. TanStack typecheck, Cloudflare build and deployment dry run pass. No real charges or provider jobs were submitted.
+
+Sitemap cleanup: exclude every Rumpelstiltskin pathname from route discovery, published URL inputs and final XML rendering. The six legacy pages stay accessible but no longer appear in the sitemap; the current sitemap contains only the AI Rap Video homepage. Verify with `tests/unit/seo/foundation.test.ts` and the deployed `/sitemap.xml` response.
+
+Legacy page retirement supersedes the accessible-page behavior above: the six specified Rumpelstiltskin URLs return HTTP 410 with `X-Robots-Tag: noindex, follow`, no `Location` header, and no redirect to the homepage. This response runs before canonical normalization, including www, query parameters and trailing slashes. HEAD returns the same status and headers with an empty body. Legacy client-side page heads are also noindex. Homepage remains 200; sitemap remains homepage-only. Verify with `tests/unit/seo/retired-pages.test.ts` and direct deployed HTTP checks.
+
+## AI Rap Video P3 consistency — 2026-10-24
+
+Scope is the deployed TanStack site. Active homepage, legal, payment-result and 404 HTML must contain no retired branding, image paths, links or alt text. All mentioned prices remain $4.99 USD per video; confirmed generation failure receives a full refund; stored uploads and saved videos are scheduled for automatic deletion after 24 hours. Both photo uploads and the existing homepage keyword remain. Seven legacy page paths, including the former 1987 alias, terminate as 410 without redirecting. The 21 removed marketing images and old demo video must return 404/410. Sitemap contains only https://ai-rapvideo.co/. Retired page route code, copy and dedicated styles are removed from the frontend build; earlier stage3/stage4 published-page tests are superseded by retirement and consistency checks.
+
+Verification: `site-consistency.spec.ts`, `retired-pages.spec.ts`, current SEO HTTP tests, focused unit tests, TanStack typecheck, Cloudflare production build and dry run. No real payment or video generation is submitted. Final outcomes are recorded in `docs/implementation/ai-rapvideo-p3-consistency.md`.
+
+## AI Rap Video single-page SEO — 2026-10-24
+
+Execute P0-1 through P2-6 in order, homepage only. Raw homepage HTML must contain parseable SoftwareApplication + FAQPage JSON-LD, matching the seven original visible FAQ pairs; real 1200x630 OG image and matching Twitter/OG title/description; exact requested 61-character title, unchanged H1/description; subtitle directly after H1; three new SSR content sections between instructions and examples; 900–1100 main words; five local rap example clips with complete captions and at least one portrait video; three described anchor cards and rap-maker/presentation identifiers. Preserve $4.99, both photos, current refund/retention copy, existing backend behavior and the exact one-entry sitemap. Verify with homepage-seo.spec.ts and relevant existing homepage/SEO/SSR checks. Capture before/after raw HTML, word-count scope, metadata and FAQ comparison evidence. No real charge or generation is needed.
+
+Order update (2026-10-24): the earlier instructions → editorial → examples order is a historical record superseded by the user's latest tool → examples → instructions → editorial requirement. Examples must directly follow the maker; H2 order is Examples → How → What Is → Who → Why → FAQ → Explore. Preserve historical source snapshots.
+
+
+## AI Rap Video direct generator (2026-10-24)
+
+Scope: deployed TanStack homepage only. No paid provider requests in automated checks.
+
+- [x] Two required photos (JPG/PNG/WebP, 20 MB), consent, four scene cards and a 240-character optional theme.
+- [x] Fixed 12 seconds, 768p portrait, original generated rap audio; no price, credits, checkout, login or output settings.
+- [x] Anonymous session, upload twice, submit the rap payload once, poll, preview and download.
+- [x] Submission is disabled during processing; reload recovers the task without a new generation.
+- [x] Failed generation preserves inputs; status/download errors retry the existing task.
+- [x] Mobile form fits viewport; scene keyboard interaction and counter remain accessible.
+- [x] JSON-LD Offer is free, FAQ matches visible copy, Title/H1 and single-homepage sitemap remain correct.
+
+Verification: 126 targeted unit tests passed; TanStack TypeScript and Cloudflare production build passed; all six mocked generation flow browser tests passed, homepage/asset/mobile/privacy/retired-route checks passed; four homepage SEO checks passed after copy adjustment. The production-host-only www redirect case is skipped on localhost. No paid AutoDL generation was submitted.

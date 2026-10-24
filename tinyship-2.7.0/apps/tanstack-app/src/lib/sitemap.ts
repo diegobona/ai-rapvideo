@@ -27,7 +27,8 @@ export function discoverSitemapPaths(routeSources: Record<string, string>, publi
 }
 
 function uniqueIndexablePaths(paths: readonly string[]): string[] {
-  return [...new Set(paths.filter((path) => !path.includes('$')).map(normalizePath).filter((path) => !isResourcePath(path)))].sort()
+  return [...new Set(paths.filter((path) => !path.includes('$')).map(normalizePath)
+    .filter((path) => !isResourcePath(path) && !/rumpelstiltskin/i.test(path)))].sort()
 }
 
 export function renderSitemap(paths: readonly string[]): string {

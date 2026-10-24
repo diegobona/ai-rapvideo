@@ -51,7 +51,7 @@ export default defineConfig({
     port: 7001,
     // Allow the Cloudflare Tunnel hostname used for local payment webhooks.
     // Keep this explicit instead of allowing arbitrary Host headers.
-    allowedHosts: ['rumpelstiltskin-ai.co', 'www.rumpelstiltskin-ai.co'],
+    allowedHosts: ['ai-rapvideo.co', 'www.ai-rapvideo.co'],
   },
   // Nuxt pins seroval@1.4.0, which otherwise gets hoisted and pre-bundled into
   // the TanStack client. 1.4.0 cannot decode 1.5.1 RPC payloads (empty object),

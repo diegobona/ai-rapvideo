@@ -29,7 +29,7 @@ try {
   const guest = await localRequest('/api/auth/sign-in/anonymous', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
   assert.equal(guest.status, 200)
   userId = (await guest.json()).user.id
-  const bytes = await readFile(path.join(app, 'public/images/dance/example-barn.png'))
+  const bytes = await readFile(path.join(app, 'public/images/rap/step-person-1.png'))
   const form = new FormData()
   form.set('file', new File([bytes], 'r2-upload-regression.png', { type: 'image/png' }))
   form.set('provider', 'r2')

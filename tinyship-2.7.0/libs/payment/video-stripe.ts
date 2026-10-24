@@ -29,8 +29,8 @@ export function videoCheckoutUrls(appBaseUrl: string, returnPath: string) {
     throw new Error('Invalid checkout return path');
   const base = new URL(appBaseUrl).origin + returnPath;
   return {
-    success_url: `${base}?checkout_session_id={CHECKOUT_SESSION_ID}#dance-maker`,
-    cancel_url: `${base}?checkout=cancelled#dance-maker`,
+    success_url: `${base}?checkout_session_id={CHECKOUT_SESSION_ID}#rap-maker`,
+    cancel_url: `${base}?checkout=cancelled#rap-maker`,
   };
 }
 export function validateOwnedVideoImage(value: unknown, userId: string, publicUrl: string): string {

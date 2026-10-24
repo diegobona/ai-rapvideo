@@ -18,5 +18,5 @@ export const getDanceServiceState = createServerFn({ method: 'GET' }).handler(as
     const url = new URL(publicUrl)
     publicStorage = url.protocol === 'https:' && url.hostname !== 'example.com' && !url.hostname.endsWith('.example.com')
   } catch { /* An unconfigured address keeps live generation unavailable. */ }
-  return { isAvailable: isVideoGenerationConfigured() && hasBucket && publicStorage && (!VIDEO_PAYMENT_REQUIRED || isVideoPaymentConfigured()) }
+  return { isAvailable: isVideoGenerationConfigured('autodl') && hasBucket && publicStorage && (!VIDEO_PAYMENT_REQUIRED || isVideoPaymentConfigured()) }
 })

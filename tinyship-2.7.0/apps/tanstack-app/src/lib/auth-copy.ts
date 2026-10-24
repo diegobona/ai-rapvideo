@@ -1,6 +1,6 @@
 export const authCopy = {
-  signinDescription: 'A video costs $4.99 USD. You can buy one without creating an account.',
-  signupDescription: 'No account is required to buy a video. Each video costs $4.99 USD.',
+  signinDescription: 'Create a rap video for free without creating an account.',
+  signupDescription: 'No account or payment is required to generate a rap video.',
   passwordHelp: 'Use 8–100 characters. Choose a password you do not use on other sites.',
   unavailableProvider: 'This sign-in method is not available. Please use your email and password.',
   resetUnavailable: 'Password reset emails are currently unavailable. Contact support if you need help accessing your account.',

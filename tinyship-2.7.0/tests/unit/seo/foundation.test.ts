@@ -61,6 +61,21 @@ describe('English SEO foundation', () => {
     })).toEqual(['/', '/about-us', '/getting-started'])
   })
 
+  it('adds matching Twitter metadata only when opted in and preserves exact JSON-LD text safely', () => {
+    const structuredData = { '@context': 'https://schema.org', text: 'A </script> string stays data.' }
+    const head = seoHead({ title: 'Page', description: 'Description', canonical: '/', og: { title: 'Share title', description: 'Share description', image: '/share.jpg', imageWidth: 1200, imageHeight: 630 }, twitter: true, structuredData })
+    expect(head.meta).toContainEqual({ name: 'twitter:title', content: 'Share title' })
+    expect(head.meta).toContainEqual({ name: 'twitter:description', content: 'Share description' })
+    expect(head.meta).toContainEqual({ property: 'og:image:width', content: '1200' })
+    expect(head.meta).toContainEqual({ property: 'og:image:height', content: '630' })
+    expect(head.scripts?.[0].type).toBe('application/ld+json')
+    expect(head.scripts?.[0].children).not.toContain('</script>')
+    expect(JSON.parse(head.scripts![0].children)).toEqual(structuredData)
+    const otherPage = seoHead({ title: 'Other', description: 'Other page', canonical: '/other' })
+    expect(otherPage.scripts).toBeUndefined()
+    expect(otherPage.meta.some(entry => 'name' in entry && entry.name.startsWith('twitter:'))).toBe(false)
+  })
+
   it('excludes layouts, API, resources, dynamic pages and explicit noindex pages', () => {
     expect(discoverSitemapPaths({
       '../routes/index.tsx': page('/'),
@@ -80,6 +95,24 @@ describe('English SEO foundation', () => {
   it('allows published dynamic URLs while filtering resource URLs and duplicates', () => {
     expect(discoverSitemapPaths({ '../routes/index.tsx': page('/') }, ['/stories/gold/', '/stories/gold?ref=feed', '/signin', '/stories/$slug']))
       .toEqual(['/', '/stories/gold'])
+  })
+
+  it('excludes legacy Rumpelstiltskin pages from discovered, published and rendered sitemap URLs', () => {
+    const legacyPaths = [
+      '/rumpelstiltskin-ai-video-generator',
+      '/rumpelstiltskin-dance-video',
+      '/best-rumpelstiltskin-ai-generators',
+      '/rumpelstiltskin-meme',
+      '/how-to-make-rumpelstiltskin-ai-video',
+      '/is-rumpelstiltskin-1987-real',
+    ]
+    const routes = Object.fromEntries(['/', '/rap-video-guide', ...legacyPaths].map(path => [`../routes${path}.tsx`, page(path)]))
+    expect(discoverSitemapPaths(routes, ['/guides/Rumpelstiltskin', '/rap-video-guide']))
+      .toEqual(['/', '/rap-video-guide'])
+    const xml = renderSitemap(['/', ...legacyPaths, '/guides/Rumpelstiltskin'])
+    expect(xml).not.toMatch(/rumpelstiltskin/i)
+    expect(xml.match(/<loc>/g)).toHaveLength(1)
+    expect(xml).toContain(`<loc>${SITE_ORIGIN}/</loc>`)
   })
 
   it('renders escaped sitemap XML and robots that allow every directory', () => {
