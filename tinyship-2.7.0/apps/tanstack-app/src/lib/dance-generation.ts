@@ -6,6 +6,7 @@ import { DEFAULT_DANCE_ORIENTATION, type DanceOrientation } from '../../../../co
 import { readVideoFailureReason, type VideoFailureReason } from '../../../../config/videoFailure'
 import { DANCE_PURCHASE_TIMEOUT_MS } from '../../../../config/danceUi'
 import { normalizeRapLyricsDraft } from '@libs/ai/rap-lyrics-draft'
+import { readRapCreditOrder, type RapCreditOrder } from './rap-credit-client'
 
 const paidPolling = { ...aiVideoConfig.polling, maxTimeoutMs: DANCE_PURCHASE_TIMEOUT_MS }
 export type DanceErrorCode = 'fileType' | 'fileSize' | 'photoRequired' | 'consentRequired' | 'upload' | 'generation' | 'credits' | 'status' | 'timeout' | 'download' | 'invalidResponse' | 'unauthorized' | 'expired' | 'trialUsed' | 'trialProcessing' | 'rateLimited' | 'visitor' | 'checkout' | 'paymentRequired' | 'paymentPending' | 'refundPending' | 'refunded'
@@ -50,7 +51,7 @@ function isHttpUrl(value: unknown): value is string {
   } catch { return false }
 }
 
-function readVideoResult(value: unknown): VideoGenerationResult {
+export function readVideoResult(value: unknown): VideoGenerationResult {
   if (!isRecord(value) || typeof value.videoUrl !== 'string'
     || !(isHttpUrl(value.videoUrl) || /^data:video\/[a-z0-9.+-]+;base64,[a-z0-9+/=\s]+$/i.test(value.videoUrl))
     || !['fal', 'volcengine', 'aliyun', 'autodl', 'compshare'].includes(String(value.provider)) || typeof value.model !== 'string') {
@@ -133,11 +134,15 @@ function readPurchase(value: unknown, expectedId?: string): PublicVideoPurchase 
   }
 }
 
-export async function readDancePurchase(signal?: AbortSignal, transport: typeof fetch = fetch): Promise<{ purchase: PublicVideoPurchase | null; storageKey: string; directTaskId?: string; previewState?: 'available' | 'processing' | 'used' }> {
+export async function readDancePurchase(signal?: AbortSignal, transport: typeof fetch = fetch): Promise<{ purchase: PublicVideoPurchase | null; storageKey: string; directTaskId?: string; complimentaryFullVideo?: boolean; paidCredits: number; paidPaymentsEnabled: boolean; paidOrder?: RapCreditOrder; previewState?: 'available' | 'processing' | 'used' }> {
   const data = await readApiData(await transport('/api/video-generate/', { signal, cache: 'no-store' }), 'visitor')
   if (typeof data.storageKey !== 'string' || !data.storageKey.trim()) throw new DanceGenerationError('invalidResponse')
   if (data.directTaskId !== undefined && data.directTaskId !== null && (typeof data.directTaskId !== 'string' || !/^[\w-]{1,128}$/.test(data.directTaskId))) throw new DanceGenerationError('invalidResponse')
   return { purchase: data.purchase === null ? null : readPurchase(data.purchase), storageKey: data.storageKey,
+    complimentaryFullVideo: data.complimentaryFullVideo === true,
+    paidCredits: typeof data.paidCredits === 'number' && Number.isSafeInteger(data.paidCredits) && data.paidCredits >= 0 ? data.paidCredits : 0,
+    paidPaymentsEnabled: data.paidPaymentsEnabled === true,
+    paidOrder: readRapCreditOrder(data.paidOrder),
     ...(['available', 'processing', 'used'].includes(String(data.previewState)) ? { previewState: data.previewState as 'available' | 'processing' | 'used' } : {}),
     ...(typeof data.directTaskId === 'string' ? { directTaskId: data.directTaskId } : {}),
   }

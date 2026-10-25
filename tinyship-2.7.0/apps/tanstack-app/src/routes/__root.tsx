@@ -12,6 +12,7 @@ import { Toaster } from '@libs/react-shared/ui/sonner'
 import { GlobalHeader } from '@/components/global-header'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteAnalytics } from '@/components/site-analytics'
+import { RapCreditsProvider } from '@/components/rap-credit-provider'
 import '../styles.css'
 
 export const Route = createRootRoute({
@@ -43,12 +44,15 @@ export function useAffiliateEnabled() {
 
 function RootComponent() {
   const { t, locale } = useTranslation()
+  const paymentsEnabled = useLoaderData({ from: '__root__', select: data => data.rapCreditPaymentsEnabled })
   return (
     <RootDocument>
       <SharedAppProvider value={{ t, locale }}>
+        <RapCreditsProvider initialEnabled={paymentsEnabled}>
         <GlobalHeader />
         <Outlet />
         <SiteFooter />
+        </RapCreditsProvider>
       </SharedAppProvider>
     </RootDocument>
   )

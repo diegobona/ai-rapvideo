@@ -4,6 +4,8 @@ import { paidDanceDependencies, paidDanceErrorResponse } from '@/lib/paid-dance-
 import { publicPaidVideoPurchase, refreshPaidVideoPurchase } from '@libs/ai/paid-video';
 import { isManagedVideoExpired } from '../../../../../../config/mediaRetention';
 import { settlePreviewTask } from '@libs/ai/preview-video';
+import { settleRapCreditTask } from '@libs/ai/rap-paid-credits';
+import { scheduleRapCreditRecovery } from '@/lib/rap-credit-recovery';
 
 export const Route = createFileRoute('/api/video-generate/status')({
   server: {
@@ -33,6 +35,10 @@ export const Route = createFileRoute('/api/video-generate/status')({
           const task = await refreshVideoTask(taskId, session.user.id, { resultStorage });
           if (!task) return Response.json({ error: 'not_found' }, { status: 404 });
           await settlePreviewTask(task);
+          if (task.rapCreditOrderId) {
+            await settleRapCreditTask(task);
+            await scheduleRapCreditRecovery(task.rapCreditOrderId);
+          }
           if (isManagedVideoExpired(task.result)) return Response.json({ error: 'video_expired' }, { status: 410, headers: { 'Cache-Control': 'private, no-store' } });
           return Response.json(
             {

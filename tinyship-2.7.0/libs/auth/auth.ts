@@ -127,6 +127,9 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
+    minPasswordLength: 8,
+    maxPasswordLength: 100,
+    revokeSessionsOnPasswordReset: true,
     requireEmailVerification: config.auth.requireEmailVerification,
     sendResetPassword: async ({user, url, token}, request) => {
       // 从 referer 中获取语言信息
@@ -225,8 +228,10 @@ export const auth = betterAuth({
   },
   account: {
     accountLinking: {
-      enabled: true,
-      trustedProviders: ["google", "github", "wechat"]
+      // Email registration currently does not verify mailbox ownership. Never
+      // automatically merge a password account with a Google account by email.
+      // Anonymous-to-account task transfers use a separate plugin hook below.
+      enabled: false,
     }
   },
   plugins: [

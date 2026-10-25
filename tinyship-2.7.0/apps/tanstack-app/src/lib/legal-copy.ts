@@ -20,7 +20,8 @@ export const legalPages = {
         paragraphs: [
           'The service creates an anonymous session with a generated internal identifier to associate uploads and video tasks with your browser. Registration, a name, an email address and a password are not required. Session records can include your IP address and browser information.',
           'Google sign-in is optional. If you use it, Google provides your account identifier, name, email address, verification status and profile image. We store account and session records to recognize your account and associate your previous video tasks. Google OAuth tokens may be stored in the account record. We do not receive your Google password or request access to Gmail or Google Drive.',
-          'When you generate a free preview, the service uploads your selected photos and stores the generation request, task status and a link to the result. Support emails contain the information you choose to send us.',
+          'Email registration is also optional. If you create an account, we store your name, email address and a salted password hash, rather than your password in readable form. We use these records to sign you in and associate your video tasks. Where email delivery is configured, password recovery uses a time-limited reset link sent to your email address.',
+          'When you generate a preview or full video, the service uploads your selected photos and stores the generation request, task status and a link to the result. Credit purchases and refunds store payment references, amounts, currency and their status. Stripe processes payment details; we do not store full card numbers or card security codes. Support emails contain the information you choose to send us.',
         ],
       },
       {
@@ -39,10 +40,10 @@ export const legalPages = {
         ],
       },
       {
-        heading: 'Current free access and historical payment records',
+        heading: 'Payments and video-credit records',
         paragraphs: [
-          'A single 3-second preview is free per public IP address and does not require checkout or payment details. Stripe processed payments for earlier paid orders; we did not receive or store full card numbers or card security codes.',
-          'Records for earlier purchases may include the amount, currency, payment references and refund status, and may be retained for order support. New free generation requests are not sent to Stripe.',
+          'A single 3-second preview is free per public IP address and does not require checkout or payment details. Stripe processes purchases of video credits and refunds. We do not receive or store full card numbers or card security codes.',
+          'Purchase records include your account identifier, amount, currency, payment references, credit status and refund status. These records are used to provide the purchased generation, avoid duplicate charges and support refunds. Free preview requests are not sent to Stripe.',
         ],
       },
       {
@@ -100,15 +101,15 @@ export const legalPages = {
       {
         heading: 'Free access and generation',
         paragraphs: [
-          'Each public IP address can generate one free 3-second portrait preview from four selectable scenes. No payment or account is required. An $8.90 pack for one full 12-second video is planned; checkout is not yet available.',
-          'Only selecting Generate free 3-second preview starts a new request. Refreshing, checking an existing task or downloading does not create another video. The allowance is reserved before submission and consumed after successful generation; clearing cookies or changing browsers does not restore it. Requests with an uncertain submission status remain reserved until resolved.',
+          'Each public IP address can generate one free 3-second portrait preview from four selectable scenes, without an account or payment. Sign in to purchase a $8.90 USD pack containing one video credit. One purchased credit generates one full 12-second portrait rap video. Registration alone does not grant purchased video credits.',
+          'Selecting a generation button starts a new request. Refreshing, checking an existing task or downloading does not create another video or spend another credit. A free preview allowance is reserved before submission and consumed after successful generation; clearing cookies or changing browsers does not restore it. A purchased credit is reserved for one full-video task when generation starts. Requests with an uncertain submission status remain reserved while the service checks the existing task.',
           'Keep access to the same browser session to retrieve your video. Generation may continue after you close the page. Contact support@ai-rapvideo.co with your approximate generation time if you need help finding a task.',
         ],
       },
       {
         heading: 'Generation failures and refunds',
         paragraphs: [
-          'Free previews have no payment to refund. If the provider confirms generation failed, the preview allowance is restored for a retry using your selected photos and settings. Earlier paid orders keep their original failure-refund handling; contact support@ai-rapvideo.co for help with an unresolved historical order.',
+          'Free previews have no payment to refund. If the provider confirms a preview failed, its allowance is restored for a retry. If a full-video generation funded by a purchased credit fails, the service requests a full $8.90 refund to the original payment method and invalidates that credit. Stripe and your bank determine when the refund appears. Earlier paid orders retain their original failure-refund handling. Contact support@ai-rapvideo.co for help with an unresolved purchase or refund.',
           'A temporary network or status-check error is not proof that generation failed; the service continues checking the existing order. A completed video can differ from the reference photos or intended motion. A completed result is not automatically refunded solely for a difference in appearance or movement; contact support if you have a concern. Nothing in these terms limits refund rights required by applicable law.',
         ],
       },

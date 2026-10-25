@@ -13,8 +13,8 @@ export type FixedConsumptionConfig = number | {
 };
 
 export const creditsConfig = {
-  /** One free 10-second dance video for each newly created account. */
-  signupBonus: { enabled: true, amount: 40 },
+  /** Paid rap-video credits have their own ledger; registration grants no credit. */
+  signupBonus: { enabled: false, amount: 40 },
   /**
    * Consumption mode: 'fixed' or 'dynamic'
    * - fixed: Each operation consumes a fixed amount of credits

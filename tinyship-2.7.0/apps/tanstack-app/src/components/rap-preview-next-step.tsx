@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Sparkles } from 'lucide-react'
 import { rapCopy, type RapLocale } from '@/lib/rap-copy'
-import { GoogleSignin } from './google-signin'
+import { RapCreditPurchase } from './rap-credit-purchase'
 
 export function RapPreviewNextStep({ watched, locale }: { watched: boolean; locale: RapLocale }) {
   const copy = rapCopy[locale].previewNextStep
@@ -19,7 +19,6 @@ export function RapPreviewNextStep({ watched, locale }: { watched: boolean; loca
     <h3 id="preview-next-step-title" aria-live="polite" aria-atomic="true"><Sparkles size={17} aria-hidden="true" />{watched ? copy.watched : copy.ready}</h3>
     <p>{copy.description}</p>
     <strong className="rap-preview-pack">{copy.pack}</strong>
-    <GoogleSignin variant="preview" signedInLabel={copy.viewPack} />
-    <p className="rap-preview-availability">{copy.availability}</p>
+    <RapCreditPurchase locale={locale} compact />
   </section>
 }

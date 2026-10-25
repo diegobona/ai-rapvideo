@@ -8,7 +8,7 @@ export const RAP_PHOTO_ACCEPT = '.jpg,.jpeg,.png,.webp'
 export const RAP_PHOTO_MAX_BYTES = 20 * 1024 * 1024
 export const RAP_TOPIC_LIMIT = RAP_VIDEO_MAX_TOPIC_LENGTH
 export const RAP_POLLING = { intervalMs: 5_000, maxTimeoutMs: 30 * 60 * 1_000 }
-export type RapErrorCode = 'fileType' | 'fileSize' | 'photoRequired' | 'consentRequired' | 'topicTooLong' | 'upload' | 'generation' | 'status' | 'timeout' | 'download' | 'invalidResponse' | 'unauthorized' | 'expired' | 'rateLimited' | 'visitor' | 'trialUsed' | 'trialProcessing' | 'previewIp'
+export type RapErrorCode = 'fileType' | 'fileSize' | 'photoRequired' | 'consentRequired' | 'topicTooLong' | 'upload' | 'generation' | 'status' | 'timeout' | 'download' | 'invalidResponse' | 'unauthorized' | 'expired' | 'rateLimited' | 'visitor' | 'trialUsed' | 'trialProcessing' | 'previewIp' | 'credits' | 'paidProcessing' | 'refundPending' | 'refunded' | 'partialRefund' | 'paymentsUnavailable'
 export class RapGenerationError extends Error {
   constructor(readonly code: RapErrorCode, readonly submissionRejected = false) { super(code); this.name = 'RapGenerationError' }
 }
@@ -19,7 +19,7 @@ export function resolveRapRecoveryTask(serverTask: string | null, tabTask: strin
 }
 export function getRapErrorCode(cause: unknown, fallback: RapErrorCode = 'generation'): RapErrorCode {
   if (cause instanceof RapGenerationError) return cause.code
-  if (cause instanceof DanceGenerationError && ['upload', 'generation', 'status', 'timeout', 'download', 'invalidResponse', 'unauthorized', 'expired', 'rateLimited', 'visitor', 'trialUsed', 'trialProcessing'].includes(cause.code)) return cause.code as RapErrorCode
+  if (cause instanceof DanceGenerationError && ['upload', 'generation', 'status', 'timeout', 'download', 'invalidResponse', 'unauthorized', 'expired', 'rateLimited', 'visitor', 'trialUsed', 'trialProcessing', 'credits', 'refundPending', 'refunded'].includes(cause.code)) return cause.code as RapErrorCode
   return fallback
 }
 export function validateRapPhoto(file: File): 'fileType' | 'fileSize' | null {
@@ -33,9 +33,10 @@ function isHttpUrl(value: unknown): value is string {
 async function readData(response: Response, fallback: RapErrorCode): Promise<Record<string, unknown>> {
   if (!response.ok) {
     const failure = await response.json().catch(() => null)
-    const code = failure?.error === 'trial_used' ? 'trialUsed' : failure?.error === 'trial_processing' ? 'trialProcessing' : failure?.error === 'preview_ip_unavailable' ? 'previewIp' : null
+    const paidCodes: Record<string, RapErrorCode> = { rap_credit_required: 'credits', insufficient_credits: 'credits', payment_required: 'credits', video_start_pending: 'paidProcessing', paid_video_processing: 'paidProcessing', generation_in_progress: 'paidProcessing', payment_refunded: 'refundPending', refund_pending: 'refundPending', refunded: 'refunded', payments_unavailable: 'paymentsUnavailable', payments_disabled: 'paymentsUnavailable' }
+    const code = failure?.error === 'trial_used' ? 'trialUsed' : failure?.error === 'trial_processing' ? 'trialProcessing' : failure?.error === 'preview_ip_unavailable' ? 'previewIp' : paidCodes[failure?.error ?? ''] ?? null
     throw new RapGenerationError(code ?? (response.status === 401 || response.status === 403 ? 'unauthorized' : response.status === 429 ? 'rateLimited' : response.status === 404 || response.status === 410 ? 'expired' : fallback),
-      Boolean(code) || (response.status >= 400 && response.status < 500 && ![408, 409].includes(response.status)))
+      code === 'paidProcessing' ? false : Boolean(code) || (response.status >= 400 && response.status < 500 && ![408, 409].includes(response.status)))
   }
   const payload = await response.json().catch(() => null)
   if (!payload || payload.success !== true || !payload.data || typeof payload.data !== 'object' || Array.isArray(payload.data)) throw new RapGenerationError('invalidResponse')
@@ -53,7 +54,7 @@ export async function uploadRapPhoto(file: File, signal: AbortSignal, transport:
   if (!isHttpUrl(data.url)) throw new RapGenerationError('invalidResponse')
   return data.url
 }
-export interface RapGenerationRequest { personOneImageUrl: string; personTwoImageUrl: string; scene: RapVideoSceneId; topic: string; lyrics: RapLyricsDraft; voices: [RapVoiceType, RapVoiceType] }
+export interface RapGenerationRequest { personOneImageUrl: string; personTwoImageUrl: string; scene: RapVideoSceneId; topic: string; lyrics: RapLyricsDraft; voices: [RapVoiceType, RapVoiceType]; generationMode?: 'full' | 'preview'; requestId?: string }
 export async function startRapGeneration(input: RapGenerationRequest, signal: AbortSignal, transport: typeof fetch = fetch): Promise<{ taskId: string; status: 'processing' }> {
   signal.throwIfAborted()
   if (!isHttpUrl(input.personOneImageUrl) || !isHttpUrl(input.personTwoImageUrl) || input.personOneImageUrl === input.personTwoImageUrl) throw new RapGenerationError('photoRequired')
@@ -62,7 +63,7 @@ export async function startRapGeneration(input: RapGenerationRequest, signal: Ab
   const lyrics = normalizeRapLyricsDraft(input.lyrics)
   const data = await readData(await transport('/api/video-generate/', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, signal,
-    body: JSON.stringify({ rapTemplate: RAP_VIDEO_TEMPLATE, personOneImageUrl: input.personOneImageUrl, personTwoImageUrl: input.personTwoImageUrl, scene: input.scene, topic: input.topic.trim(), lyrics, voices: input.voices }),
+    body: JSON.stringify({ rapTemplate: RAP_VIDEO_TEMPLATE, personOneImageUrl: input.personOneImageUrl, personTwoImageUrl: input.personTwoImageUrl, scene: input.scene, topic: input.topic.trim(), lyrics, voices: input.voices, generationMode: input.generationMode === 'full' ? 'full' : 'preview', ...(input.requestId ? { requestId: input.requestId } : {}) }),
   }), 'generation')
   if (typeof data.taskId !== 'string' || !/^[\w-]{1,128}$/.test(data.taskId) || data.status !== 'processing') throw new RapGenerationError('invalidResponse')
   return { taskId: data.taskId, status: 'processing' }

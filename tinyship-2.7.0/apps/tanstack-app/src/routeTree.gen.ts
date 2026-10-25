@@ -30,6 +30,7 @@ import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-p
 import { Route as authCellphoneRouteImport } from './routes/(auth)/cellphone'
 import { Route as ApiVideoGenerateIndexRouteImport } from './routes/api/video-generate/index'
 import { Route as ApiVideoCheckoutIndexRouteImport } from './routes/api/video-checkout/index'
+import { Route as ApiRapCreditsIndexRouteImport } from './routes/api/rap-credits/index'
 import { Route as ApiBlogIndexRouteImport } from './routes/api/blog/index'
 import { Route as ApiWithdrawalRequestRouteImport } from './routes/api/withdrawal/request'
 import { Route as ApiWithdrawalHistoryRouteImport } from './routes/api/withdrawal/history'
@@ -41,6 +42,9 @@ import { Route as ApiVideoCheckoutVerifyRouteImport } from './routes/api/video-c
 import { Route as ApiUsersIdRouteImport } from './routes/api/users/$id'
 import { Route as ApiSubscriptionStatusRouteImport } from './routes/api/subscription/status'
 import { Route as ApiSubscriptionPortalRouteImport } from './routes/api/subscription/portal'
+import { Route as ApiRapCreditsWebhookRouteImport } from './routes/api/rap-credits/webhook'
+import { Route as ApiRapCreditsVerifyRouteImport } from './routes/api/rap-credits/verify'
+import { Route as ApiRapCreditsCheckoutRouteImport } from './routes/api/rap-credits/checkout'
 import { Route as ApiPricingPlansRouteImport } from './routes/api/pricing/plans'
 import { Route as ApiPaymentQueryRouteImport } from './routes/api/payment/query'
 import { Route as ApiPaymentInitiateRouteImport } from './routes/api/payment/initiate'
@@ -185,6 +189,11 @@ const ApiVideoCheckoutIndexRoute = ApiVideoCheckoutIndexRouteImport.update({
   path: '/api/video-checkout/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRapCreditsIndexRoute = ApiRapCreditsIndexRouteImport.update({
+  id: '/api/rap-credits/',
+  path: '/api/rap-credits/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiBlogIndexRoute = ApiBlogIndexRouteImport.update({
   id: '/api/blog/',
   path: '/api/blog/',
@@ -239,6 +248,21 @@ const ApiSubscriptionStatusRoute = ApiSubscriptionStatusRouteImport.update({
 const ApiSubscriptionPortalRoute = ApiSubscriptionPortalRouteImport.update({
   id: '/api/subscription/portal',
   path: '/api/subscription/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRapCreditsWebhookRoute = ApiRapCreditsWebhookRouteImport.update({
+  id: '/api/rap-credits/webhook',
+  path: '/api/rap-credits/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRapCreditsVerifyRoute = ApiRapCreditsVerifyRouteImport.update({
+  id: '/api/rap-credits/verify',
+  path: '/api/rap-credits/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRapCreditsCheckoutRoute = ApiRapCreditsCheckoutRouteImport.update({
+  id: '/api/rap-credits/checkout',
+  path: '/api/rap-credits/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPricingPlansRoute = ApiPricingPlansRouteImport.update({
@@ -478,6 +502,9 @@ export interface FileRoutesByFullPath {
   '/api/payment/initiate': typeof ApiPaymentInitiateRoute
   '/api/payment/query': typeof ApiPaymentQueryRoute
   '/api/pricing/plans': typeof ApiPricingPlansRoute
+  '/api/rap-credits/checkout': typeof ApiRapCreditsCheckoutRoute
+  '/api/rap-credits/verify': typeof ApiRapCreditsVerifyRoute
+  '/api/rap-credits/webhook': typeof ApiRapCreditsWebhookRoute
   '/api/subscription/portal': typeof ApiSubscriptionPortalRoute
   '/api/subscription/status': typeof ApiSubscriptionStatusRoute
   '/api/users/$id': typeof ApiUsersIdRoute
@@ -489,6 +516,7 @@ export interface FileRoutesByFullPath {
   '/api/withdrawal/history': typeof ApiWithdrawalHistoryRoute
   '/api/withdrawal/request': typeof ApiWithdrawalRequestRoute
   '/api/blog/': typeof ApiBlogIndexRoute
+  '/api/rap-credits/': typeof ApiRapCreditsIndexRoute
   '/api/video-checkout/': typeof ApiVideoCheckoutIndexRoute
   '/api/video-generate/': typeof ApiVideoGenerateIndexRoute
   '/api/admin/blog/$id': typeof ApiAdminBlogIdRoute
@@ -550,6 +578,9 @@ export interface FileRoutesByTo {
   '/api/payment/initiate': typeof ApiPaymentInitiateRoute
   '/api/payment/query': typeof ApiPaymentQueryRoute
   '/api/pricing/plans': typeof ApiPricingPlansRoute
+  '/api/rap-credits/checkout': typeof ApiRapCreditsCheckoutRoute
+  '/api/rap-credits/verify': typeof ApiRapCreditsVerifyRoute
+  '/api/rap-credits/webhook': typeof ApiRapCreditsWebhookRoute
   '/api/subscription/portal': typeof ApiSubscriptionPortalRoute
   '/api/subscription/status': typeof ApiSubscriptionStatusRoute
   '/api/users/$id': typeof ApiUsersIdRoute
@@ -561,6 +592,7 @@ export interface FileRoutesByTo {
   '/api/withdrawal/history': typeof ApiWithdrawalHistoryRoute
   '/api/withdrawal/request': typeof ApiWithdrawalRequestRoute
   '/api/blog': typeof ApiBlogIndexRoute
+  '/api/rap-credits': typeof ApiRapCreditsIndexRoute
   '/api/video-checkout': typeof ApiVideoCheckoutIndexRoute
   '/api/video-generate': typeof ApiVideoGenerateIndexRoute
   '/api/admin/blog/$id': typeof ApiAdminBlogIdRoute
@@ -624,6 +656,9 @@ export interface FileRoutesById {
   '/api/payment/initiate': typeof ApiPaymentInitiateRoute
   '/api/payment/query': typeof ApiPaymentQueryRoute
   '/api/pricing/plans': typeof ApiPricingPlansRoute
+  '/api/rap-credits/checkout': typeof ApiRapCreditsCheckoutRoute
+  '/api/rap-credits/verify': typeof ApiRapCreditsVerifyRoute
+  '/api/rap-credits/webhook': typeof ApiRapCreditsWebhookRoute
   '/api/subscription/portal': typeof ApiSubscriptionPortalRoute
   '/api/subscription/status': typeof ApiSubscriptionStatusRoute
   '/api/users/$id': typeof ApiUsersIdRoute
@@ -635,6 +670,7 @@ export interface FileRoutesById {
   '/api/withdrawal/history': typeof ApiWithdrawalHistoryRoute
   '/api/withdrawal/request': typeof ApiWithdrawalRequestRoute
   '/api/blog/': typeof ApiBlogIndexRoute
+  '/api/rap-credits/': typeof ApiRapCreditsIndexRoute
   '/api/video-checkout/': typeof ApiVideoCheckoutIndexRoute
   '/api/video-generate/': typeof ApiVideoGenerateIndexRoute
   '/api/admin/blog/$id': typeof ApiAdminBlogIdRoute
@@ -698,6 +734,9 @@ export interface FileRouteTypes {
     | '/api/payment/initiate'
     | '/api/payment/query'
     | '/api/pricing/plans'
+    | '/api/rap-credits/checkout'
+    | '/api/rap-credits/verify'
+    | '/api/rap-credits/webhook'
     | '/api/subscription/portal'
     | '/api/subscription/status'
     | '/api/users/$id'
@@ -709,6 +748,7 @@ export interface FileRouteTypes {
     | '/api/withdrawal/history'
     | '/api/withdrawal/request'
     | '/api/blog/'
+    | '/api/rap-credits/'
     | '/api/video-checkout/'
     | '/api/video-generate/'
     | '/api/admin/blog/$id'
@@ -770,6 +810,9 @@ export interface FileRouteTypes {
     | '/api/payment/initiate'
     | '/api/payment/query'
     | '/api/pricing/plans'
+    | '/api/rap-credits/checkout'
+    | '/api/rap-credits/verify'
+    | '/api/rap-credits/webhook'
     | '/api/subscription/portal'
     | '/api/subscription/status'
     | '/api/users/$id'
@@ -781,6 +824,7 @@ export interface FileRouteTypes {
     | '/api/withdrawal/history'
     | '/api/withdrawal/request'
     | '/api/blog'
+    | '/api/rap-credits'
     | '/api/video-checkout'
     | '/api/video-generate'
     | '/api/admin/blog/$id'
@@ -843,6 +887,9 @@ export interface FileRouteTypes {
     | '/api/payment/initiate'
     | '/api/payment/query'
     | '/api/pricing/plans'
+    | '/api/rap-credits/checkout'
+    | '/api/rap-credits/verify'
+    | '/api/rap-credits/webhook'
     | '/api/subscription/portal'
     | '/api/subscription/status'
     | '/api/users/$id'
@@ -854,6 +901,7 @@ export interface FileRouteTypes {
     | '/api/withdrawal/history'
     | '/api/withdrawal/request'
     | '/api/blog/'
+    | '/api/rap-credits/'
     | '/api/video-checkout/'
     | '/api/video-generate/'
     | '/api/admin/blog/$id'
@@ -911,6 +959,9 @@ export interface RootRouteChildren {
   ApiPaymentInitiateRoute: typeof ApiPaymentInitiateRoute
   ApiPaymentQueryRoute: typeof ApiPaymentQueryRoute
   ApiPricingPlansRoute: typeof ApiPricingPlansRoute
+  ApiRapCreditsCheckoutRoute: typeof ApiRapCreditsCheckoutRoute
+  ApiRapCreditsVerifyRoute: typeof ApiRapCreditsVerifyRoute
+  ApiRapCreditsWebhookRoute: typeof ApiRapCreditsWebhookRoute
   ApiSubscriptionPortalRoute: typeof ApiSubscriptionPortalRoute
   ApiSubscriptionStatusRoute: typeof ApiSubscriptionStatusRoute
   ApiUsersIdRoute: typeof ApiUsersIdRoute
@@ -922,6 +973,7 @@ export interface RootRouteChildren {
   ApiWithdrawalHistoryRoute: typeof ApiWithdrawalHistoryRoute
   ApiWithdrawalRequestRoute: typeof ApiWithdrawalRequestRoute
   ApiBlogIndexRoute: typeof ApiBlogIndexRoute
+  ApiRapCreditsIndexRoute: typeof ApiRapCreditsIndexRoute
   ApiVideoCheckoutIndexRoute: typeof ApiVideoCheckoutIndexRoute
   ApiVideoGenerateIndexRoute: typeof ApiVideoGenerateIndexRoute
   ApiAdminBlogIdRoute: typeof ApiAdminBlogIdRoute
@@ -1100,6 +1152,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVideoCheckoutIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/rap-credits/': {
+      id: '/api/rap-credits/'
+      path: '/api/rap-credits'
+      fullPath: '/api/rap-credits/'
+      preLoaderRoute: typeof ApiRapCreditsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/blog/': {
       id: '/api/blog/'
       path: '/api/blog'
@@ -1175,6 +1234,27 @@ declare module '@tanstack/react-router' {
       path: '/api/subscription/portal'
       fullPath: '/api/subscription/portal'
       preLoaderRoute: typeof ApiSubscriptionPortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/rap-credits/webhook': {
+      id: '/api/rap-credits/webhook'
+      path: '/api/rap-credits/webhook'
+      fullPath: '/api/rap-credits/webhook'
+      preLoaderRoute: typeof ApiRapCreditsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/rap-credits/verify': {
+      id: '/api/rap-credits/verify'
+      path: '/api/rap-credits/verify'
+      fullPath: '/api/rap-credits/verify'
+      preLoaderRoute: typeof ApiRapCreditsVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/rap-credits/checkout': {
+      id: '/api/rap-credits/checkout'
+      path: '/api/rap-credits/checkout'
+      fullPath: '/api/rap-credits/checkout'
+      preLoaderRoute: typeof ApiRapCreditsCheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/pricing/plans': {
@@ -1503,6 +1583,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPaymentInitiateRoute: ApiPaymentInitiateRoute,
   ApiPaymentQueryRoute: ApiPaymentQueryRoute,
   ApiPricingPlansRoute: ApiPricingPlansRoute,
+  ApiRapCreditsCheckoutRoute: ApiRapCreditsCheckoutRoute,
+  ApiRapCreditsVerifyRoute: ApiRapCreditsVerifyRoute,
+  ApiRapCreditsWebhookRoute: ApiRapCreditsWebhookRoute,
   ApiSubscriptionPortalRoute: ApiSubscriptionPortalRoute,
   ApiSubscriptionStatusRoute: ApiSubscriptionStatusRoute,
   ApiUsersIdRoute: ApiUsersIdRoute,
@@ -1514,6 +1597,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWithdrawalHistoryRoute: ApiWithdrawalHistoryRoute,
   ApiWithdrawalRequestRoute: ApiWithdrawalRequestRoute,
   ApiBlogIndexRoute: ApiBlogIndexRoute,
+  ApiRapCreditsIndexRoute: ApiRapCreditsIndexRoute,
   ApiVideoCheckoutIndexRoute: ApiVideoCheckoutIndexRoute,
   ApiVideoGenerateIndexRoute: ApiVideoGenerateIndexRoute,
   ApiAdminBlogIdRoute: ApiAdminBlogIdRoute,

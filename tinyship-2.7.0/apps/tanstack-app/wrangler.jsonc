@@ -8,9 +8,9 @@
 	],
 	"main": "src/worker.ts",
 	"durable_objects": {
-		"bindings": [{ "name": "PAID_VIDEO_RECOVERY", "class_name": "PaidVideoRecovery" }]
+		"bindings": [{ "name": "PAID_VIDEO_RECOVERY", "class_name": "PaidVideoRecovery" }, { "name": "RAP_CREDIT_RECOVERY", "class_name": "RapCreditRecovery" }]
 	},
-	"migrations": [{ "tag": "paid-video-recovery-v1", "new_sqlite_classes": ["PaidVideoRecovery"] }],
+	"migrations": [{ "tag": "paid-video-recovery-v1", "new_sqlite_classes": ["PaidVideoRecovery"] }, { "tag": "rap-credit-recovery-v1", "new_sqlite_classes": ["RapCreditRecovery"] }],
 	"observability": {
 		"enabled": true,
 		"traces": { "enabled": true }

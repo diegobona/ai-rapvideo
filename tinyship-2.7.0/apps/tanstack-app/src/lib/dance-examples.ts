@@ -5,6 +5,13 @@ export const danceExamples = {
   unavailable: 'This preview is temporarily unavailable. Try opening the video directly.',
   items: [
     {
+      title: 'Love · Orange studio',
+      video: '/videos/examples/rap-portrait-love-v1.mp4',
+      poster: '/images/examples/rap-portrait-love-v1.jpg',
+      width: 768,
+      height: 1376,
+    },
+    {
       title: 'Coworkers · Street cypher',
       video: '/videos/examples/rap-portrait-cowork.mp4',
       poster: '/images/examples/rap-portrait-cowork.jpg',
@@ -36,13 +43,6 @@ export const danceExamples = {
       title: 'Couple · Night rooftop',
       video: '/videos/examples/rap-portrait-couple.mp4',
       poster: '/images/examples/rap-portrait-couple.jpg',
-      width: 720,
-      height: 1280,
-    },
-    {
-      title: 'Friends · Orange studio',
-      video: '/videos/examples/rap-portrait-friends.mp4',
-      poster: '/images/examples/rap-portrait-friends.jpg',
       width: 720,
       height: 1280,
     },

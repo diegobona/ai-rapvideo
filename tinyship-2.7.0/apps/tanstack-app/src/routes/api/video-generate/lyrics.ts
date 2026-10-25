@@ -4,6 +4,9 @@ import { limitTrialIp, sameOriginMutation, trialErrorResponse, previewIpKey, vid
 import { assertPreviewAvailable, previewKeys } from '@libs/ai/preview-video';
 import { generateRapLyricsDraft, normalizeRapLyricsRequest, RapLyricsDraftError } from '@libs/ai/deepseek-rap-lyrics';
 import { VideoTrialError, takeTrialRateSlot } from '@libs/ai/video-trial';
+import { hasComplimentaryRapAccess } from '@libs/ai/rap-access';
+import { availableRapCredits } from '@libs/payment/rap-credit-orders';
+import { rapCreditPaymentsEnabled } from '../../../../../../config/rapCredits';
 
 const MAX_REQUEST_BYTES = 2_048;
 const headers = { 'Cache-Control': 'private, no-store' };
@@ -36,7 +39,9 @@ export const Route = createFileRoute('/api/video-generate/lyrics')({
           const session = await auth.api.getSession({ headers: request.headers });
           if (!session?.user.id) return Response.json({ error: 'unauthorized' }, { status: 401, headers });
           const visitor = await videoVisitor(request);
-          await assertPreviewAvailable(previewKeys(await previewIpKey(request), session.user.id, visitor.id));
+          const hasPaidCredit = session.user.isAnonymous === false && rapCreditPaymentsEnabled() && await availableRapCredits(session.user.id) > 0;
+          if (!hasComplimentaryRapAccess(session.user) && !hasPaidCredit)
+            await assertPreviewAvailable(previewKeys(await previewIpKey(request), session.user.id, visitor.id));
           const input = normalizeRapLyricsRequest(await readRequest(request));
           // Durable per-owner limits cover local/preview requests too; edge IP
           // limits additionally constrain repeated anonymous session creation.

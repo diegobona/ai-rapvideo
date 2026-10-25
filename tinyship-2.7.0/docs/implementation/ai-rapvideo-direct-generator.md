@@ -616,3 +616,22 @@ video-generation task was run, following the owner's standing instruction.
 - The offer remains $8.90 for one credit / one full 12-second generation. Checkout is still display-only, so the card explicitly says it is coming soon and does not claim a purchase or full generation can start today.
 - Preview downloads, quota rules, generation parameters, and payment activation are unchanged. Interactive sign-in, playback, and generation verification remain manual at the user's request.
 
+# Optional email accounts (2026-10-25)
+
+- The header and preview completion card now offer email sign-in. An accessible Radix dialog switches between sign-in and registration and also includes the existing Google option. No new page or sitemap entry is added.
+- Registration uses name (2–50 characters), email and an 8–100 character password. Existing policy remains: registration automatically signs in without requiring a verification email. Better Auth salts and hashes passwords; raw passwords are not stored or logged by application code.
+- The auth adapter explicitly allows only the email sign-in/sign-up fields. Other account/admin endpoints stay unavailable; same-origin mutation checks and the durable per-IP session rate limit apply before credential hashing.
+- The anonymous plugin transfers previous video tasks and preview allowance. A successful email sign-in reconciles the maker in place, keeping selected photos and avoiding a page reload. Signing in or registering does not grant another network preview.
+- Automatic email-based linking between password accounts and Google accounts is disabled while email registration does not verify mailbox ownership. Existing linked Google accounts and anonymous-to-account transfers continue through their existing paths.
+- Password recovery is displayed only with a configured email sender/provider. Its API is similarly gated; the callback lands on the homepage and the bearer token is removed from the address bar and kept in memory. Password resets revoke existing sessions. Optional Resend settings are documented in `.dev.vars.example`.
+- Interactive registration/login and email delivery are left for the user's manual verification. No real accounts, recovery emails, or video generation requests are created for testing.
+
+# Account-specific complimentary full videos (2026-10-25)
+
+- `1127512642@qq.com` is the only complimentary full-video account. The server policy checks its existing immutable user ID, matching email and non-anonymous session together; the browser cannot submit an entitlement or override duration.
+- The generation and automatic-lyrics adapters use this policy. The allowed account bypasses the one-time preview allowance and payment, with the full 12-second prompt/duration. All other unpaid sessions keep the server-enforced 3-second preview and network allowance.
+- Full tasks reuse the existing repeatable temporary-task store, including atomic in-flight reservation, owner-scoped status/download and managed output retention. Existing request-rate limits remain active. No credit balance is minted or deducted.
+- The maker reads the server entitlement for labels and admission, offers another full generation after completion, and hides the purchase invitation for this account. Refresh recovers full tasks before older previews.
+- Registration/login clears cached upload URLs while keeping selected photo files, so future submissions upload into the new account's owned storage path.
+- The production account lookup was read-only. Actual video generation remains for the user to verify manually.
+

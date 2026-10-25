@@ -12,6 +12,7 @@ export interface VideoTaskRecord {
   id: string;
   userId: string;
   purchaseId?: string;
+  rapCreditOrderId?: string;
   provider: AsyncVideoProviderName;
   model: string;
   providerTaskId: string;
@@ -43,6 +44,7 @@ function toRecord(row: typeof videoTask.$inferSelect): VideoTaskRecord {
     errorMessage: row.errorMessage ?? undefined,
     consumeTransactionId: row.consumeTransactionId ?? undefined,
     purchaseId: row.purchaseId ?? undefined,
+    rapCreditOrderId: row.rapCreditOrderId ?? undefined,
     createdAt: row.createdAt.getTime(),
     updatedAt: row.updatedAt.getTime(),
   };
@@ -81,6 +83,11 @@ export async function getVideoTaskRecord(taskId: string, userId: string): Promis
 
 export async function getVideoTaskByPurchase(purchaseId: string, userId: string): Promise<VideoTaskRecord | undefined> {
   const [row] = await db.select().from(videoTask).where(and(eq(videoTask.purchaseId,purchaseId),eq(videoTask.userId,userId))).limit(1);
+  return row ? toRecord(row) : undefined;
+}
+
+export async function getVideoTaskByRapCreditOrder(orderId: string, userId: string): Promise<VideoTaskRecord | undefined> {
+  const [row] = await db.select().from(videoTask).where(and(eq(videoTask.rapCreditOrderId, orderId), eq(videoTask.userId, userId))).limit(1);
   return row ? toRecord(row) : undefined;
 }
 

@@ -1,6 +1,6 @@
 import { homeCopy } from './home-copy'
 import { SITE_ORIGIN } from './site'
-import { VIDEO_PAYMENT_REQUIRED, videoPurchaseConfig } from '../../../../config/videoPurchase'
+import { rapCreditConfig } from '../../../../config/rapCredits'
 
 /** Use the same FAQ strings as the visible, server-rendered homepage. */
 export function homeStructuredData() {
@@ -13,11 +13,10 @@ export function homeStructuredData() {
         applicationCategory: 'MultimediaApplication',
         operatingSystem: 'Web',
         url: `${SITE_ORIGIN}/`,
-        offers: {
-          '@type': 'Offer',
-          price: VIDEO_PAYMENT_REQUIRED ? videoPurchaseConfig.amount / 100 : 0,
-          priceCurrency: videoPurchaseConfig.currency.toUpperCase(),
-        },
+        offers: [
+          { '@type': 'Offer', name: '3-second preview', price: 0, priceCurrency: 'USD' },
+          { '@type': 'Offer', name: '1 video credit — one full 12-second video', price: rapCreditConfig.amount / 100, priceCurrency: rapCreditConfig.currency.toUpperCase(), url: `${SITE_ORIGIN}/#pricing` },
+        ],
       },
       {
         '@type': 'FAQPage',

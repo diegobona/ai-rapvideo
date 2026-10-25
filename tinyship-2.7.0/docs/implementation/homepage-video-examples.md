@@ -1,4 +1,14 @@
-# Homepage video examples — 2026-10-20
+# Homepage video examples
+
+## Current gallery — 2026-10-25
+
+The homepage displays six owner-supplied portrait clips in this order: Love · Orange studio, Coworkers · Street cypher, Besties · Recording studio, Birthday party, Grandpas · Luxury lobby, and Couple · Night rooftop.
+
+The first example replaces Friends · Orange studio with the owner-supplied `SSSfjj0B-eYIa9aEBD1GG.mp4` (768 × 1376, 12.25 seconds). It is served locally at `/videos/examples/rap-portrait-love-v1.mp4`, with a matching frame extracted at 1 second as `/images/examples/rap-portrait-love-v1.jpg`. The MP4 is remuxed for fast-start playback with the original video and audio streams retained. The gallery title and accessible video label both use “Love · Orange studio”.
+
+The following section records the original template gallery and is historical.
+
+## Original gallery — 2026-10-20
 
 The homepage shows three externally hosted creative-reference cards directly below the video-examples heading. Following the user's annotated screenshot, the gallery introduction, featured maker-sample card, inspiration subheading and explanatory paragraph were removed. The cards keep their AI-reference labels and captions, without added author names or source-credit text; there are no endorsements or claims that these clips were generated here.
 

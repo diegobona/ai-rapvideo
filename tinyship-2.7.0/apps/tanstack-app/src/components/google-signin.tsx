@@ -6,9 +6,10 @@ import { useAuthCapabilities } from '@/hooks/use-auth-capabilities'
 import { authCopy } from '@/lib/auth-copy'
 import { SITE_ORIGIN } from '@/lib/site'
 
-export function GoogleSignin({ variant = 'header', signedInLabel = authCopy.google.viewPack }: {
-  variant?: 'header' | 'preview'
+export function GoogleSignin({ variant = 'header', signedInLabel = authCopy.google.viewPack, returnTo }: {
+  variant?: 'header' | 'preview' | 'dialog'
   signedInLabel?: string
+  returnTo?: '#rap-maker' | '#preview-next-step'
 }) {
   const { socialProviders } = useAuthCapabilities()
   const { data: session, isPending } = authClientReact.useSession()
@@ -17,14 +18,14 @@ export function GoogleSignin({ variant = 'header', signedInLabel = authCopy.goog
   const enabled = socialProviders.includes('google')
   const user = session?.user && !session.user.isAnonymous ? session.user : null
 
-  async function signIn(returnTo: '#rap-maker' | '#preview-next-step' = variant === 'preview' ? '#preview-next-step' : '#rap-maker') {
+  async function signIn(destination: '#rap-maker' | '#preview-next-step' = returnTo ?? (variant === 'preview' ? '#preview-next-step' : '#rap-maker')) {
     if (started.current) return
     if (!enabled) { toast.error(authCopy.google.unavailable); return }
     const local = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)
     if (!local && window.location.origin !== SITE_ORIGIN) {
       // OAuth state and callback cookies must use the same host, including when
       // a visitor starts on www or the Workers preview address.
-      window.location.assign(`${SITE_ORIGIN}/?signin=google${returnTo === '#preview-next-step' ? '&continue=preview' : ''}`)
+      window.location.assign(`${SITE_ORIGIN}/?signin=google${destination === '#preview-next-step' ? '&continue=preview' : ''}`)
       return
     }
     started.current = true
@@ -32,9 +33,9 @@ export function GoogleSignin({ variant = 'header', signedInLabel = authCopy.goog
     try {
       const { data, error } = await authClientReact.signIn.social({
         provider: 'google', disableRedirect: true,
-        callbackURL: `${window.location.origin}/${returnTo}`,
-        newUserCallbackURL: `${window.location.origin}/${returnTo}`,
-        errorCallbackURL: `${window.location.origin}/?authError=google${returnTo}`,
+        callbackURL: `${window.location.origin}/${destination}`,
+        newUserCallbackURL: `${window.location.origin}/${destination}`,
+        errorCallbackURL: `${window.location.origin}/?authError=google${destination}`,
       })
       if (error || !data?.url) throw new Error('google_signin_failed')
       const target = new URL(data.url)

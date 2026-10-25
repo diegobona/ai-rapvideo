@@ -1,5 +1,6 @@
 import { siteCopy } from '@/lib/site-copy'
 import { GoogleSignin } from './google-signin'
+import { EmailAuthDialog } from './email-auth-dialog'
 
 export function GlobalHeader() {
   return (
@@ -10,6 +11,7 @@ export function GlobalHeader() {
           <a href="/#how-to-make">{siteCopy.navigation.howItWorks}</a>
           <a href="/#pricing">{siteCopy.navigation.pricing}</a>
           <GoogleSignin />
+          <EmailAuthDialog />
         </div>
       </nav>
     </header>

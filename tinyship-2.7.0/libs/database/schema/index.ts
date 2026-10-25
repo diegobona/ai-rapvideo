@@ -11,3 +11,4 @@ export * from './pricing-plan';
 export * from './video-task';
 export * from './video-trial';
 export * from './video-purchase';
+export * from './rap-credit-order';

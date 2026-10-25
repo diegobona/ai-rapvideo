@@ -1,0 +1,18 @@
+.rap-credit-actions { display:flex;flex-direction:column;gap:10px;min-width:0;margin-top:16px;color:#c1aecf;font-size:12px;line-height:1.6; }
+.rap-credit-actions p { margin:0; }
+.rap-credit-actions.is-compact { margin-top:0; }
+.rap-credit-balance strong { color:#e8d9f9;font-variant-numeric:tabular-nums; }
+.rap-credit-auth { display:flex;flex-wrap:wrap;gap:9px; }
+.rap-credit-auth>* { flex:1;min-width:160px; }
+.rap-credit-buy,.rap-credit-use { display:flex;align-items:center;justify-content:center;gap:8px;min-height:43px;padding:10px 14px;border:1px solid #c5a4f5;border-radius:9px;background:#cfb0ff;color:#21122e;font:inherit;font-size:13px;font-weight:650;text-decoration:none;cursor:pointer; }
+.rap-credit-buy:hover:not(:disabled),.rap-credit-use:hover { background:#ddc6ff; }
+.rap-credit-buy:disabled { opacity:.55;cursor:wait; }
+.rap-credit-actions .rap-credit-use { border-color:#725194;background:#38234b;color:#f0dfff; }
+.rap-credit-check { align-self:flex-start;padding:0;border:0;background:transparent;color:#d5b5ff;font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer; }
+.rap-credit-check:disabled { opacity:.55;cursor:wait; }
+.rap-credit-actions .rap-credit-muted { color:#ad96be;font-size:11px; }
+.rap-credit-actions .rap-credit-error { color:#f5b2c1; }
+.rap-credit-actions .rap-credit-notice { color:#d9c5ea; }
+.rap-credit-actions button:focus-visible,.rap-credit-actions a:focus-visible { outline:2px solid #e9d9ff;outline-offset:3px; }
+#rap-maker.rap-duo-maker .rap-credit-actions { padding:13px;border:1px solid #72519455;border-radius:10px;background:#25183366; }
+#rap-maker.rap-duo-maker .rap-preview-next-step .rap-credit-actions { padding:0;border:0;background:none; }

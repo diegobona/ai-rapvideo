@@ -22,14 +22,13 @@ export const getPublicFeatureFlags = createServerFn({ method: 'GET' }).handler(a
   if (all('NEXT_PUBLIC_WECHAT_APP_ID', 'WECHAT_APP_SECRET')) socialProviders.push('wechat')
   // The existing Better Auth phone plugin sends through Aliyun.
   if (all('ALIYUN_ACCESS_KEY_ID', 'ALIYUN_ACCESS_KEY_SECRET', 'ALIYUN_SMS_SIGN_NAME', 'ALIYUN_SMS_TEMPLATE_CODE')) socialProviders.push('phone')
-  const emailProvider: string = config.email.defaultProvider
-  const passwordResetEnabled = configured('EMAIL_DEFAULT_FROM') && (
-    emailProvider === 'resend' ? configured('RESEND_API_KEY') :
-      emailProvider === 'cloudflare' && all('CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_API_TOKEN')
-  )
+  const { authEmailAvailable } = await import('@libs/auth/email-availability')
+  const passwordResetEnabled = authEmailAvailable()
+  const { rapCreditPaymentsEnabled } = await import('../../../../config/rapCredits')
 
   return {
     affiliateEnabled: config.affiliate.enabled,
+    rapCreditPaymentsEnabled: rapCreditPaymentsEnabled(),
     auth: {
       socialProviders,
       passwordResetEnabled,

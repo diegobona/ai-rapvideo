@@ -15,6 +15,11 @@ GOOGLE_CLIENT_SECRET=
 DB_DIALECT=d1
 BETTER_AUTH_SECRET=replace-with-a-random-32-char-min-secret
 
+# Optional: enables the email password-recovery flow when both are configured.
+# Register and sign in with email/password work without these.
+RESEND_API_KEY=
+EMAIL_DEFAULT_FROM=AI Rap Video <support@ai-rapvideo.co>
+
 # D1 and R2 use the native bindings in wrangler.jsonc; no DATABASE_URL is needed.
 # A built Wrangler preview with --local-upstream localhost rewrites Origin to
 # http://localhost: use that origin for both auth URLs in that preview only.
@@ -23,6 +28,10 @@ BETTER_AUTH_SECRET=replace-with-a-random-32-char-min-secret
 # STRIPE_SECRET_KEY=
 # STRIPE_VIDEO_PRICE_ID=
 # STRIPE_VIDEO_WEBHOOK_SECRET=
+# Dedicated $8.90 video-credit pack; old video-price settings remain for history.
+# RAP_CREDIT_PAYMENTS_ENABLED=true
+# STRIPE_RAP_CREDIT_PRICE_ID=
+# STRIPE_RAP_CREDIT_WEBHOOK_SECRET=
 # OPENAI_API_KEY=
 
 # AI Rap Video: paste a token from the AutoDL ComfyUI group (server-only secret).

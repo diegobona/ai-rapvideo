@@ -1,5 +1,6 @@
 import { homeCopy } from '@/lib/home-copy'
 import { VideoExamples } from './video-examples'
+import { RapPricingCard } from './rap-credit-purchase'
 
 type RelatedTool = {
   category: string
@@ -36,14 +37,7 @@ export function HomeContent({ relatedTools = homeCopy.related.items }: HomeConte
 
       <section className="home-section section-pricing" aria-labelledby="pricing">
         <h2 id="pricing">{homeCopy.pricing.heading}</h2>
-        <div className="pricing-card">
-          <span className="pricing-availability">{homeCopy.pricing.availability}</span>
-          <div className="pricing-offer">
-            <strong className="pricing-price">{homeCopy.pricing.price}</strong>
-            <div><h3>{homeCopy.pricing.pack}</h3><p>{homeCopy.pricing.detail}</p></div>
-          </div>
-          <p className="pricing-note">{homeCopy.pricing.note}</p>
-        </div>
+        <RapPricingCard />
       </section>
 
       <section className="home-section section-editorial" aria-labelledby="what-is-rap-video">

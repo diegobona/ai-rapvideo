@@ -3,9 +3,9 @@ import { ArrowRightLeft, Check, CheckCircle2, Download, ImagePlus, LoaderCircle,
 import type { VideoGenerationResult } from '@libs/ai/types'
 import { normalizeRapLyricsDraft } from '@libs/ai/rap-lyrics-draft'
 import type { RapLyricsDraft } from '@libs/ai/rap-lyrics-types'
-import { RAP_LYRICS_UI_ENABLED, RAP_PREVIEW_DURATION, RAP_VIDEO_SCENES, type RapVideoSceneId } from '../../../../config/rapVideo'
+import { RAP_LYRICS_UI_ENABLED, RAP_PREVIEW_DURATION, RAP_VIDEO_DURATION, RAP_VIDEO_SCENES, type RapVideoSceneId } from '../../../../config/rapVideo'
 import { RAP_LYRICS_MAX_LINE_LENGTH } from '../../../../config/rapLyrics'
-import type { RapVoiceType } from '../../../../config/rapVoices'
+import { normalizeRapVoices, type RapVoiceType } from '../../../../config/rapVoices'
 import { DanceGenerationError, ensureDanceSession, pollDanceTask, readDancePurchase } from '../lib/dance-generation'
 import { forgetDanceTask, readDanceTask, rememberDanceTask } from '../lib/dance-task-session'
 import { downloadRapVideo, getRapErrorCode, RAP_PHOTO_ACCEPT, RAP_POLLING, RAP_TOPIC_LIMIT, RapGenerationError, resolveRapRecoveryTask, startRapGeneration, uploadRapPhoto, validateRapPhoto, type RapErrorCode } from '../lib/rap-generation'
@@ -14,6 +14,9 @@ import { rapLyricsFromText, requestRapLyrics } from '../lib/rap-lyrics-client'
 import { RapLyrics } from './rap-lyrics'
 import { RapVoicePicker } from './rap-voice-picker'
 import { RapPreviewNextStep } from './rap-preview-next-step'
+import { useRapCredits } from './rap-credit-provider'
+import { RapCreditPurchase } from './rap-credit-purchase'
+import { rapCreditCopy } from '../lib/rap-credit-copy'
 import './rap-maker.css'
 
 interface DanceMakerProps {
@@ -25,6 +28,7 @@ interface DanceMakerProps {
 }
 type Phase = 'idle' | 'preparing' | 'uploading' | 'queued' | 'processing' | 'succeeded' | 'failed' | 'recovering'
 type Photo = { file: File; url?: string }
+const DRAFT_STORAGE_KEY = 'ai-rapvideo-maker-draft-v1'
 
 function PhotoInput({ index, id, photo, voice, otherVoice, disabled, copy, onChange, onVoiceChange }: {
   index: number; id: string; photo: Photo | null; disabled: boolean
@@ -66,6 +70,8 @@ function PhotoInput({ index, id, photo, voice, otherVoice, disabled, copy, onCha
 /** Mount and status retries only read an existing task; only form submission creates one. */
 export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }: DanceMakerProps) {
   const copy = rapCopy[locale]
+  const creditCopy = rapCreditCopy[locale]
+  const billing = useRapCredits()
   const id = useId()
   const mounted = useRef(false)
   const operation = useRef<AbortController | null>(null)
@@ -76,10 +82,14 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
   const activeTask = useRef<string | null>(null)
   const previousTask = useRef<string | null>(null)
   const needsRecovery = useRef(true)
+  const fullRequestId = useRef<string | null>(null)
+  const submittedMode = useRef<'full' | 'preview' | null>(null)
+  const recoveredPaidTask = useRef<string | null>(null)
   const [photos, setPhotos] = useState<[Photo | null, Photo | null]>([null, null])
   const [voices, setVoices] = useState<[RapVoiceType, RapVoiceType]>(['male-young', 'female-young'])
   const [scene, setScene] = useState<RapVideoSceneId>('hotel-lobby')
   const [topic, setTopic] = useState('')
+  const [draftRestored, setDraftRestored] = useState(false)
   const [lyrics, setLyrics] = useState<RapLyricsDraft>({ language: 'en', lines: ['', '', '', ''] })
   const [lyricsText, setLyricsText] = useState('')
   const [lyricsTopic, setLyricsTopic] = useState<string | null>(null)
@@ -96,6 +106,9 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
   const [downloadError, setDownloadError] = useState(false)
   const [longWait, setLongWait] = useState(false)
   const [previewState, setPreviewState] = useState<'available' | 'processing' | 'used'>('available')
+  const [complimentaryFullVideo, setComplimentaryFullVideo] = useState(false)
+  const fullVideo = complimentaryFullVideo || billing.credits > 0
+  const paidOrderBusy = ['starting', 'processing'].includes(billing.order?.state ?? '')
   const working = ['preparing', 'uploading', 'queued', 'processing', 'recovering'].includes(phase)
   const currentPlayback = playback?.url === result?.videoUrl ? playback : null
   const resultDuration = currentPlayback?.duration ?? result?.duration
@@ -126,6 +139,8 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
     setPreviewState(current => current === 'processing' ? 'used' : current)
     setPhase('succeeded')
     setError(null)
+    fullRequestId.current = null
+    window.dispatchEvent(new Event('rap-credits-changed'))
   }
   function fail(cause: unknown, fallback: RapErrorCode) {
     const code = getRapErrorCode(cause, fallback)
@@ -135,6 +150,7 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
     if (cause instanceof DanceGenerationError && cause.terminal) { forgetTask(); needsRecovery.current = false }
     setError(code)
     setPhase('failed')
+    window.dispatchEvent(new Event('rap-credits-changed'))
   }
   async function recover(controller: AbortController) {
     setError(null)
@@ -151,12 +167,26 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
       if (controller.signal.aborted) return
       storageKey.current = owned.storageKey
       setPreviewState(owned.previewState ?? 'available')
+      setComplimentaryFullVideo(owned.complimentaryFullVideo === true)
       needsRecovery.current = false
       setRestoring(false)
       let tabTask: string | null = null
       try { tabTask = readDanceTask(window.sessionStorage, owned.storageKey) } catch { /* Optional tab recovery. */ }
-      const task = resolveRapRecoveryTask(owned.directTaskId ?? owned.purchase?.taskId ?? null, tabTask, previousTask.current)
-      if (owned.purchase?.state === 'succeeded' && owned.purchase.result && !owned.directTaskId) {
+      const paidTask = owned.paidOrder?.taskId
+      const activePaidTask = ['starting', 'processing'].includes(owned.paidOrder?.state ?? '') ? paidTask : undefined
+      const task = resolveRapRecoveryTask(activePaidTask ?? owned.directTaskId ?? paidTask ?? owned.purchase?.taskId ?? null, tabTask, previousTask.current)
+      if (paidTask) { submittedMode.current = 'full'; recoveredPaidTask.current = paidTask }
+      if (owned.paidOrder?.state === 'succeeded' && owned.paidOrder.result && (!owned.directTaskId || owned.directTaskId === paidTask)) {
+        setResult(owned.paidOrder.result)
+        setPhase('succeeded')
+      } else if (owned.paidOrder?.state === 'refund_pending' || owned.paidOrder?.state === 'refunded') {
+        forgetTask(); fullRequestId.current = null
+        setError(owned.paidOrder.refundStatus === 'partially_refunded' ? 'partialRefund' : owned.paidOrder.state === 'refunded' ? 'refunded' : 'refundPending')
+        setPhase('failed')
+      } else if (owned.paidOrder?.state === 'starting' && !paidTask) {
+        needsRecovery.current = true
+        setError('paidProcessing'); setPhase('failed')
+      } else if (owned.purchase?.state === 'succeeded' && owned.purchase.result && !owned.directTaskId) {
         setResult(owned.purchase.result)
         setPhase('succeeded')
       } else if (task) await followTask(task, controller)
@@ -171,12 +201,49 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
   }
 
   useEffect(() => {
+    // Keep non-file choices when returning from sign-in or Stripe. Uploaded
+    // photo URLs and local files are deliberately excluded from this cache.
+    try {
+      const saved = JSON.parse(window.sessionStorage.getItem(DRAFT_STORAGE_KEY) ?? 'null')
+      if (saved && typeof saved === 'object') {
+        if (RAP_VIDEO_SCENES.some(item => item.id === saved.scene)) setScene(saved.scene)
+        if (typeof saved.topic === 'string') setTopic(saved.topic.slice(0, RAP_TOPIC_LIMIT))
+        if (saved.voices !== undefined) setVoices(normalizeRapVoices(saved.voices))
+      }
+    } catch { /* Optional tab storage never controls account ownership. */ }
+    setDraftRestored(true)
+  }, [])
+  useEffect(() => {
+    if (!draftRestored) return
+    try { window.sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({ scene, topic, voices })) } catch { /* Browsers may disable storage. */ }
+  }, [draftRestored, scene, topic, voices])
+  useEffect(() => {
     mounted.current = true
     const controller = new AbortController()
     operation.current = controller
     void recover(controller).finally(() => { if (operation.current === controller) operation.current = null })
-    return () => { mounted.current = false; operation.current?.abort(); controller.abort(); downloadOperation.current?.abort(); lyricsOperation.current?.abort() }
+    const reconcileAccount = () => {
+      setPhotos(current => current.map(photo => photo ? { file: photo.file } : null) as typeof photos)
+      if (operation.current) return
+      const recovery = new AbortController()
+      operation.current = recovery
+      void recover(recovery).finally(() => { if (operation.current === recovery) operation.current = null })
+    }
+    window.addEventListener('rap-account-changed', reconcileAccount)
+    return () => { window.removeEventListener('rap-account-changed', reconcileAccount); mounted.current = false; operation.current?.abort(); controller.abort(); downloadOperation.current?.abort(); lyricsOperation.current?.abort() }
   }, [])
+  useEffect(() => {
+    const taskId = billing.order?.taskId
+    if (!taskId || taskId === recoveredPaidTask.current || !['starting', 'processing'].includes(billing.order?.state ?? '') || operation.current) return
+    recoveredPaidTask.current = taskId
+    submittedMode.current = 'full'
+    const controller = new AbortController()
+    operation.current = controller
+    void followTask(taskId, controller).catch(cause => { if (!controller.signal.aborted) fail(cause, 'status') }).finally(() => { if (operation.current === controller) operation.current = null })
+  }, [billing.order?.taskId, billing.order?.state])
+  useEffect(() => {
+    if (phase === 'failed' && billing.order?.state === 'refunded' && billing.order.refundStatus === 'partially_refunded' && ['refunded', 'refundPending', 'generation'].includes(error ?? '')) setError('partialRefund')
+  }, [phase, error, billing.order?.state, billing.order?.refundStatus])
   useEffect(() => {
     setLongWait(false)
     if (!working) return
@@ -235,6 +302,12 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
     if (RAP_LYRICS_UI_ENABLED && !submittedLyrics) return
     if (!photos[0] || !photos[1]) { setError('photoRequired'); return }
     if (!consent) { setError('consentRequired'); return }
+    // The full-video button is an explicit credit-spending action. A preview
+    // request always stays a preview even if the balance changes mid-submit.
+    const generationMode = fullVideo ? 'full' : 'preview'
+    if (generationMode === 'full' && !complimentaryFullVideo && paidOrderBusy) { setError('paidProcessing'); return }
+    submittedMode.current = generationMode
+    fullRequestId.current = generationMode === 'full' ? crypto.randomUUID() : null
     previousTask.current = activeTask.current ?? previousTask.current
     forgetTask()
     const controller = new AbortController()
@@ -250,8 +323,10 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
       await ensureDanceSession(controller.signal)
       const admission = await readDancePurchase(controller.signal)
       setPreviewState(admission.previewState ?? 'available')
-      if (admission.previewState === 'used') throw new RapGenerationError('trialUsed', true)
-      if (admission.previewState === 'processing') throw new RapGenerationError('trialProcessing', true)
+      setComplimentaryFullVideo(admission.complimentaryFullVideo === true)
+      if (generationMode === 'full' && !admission.complimentaryFullVideo && admission.paidCredits < 1) throw new RapGenerationError('credits', true)
+      if (generationMode === 'preview' && !admission.complimentaryFullVideo && admission.previewState === 'used') throw new RapGenerationError('trialUsed', true)
+      if (generationMode === 'preview' && !admission.complimentaryFullVideo && admission.previewState === 'processing') throw new RapGenerationError('trialProcessing', true)
       if (!RAP_LYRICS_UI_ENABLED) {
         stage = 'generation'
         submittedLyrics = await requestRapLyrics(topic, 'en', controller.signal)
@@ -272,11 +347,13 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
       // A lost response is ambiguous: status recovery must precede another POST.
       submitted = true
       needsRecovery.current = true
-      const task = await startRapGeneration({ personOneImageUrl: urls[0], personTwoImageUrl: urls[1], scene, topic, lyrics: submittedLyrics, voices }, controller.signal)
+      const task = await startRapGeneration({ personOneImageUrl: urls[0], personTwoImageUrl: urls[1], scene, topic, lyrics: submittedLyrics, voices, generationMode, ...(fullRequestId.current ? { requestId: fullRequestId.current } : {}) }, controller.signal)
       clearTimeout(timer)
       if (controller.signal.aborted) return
       needsRecovery.current = false
-      setPreviewState('processing')
+      if (generationMode === 'preview' && !admission.complimentaryFullVideo) setPreviewState('processing')
+      if (generationMode === 'full') recoveredPaidTask.current = task.taskId
+      window.dispatchEvent(new Event('rap-credits-changed'))
       await followTask(task.taskId, controller)
     } catch (cause) {
       if (mounted.current) {
@@ -357,17 +434,18 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
       </fieldset>}
       {RAP_LYRICS_UI_ENABLED && lyricsError && <p className="rap-duo-error" role="alert">{copy.lyrics.error}</p>}
       <footer className="rap-duo-actions">
-        <div className="rap-duo-specs"><span>{copy.duration}</span><span>{copy.resolution}</span><span><Music2 size={12} aria-hidden="true" />{copy.audio}</span></div>
-        <p className="rap-duo-hint">{copy.previewLimit}</p>
+        <div className="rap-duo-specs"><span>{fullVideo || working && submittedMode.current === 'full' ? creditCopy.fullDuration : copy.duration}</span><span>{copy.resolution}</span><span><Music2 size={12} aria-hidden="true" />{copy.audio}</span></div>
+        <p className="rap-duo-hint">{complimentaryFullVideo ? copy.complimentary.hint : fullVideo ? creditCopy.creditHint : copy.previewLimit}</p>
         <label className="rap-duo-consent"><input type="checkbox" checked={consent} onChange={event => setConsent(event.target.checked)} disabled={working} /><span>{copy.consent}</span></label>
         {error && <p className="rap-duo-error" role="alert">{copy.errors[error]}</p>}
         {!isAvailable && <p className="rap-duo-error" role="status">{copy.unavailable}</p>}
         {RAP_LYRICS_UI_ENABLED && !validLyrics && !canCheckStatus && <p className="rap-duo-hint">{copy.lyrics.invalid}</p>}
-        {previewState !== 'available' && !working && !canCheckStatus && <p className="rap-duo-hint" role="status">{previewState === 'used' ? copy.errors.trialUsed : copy.errors.trialProcessing}</p>}
-        <button className="rap-duo-generate" type="submit" disabled={working || writingLyrics || restoring || !isAvailable || (!canCheckStatus && previewState !== 'available') || (RAP_LYRICS_UI_ENABLED && !canCheckStatus && !validLyrics)}>
+        {!fullVideo && previewState !== 'available' && !working && !canCheckStatus && <p className="rap-duo-hint" role="status">{previewState === 'used' ? copy.errors.trialUsed : copy.errors.trialProcessing}</p>}
+        <button className="rap-duo-generate" type="submit" disabled={working || writingLyrics || restoring || !isAvailable || (!canCheckStatus && (paidOrderBusy || !fullVideo && previewState !== 'available')) || (RAP_LYRICS_UI_ENABLED && !canCheckStatus && !validLyrics)}>
           {working || restoring ? <LoaderCircle className="rap-duo-spin" size={18} aria-hidden="true" /> : <Sparkles size={18} aria-hidden="true" />}
-          {restoring ? copy.status.recovering : working ? copy.status[phase] : canCheckStatus ? copy.checkStatus : phase === 'failed' ? copy.retry : result ? copy.generateAgain : copy.generate}
+          {restoring ? copy.status.recovering : working ? copy.status[phase] : canCheckStatus ? copy.checkStatus : complimentaryFullVideo ? phase === 'failed' ? copy.complimentary.retry : result ? copy.complimentary.again : copy.complimentary.generate : fullVideo ? creditCopy.useCredit : phase === 'failed' ? copy.retry : result ? copy.generateAgain : copy.generate}
         </button>
+        {!complimentaryFullVideo && <RapCreditPurchase locale={locale} compact />}
         <p className="rap-duo-privacy"><ShieldCheck size={13} aria-hidden="true" />{copy.privacy}</p>
       </footer>
     </form>
@@ -382,14 +460,14 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
           <div className="rap-duo-bars" aria-hidden="true">{[14, 25, 38, 22, 44, 30, 19, 34, 16].map((height, index) => <i key={index} style={{ height }} />)}</div>
         </div>}
       </div>
-      {isPreviewResult && <RapPreviewNextStep key={result!.videoUrl} watched={currentPlayback?.watched ?? false} locale={locale} />}
+      {isPreviewResult && !complimentaryFullVideo && <RapPreviewNextStep key={result!.videoUrl} watched={currentPlayback?.watched ?? false} locale={locale} />}
       {RAP_LYRICS_UI_ENABLED && result && <RapLyrics draft={result.rapLyrics} videoRef={video} videoUrl={result.videoUrl} locale={locale} />}
       {phase !== 'idle' && !restoring && !isPreviewResult && <p className={'rap-duo-status' + (result ? ' is-ready' : '')} role="status" aria-live="polite">{result && <CheckCircle2 size={15} aria-hidden="true" />}{copy.status[phase]}</p>}
       {longWait && working && !result && <p className="rap-duo-hint" role="status" aria-live="polite" data-testid="rap-long-wait">{copy.longWait}</p>}
       {result && <div className="rap-duo-download"><button type="button" onClick={() => { void download() }} disabled={downloading}>
         {downloading ? <LoaderCircle className="rap-duo-spin" size={17} aria-hidden="true" /> : <Download size={17} aria-hidden="true" />}{downloading ? copy.downloading : downloadError ? copy.retryDownload : copy.download}
       </button><p>{copy.downloadHint}</p>{downloadError && <p className="rap-duo-error" role="alert">{copy.errors.download}</p>}</div>}
-      <span className="rap-duo-output-format">{!result && `${RAP_PREVIEW_DURATION}s · `}9:16 · MP4</span>
+      <span className="rap-duo-output-format">{!result && `${fullVideo || working && submittedMode.current === 'full' ? RAP_VIDEO_DURATION : RAP_PREVIEW_DURATION}s · `}9:16 · MP4</span>
     </aside>
   </section>
 }

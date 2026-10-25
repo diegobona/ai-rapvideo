@@ -39,11 +39,11 @@ export const homeCopy = {
   },
   pricing: {
     heading: 'Pricing',
-    availability: 'Planned credit pack',
+    availability: 'One-time payment',
     price: '$8.90',
     pack: '1 credit',
     detail: 'Generate one full 12-second AI rap video',
-    note: 'Checkout is not available yet. Try one free 3-second preview per public IP address.',
+    note: 'One credit generates one full 12-second video. Generation failures receive a full refund to the original payment method.',
   },
   editorial: {
     whatIs: {
@@ -75,12 +75,12 @@ export const homeCopy = {
       },
       {
         question: 'How much does it cost, and is there a subscription?',
-        answer: 'Each public IP address gets one free 3-second preview, with no account required. Switching browsers or clearing cookies does not reset the allowance. Devices on a shared network share it. An $8.90 credit pack for one full 12-second video is planned; checkout is not available yet.',
+        answer: 'Each public IP address gets one free 3-second preview without an account. Switching browsers or clearing cookies does not reset it, and shared networks share the allowance. For full videos, sign in and buy a $8.90 USD pack containing one video credit. One credit generates one complete 12-second rap video. There is no subscription.',
         source: null,
       },
       {
         question: 'What happens if generation fails?',
-        answer: 'If the provider confirms that generation failed, your free preview allowance is restored. A pending request or an uncertain network response keeps the allowance reserved while its status is checked. Free previews have no payment to refund.',
+        answer: 'If the provider confirms that a free preview failed, its allowance is restored. If a full video funded by a purchased credit fails, the full $8.90 is refunded to the original payment method and that credit is invalidated. Pending or uncertain requests remain reserved while their status is checked; refreshing does not spend another credit.',
         source: null,
       },
       {
@@ -90,7 +90,7 @@ export const homeCopy = {
       },
       {
         question: 'What format will my video use?',
-        answer: 'The free preview is generated as a 3-second portrait MP4 with rap vocals and a beat. Choose from four stages. Download within 24 hours. Full 12-second videos belong to the planned paid pack.',
+        answer: 'Videos are portrait MP4 files with rap vocals and a beat, using one of four stages. The free preview is 3 seconds; a purchased video credit generates the complete 12-second performance. Download your finished video within 24 hours.',
         source: null,
       },
       {
