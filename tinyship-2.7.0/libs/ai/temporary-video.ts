@@ -72,7 +72,7 @@ export async function createTemporaryVideo(options: VideoGenerationOptions, user
   }
   try {
     const submitted = await createVideoTask(options);
-    const task = await createVideoTaskRecord({ userId, provider: submitted.provider, model: submitted.model, providerTaskId: submitted.providerTaskId, creditCost: 0, ...(options.rapLyrics ? { rapLyrics: options.rapLyrics } : {}) });
+    const task = await createVideoTaskRecord({ userId, provider: submitted.provider, model: submitted.model, providerTaskId: submitted.providerTaskId, creditCost: 0, ...(options.rapLyrics ? { rapLyrics: options.rapLyrics } : {}), ...(options.rapReferencePlan ? { rapReferencePlan: options.rapReferencePlan } : {}) });
     await db.update(videoTrial).set({ taskId: task.id, updatedAt: new Date() })
       .where(and(eq(videoTrial.reservationId, reservationId), eq(videoTrial.state, 'reserved')));
     return task;

@@ -1,9 +1,13 @@
-export type RapLyricsLanguage = 'en' | 'zh';
+import type { RapEndingAction } from '../../config/rapEndings';
 
-/** Four editable lines: the first two belong to person 1, the last two to person 2. */
+export type RapLyricsLanguage = 'en' | 'zh' | 'auto';
+
+/** Four editable lines: person 1 leads twice, person 2 responds, then both close together. */
 export interface RapLyricsDraft {
   language: RapLyricsLanguage;
   lines: [string, string, string, string];
+  /** Absent on legacy drafts, whose fourth line remains person 2's solo. */
+  endingAction?: RapEndingAction;
 }
 
 /** Planned line intervals in video playback seconds; not ASR word timings. */
@@ -11,5 +15,5 @@ export interface RapLyricCue {
   start: number;
   end: number;
   text: string;
-  performer: 1 | 2;
+  performer: 1 | 2 | 'both';
 }

@@ -9,7 +9,7 @@
 #rap-maker.rap-duo-maker legend { display:flex;align-items:center;gap:9px;margin:0 0 8px;padding:0;font-size:14px;font-weight:650;line-height:1.5;color:#f6efff; }
 #rap-maker.rap-duo-maker .rap-duo-number { display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:#8b5cf627;color:#c6a5ff;font-size:10px;font-weight:750;letter-spacing:.04em; }
 #rap-maker.rap-duo-maker .rap-duo-hint { margin:0 0 13px;color:#a69bb5;font-size:11px;line-height:1.65; }
-#rap-maker.rap-duo-maker .rap-duo-photos { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; }
+#rap-maker.rap-duo-maker .rap-duo-photos { position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; }
 #rap-maker.rap-duo-maker .rap-duo-photo-label { display:flex;justify-content:space-between;gap:5px;margin-bottom:7px;color:#e4dcec;font-size:11px;font-weight:550; }
 #rap-maker.rap-duo-maker .rap-duo-photo-label span { color:#8e819e;font-size:9px;font-weight:400; }
 #rap-maker.rap-duo-maker .rap-duo-voice { display:grid;gap:6px;margin-top:9px;color:#ae9bbf;font-size:10px; }
@@ -69,7 +69,7 @@
 #rap-maker.rap-duo-maker .rap-duo-write-lyrics { display:flex;align-items:center;justify-content:center;gap:7px;width:100%;min-height:39px;margin-bottom:11px;padding:8px 12px;border:1px solid #785199;border-radius:8px;background:#30203f;color:#eedfff;font:inherit;font-size:12px;font-weight:600;cursor:pointer; }
 #rap-maker.rap-duo-maker .rap-duo-lyrics-text { display:grid;gap:8px;margin-top:13px; }
 #rap-maker.rap-duo-maker .rap-duo-lyrics-text>label { color:#ae9bbf;font-size:11px; }
-#rap-maker.rap-duo-maker .rap-duo-lyrics-text textarea { min-height:150px;line-height:1.9; }
+#rap-maker.rap-duo-maker .rap-duo-lyrics-text textarea { min-height:0;height:calc(3.8em + 26px);line-height:1.9;resize:none;overflow-y:auto; }
 #rap-maker.rap-duo-maker .rap-duo-lyrics-playback { padding:14px;border:1px solid #62417f60;border-radius:11px;background:#191023; }
 #rap-maker.rap-duo-maker .rap-duo-lyrics-title { margin:0 0 5px;color:#e5d6f4;font-size:12px;font-weight:650; }
 #rap-maker.rap-duo-maker .rap-duo-lyrics-note { margin:0;color:#a493b5;font-size:10px;line-height:1.65; }
@@ -92,3 +92,9 @@
 @media(max-width:760px) { #rap-maker.rap-duo-maker { grid-template-columns:minmax(0,1fr); } #rap-maker.rap-duo-maker .rap-duo-output { border-left:0;border-top:1px solid #bba0ff13; } #rap-maker.rap-duo-maker .rap-duo-screen { width:100%;max-width:310px;align-self:center; } }
 @media(max-width:420px) { #rap-maker.rap-duo-maker .rap-duo-heading { padding:20px 17px; } #rap-maker.rap-duo-maker .rap-duo-form { padding:22px 17px; } #rap-maker.rap-duo-maker .rap-duo-output { padding:23px 17px; } #rap-maker.rap-duo-maker .rap-duo-drop { min-height:154px; } #rap-maker.rap-duo-maker .rap-duo-heading p { font-size:17px; } }
 @media(prefers-reduced-motion:reduce) { .rap-duo-spin { animation:none; } }
+
+#rap-maker.rap-duo-maker .rap-duo-swap { position:absolute;z-index:2;top:24px;left:50%;transform:translateX(-50%);display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:#171020;color:#c6a5ef;cursor:pointer; }
+#rap-maker.rap-duo-maker .rap-duo-swap:hover:not(:disabled) { color:#fff;background:#30203f; }
+#rap-maker.rap-duo-maker .rap-duo-swap:focus-visible { outline:2px solid #c6a5ef;outline-offset:2px; }
+#rap-maker.rap-duo-maker .rap-duo-swap:disabled { opacity:.4;cursor:default; }
+

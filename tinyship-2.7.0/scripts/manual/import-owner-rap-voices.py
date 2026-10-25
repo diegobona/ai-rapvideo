@@ -21,10 +21,15 @@ def main():
         subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-i', str(source),
                         '-map', '0:a:0', '-vn', '-ac', '1', '-ar', '24000', '-c:a', 'libmp3lame',
                         '-b:a', '128k', str(target)], check=True)
+        voice['durationSeconds'] = float(subprocess.check_output([
+            'ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+            '-of', 'default=nw=1:nk=1', str(target)], text=True).strip())
         records.append({'id': voice['id'], 'sourceFile': voice['source'],
                         'sourceSha256': hashlib.sha256(source.read_bytes()).hexdigest(),
                         'outputFile': target.name, 'outputSha256': hashlib.sha256(target.read_bytes()).hexdigest()})
         print(voice['id'] + ': imported', flush=True)
+    (ROOT / 'config/rapVoiceSources.json').write_text(
+        json.dumps(catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     (output / 'NOTICE.json').write_text(json.dumps({
         'source': 'Five audio files supplied by the site owner in this chat',
         'labels': 'Gender and age groups follow the owner-provided filenames; not independently inferred.',

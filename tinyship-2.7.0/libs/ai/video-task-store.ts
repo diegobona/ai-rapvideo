@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import { and, eq, sql } from 'drizzle-orm';
 import { db, getDialect, runNativeD1Batch, sqliteInstance } from '@libs/database';
 import { videoTask, creditTransaction, user } from '@libs/database/schema';
-import type { AsyncVideoProviderName, VideoGenerationResult } from './types';
+import type { AsyncVideoProviderName, VideoGenerationResult, RapReferencePlan } from './types';
 import type { RapLyricsDraft } from './rap-lyrics-types';
 import { normalizeRapLyricsDraft } from './rap-lyrics-draft';
 
@@ -21,6 +21,7 @@ export interface VideoTaskRecord {
   result?: VideoGenerationResult;
   /** Frozen script is available while processing, before a video result exists. */
   rapLyrics?: RapLyricsDraft;
+  rapReferencePlan?: RapReferencePlan;
   errorMessage?: string;
   refunded: boolean;
   createdAt: number;
@@ -38,6 +39,7 @@ function toRecord(row: typeof videoTask.$inferSelect): VideoTaskRecord {
     status: row.status as LocalVideoTaskStatus,
     result: saved && typeof saved.videoUrl === 'string' ? saved as VideoGenerationResult : undefined,
     ...(rapLyrics ? { rapLyrics } : {}),
+    ...(saved?.rapReferencePlan ? { rapReferencePlan: saved.rapReferencePlan } : {}),
     errorMessage: row.errorMessage ?? undefined,
     consumeTransactionId: row.consumeTransactionId ?? undefined,
     purchaseId: row.purchaseId ?? undefined,
@@ -49,7 +51,7 @@ function toRecord(row: typeof videoTask.$inferSelect): VideoTaskRecord {
 export async function createVideoTaskRecord(
   input: Omit<VideoTaskRecord, 'id' | 'status' | 'refunded' | 'createdAt' | 'updatedAt'>,
 ): Promise<VideoTaskRecord> {
-  const { rapLyrics: suppliedLyrics, ...record } = input;
+  const { rapLyrics: suppliedLyrics, rapReferencePlan, ...record } = input;
   const rapLyrics = suppliedLyrics === undefined ? undefined : normalizeRapLyricsDraft(suppliedLyrics);
   if (!Number.isSafeInteger(input.creditCost) || input.creditCost < 0) throw new Error('Invalid video credit cost');
   if (input.creditCost > 0) {
@@ -62,7 +64,7 @@ export async function createVideoTaskRecord(
     }
   }
   const [row] = await db.insert(videoTask).values({
-    ...record, ...(rapLyrics ? { result: { ...record.result, rapLyrics } } : {}),
+    ...record, ...((rapLyrics || rapReferencePlan) ? { result: { ...record.result, ...(rapLyrics ? { rapLyrics } : {}), ...(rapReferencePlan ? { rapReferencePlan } : {}) } } : {}),
     id: nanoid(), status: 'processing', refunded: false,
     createdAt: new Date(), updatedAt: new Date(),
   }).returning();
@@ -87,7 +89,7 @@ export async function markVideoTaskSucceeded(taskId: string, userId: string, res
   if (!current || current.status !== 'processing') return current;
   // The submitted script wins over provider metadata and survives managed R2
   // result replacement. Old tasks without a script retain their prior behavior.
-  const savedResult = current.rapLyrics ? { ...result, rapLyrics: current.rapLyrics } : result;
+  const savedResult = { ...result, ...(current.rapLyrics ? { rapLyrics: current.rapLyrics } : {}), ...(current.rapReferencePlan ? { rapReferencePlan: current.rapReferencePlan } : {}) };
   await db.update(videoTask).set({ status: 'succeeded', result: savedResult, errorMessage: null, updatedAt: new Date() })
     .where(and(eq(videoTask.id, taskId), eq(videoTask.userId, userId), eq(videoTask.status, 'processing')));
   return getVideoTaskRecord(taskId, userId);

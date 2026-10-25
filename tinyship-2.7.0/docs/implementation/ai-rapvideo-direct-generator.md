@@ -331,3 +331,145 @@ Exact poses and frame-level reproduction are not guaranteed. Type checking and
 the production build passed. No automated test suite or new paid video-generation
 task was run; actual motion quality is left for the owner's manual evaluation.
 
+### Stronger instrumental mix direction (2026-10-25)
+
+The owner reported that generated background music was too quiet. The prompt
+previously placed lead vocals clearly in front without specifying a sustained
+instrumental level. The summary and music section now request a music-forward
+mix with drums and bass nearly as prominent as the vocal, which stays only
+slightly above the beat for intelligibility. Every lyric line should retain
+audible kick, snare, hi-hats and bass; the beat should not duck when vocals enter.
+The soundscape section clarifies that quiet ambience and silent handoffs apply
+to room noise and voices, never to the instrumental.
+
+This changes generation instructions, not a numeric mixer control. The current
+adapter sends reference audio to H3 and does not separately mix the output
+stems. Actual output balance still requires the owner's manual listening check;
+no new video-generation task or automated test suite is run for this change.
+
+Read-only FFmpeg measurements found the existing BGM at -18.00 LUFS / -4.15
+dBTP, compared with -28.84 LUFS / -8.64 dBTP for `male-young` and -32.97 LUFS /
+-11.40 dBTP for `female-young`. The BGM reference is already louder than those
+voice-reference files, so its gain and asset URL were left unchanged. Reference
+file levels do not establish or control the generated output's music/vocal ratio.
+
+### Topic-selected shared ending (2026-10-25)
+
+The owner approved a joint final line and theme-specific closing gesture, with
+the explicit constraint that the successful earlier choreography stay unchanged.
+The 0.0–8.5-second motion paragraphs are retained verbatim. The existing fourth
+line at 8.5–11.0 seconds is now performed by `(S1,S2)` in rhythmic unison, retaining
+each selected voice; 11.0–12.0 seconds completes the preset's recovery and smile.
+The 12-second duration, four-line editor, first three cue times, reference assets,
+96 BPM and stronger instrumental direction are retained. No fifth line is added.
+
+The existing DeepSeek lyric request also selects one bounded `endingAction`:
+`celebrate`, `friendship`, `team`, `affection`, `victory`, `playful` or `groove`.
+Only the explicit user topic informs that selection; arbitrary topics, missing
+or invalid IDs use `groove`. The model never supplies executable choreography.
+`config/rapEndings.ts` owns each gesture's preparation, final-word accent and
+recovery. Scene-specific space constraints adapt that same gesture without
+changing the earlier movements or adding props. There is no extra model call.
+
+The optional action travels with approved lyrics and survives paragraph editing.
+New submissions always save an action, including the neutral fallback for older
+drafts. Historical saved tasks without the field retain their original solo
+fourth-line playback labels. New fourth-line cues identify both performers.
+Changing the topic after drafting preserves the words, uses the neutral ending
+and prompts the user to regenerate lyrics to refresh the theme-selected action.
+
+No generated video or automated test suite is used for acceptance: the owner
+will manually evaluate voices, unison and gesture synchrony in the next output.
+Prompt timing is an instruction, not a guarantee of measured audiovisual timing.
+
+Type checking and the Cloudflare production build passed. Published Worker
+version: `b675356b-4244-40ef-95aa-a3868f8514ab`. The source diff confirms the
+0.0–8.5-second choreography paragraphs were retained verbatim. No test video
+or live DeepSeek request was submitted for this release.
+
+### Explicit speaker binding at every vocal event (2026-10-25)
+
+For task `bkWYU8IYi587lx8aACy86`, the saved approved lyrics assign the first two
+lines to Person 1, the third to Person 2 and the fourth to Both, with the
+`celebrate` ending. These labels describe the submitted plan, not detected voices
+in the finished video. Frame inspection also shows a late visible handoff and
+continued mouth movement by the first performer during the second solo; it does
+not establish the audible timbres. The owner reports hearing the male voice
+throughout. Free-task storage and the provider result endpoint do not retain or
+return the original selected voice inputs, so those exact historical inputs
+cannot be retrospectively confirmed from the available task record.
+
+The prompt previously defined speaker IDs at the start but used bare S1/S2
+names at the solo vocal events. H3's full-reference guide section 5.4 requires
+the visual subject and corresponding speaker ID at each vocal event. The audio
+definitions and each solo now explicitly bind `<Subject 1> (S1)` to `<audio 0>`
+and `<Subject 2> (S2)` to `<audio 1>`. The third line explicitly stops the first
+voice. The shared final utterance carries `(S1,S2)` and requests two separately
+identifiable reference-bound voices rather than doubling the first voice.
+Source: https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/VIDEO_PROMPT_WRITING_GUIDE_ref_en.md#54-speakers-audio-sources-and-dialogue
+
+The adapter's zero-based audio labels, existing reference assets, BGM, lyrics,
+timings, early choreography and accepted closing gesture are unchanged. This
+corrects a documented prompt-format deficiency; it does not prove that formatting
+was the sole cause or guarantee the model will follow the voice assignment.
+Type checking and the production build passed. No automated test suite, lyric
+generation or new video-generation task was run. The owner will evaluate the
+next generated video's actual voice handoff and joint final line manually.
+
+Published Worker version: `16dc5b86-e06b-4628-9567-443088007255`.
+
+
+### Compact lyrics editor and performer order (2026-10-25)
+
+Removed the language selector: lyric generation always requests English. Edited
+text uses an auto language mode that instructs H3 to preserve the literal lyric
+language (including mixed languages), rather than translating it to English.
+Existing generated line boundaries remain intact until the paragraph is edited.
+The textarea displays two lines with scrolling for wrapped content. A Swap people
+button exchanges both photos and their selected voices; a caption explains that
+Person 1 sings first, Person 2 follows and both perform the final phrase.
+Type checking passed. No automated tests or paid generation requests were run.
+
+### Audio reference duration budget (2026-10-25)
+
+The owner reported a single male timbre again in `G6ggsvbFazHWyIMue-LWc`
+(provider task `d19b0366-4e38-4b6f-bce9-ec2beb937257`). Its saved approved script
+correctly assigns two opening lines to Person 1, one to Person 2 and a shared
+ending. Historical tasks do not record the selected references, so the exact
+selection for this task cannot be established from storage. Read-only checks of
+all five deployed voice URLs returned audio/mpeg, HTTP 200, distinct hashes and
+byte-for-byte agreement with local owner-v1 files.
+
+A concrete contract violation was found: H3 permits at most three audio clips,
+each 2–15 seconds, with at most 15 seconds combined. The previous default pair
+(5.985750 + 5.171292 seconds) plus the 12.096009-second BGM totals 23.253051
+seconds. AutoDL's public workflow schema has no documented override of this
+limit. Its public parameters also have no hard per-utterance voice routing.
+Sources:
+- https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/README.md#model-variants-and-input-specifications
+- https://www.autodl.art/api/v1/comfyui/workflows/minimax_h3_803
+
+New submissions preserve both complete owner-supplied voice files and use
+`friends-reference-v1/bgm-reference-2s.wav`: the first exactly 2.000000 seconds
+of the existing instrumental, decoded as 32 kHz PCM without tempo/pitch/gain
+changes. Default cumulative reference length is 13.157042 seconds; the longest
+allowed distinct pair totals 14.982500 seconds including BGM. The reference is
+only a music-style sample; requested output duration remains 12 seconds.
+
+Measured voice durations are now part of the catalog and refreshed by the owner
+voice importer. Server-side plan construction rejects audio durations outside
+the individual or cumulative limits. The plan's public asset IDs, URLs, durations
+and version are saved with each new temporary task and retained on completion.
+No keys, uploaded photos or raw prompt text are added to this diagnostic record.
+Existing choreography, prompt, lyric assignments and original audio assets are
+unchanged. No automated tests, lyric request or paid generation was run.
+
+This fixes an objectively invalid reference budget, not a proven cause of the
+specific timbre collapse: AutoDL does not expose how overlong references are
+handled internally. Speaker labels remain generative guidance; they are not
+independent, deterministically routed audio tracks. New output requires the
+owner's manual listening assessment.
+
+Type checking and the Cloudflare production build passed. Published Worker
+version: `eab42368-cd26-4b9d-88bd-1b82df51e0bf`. Audio output quality is not
+claimed verified; no test generation was submitted.

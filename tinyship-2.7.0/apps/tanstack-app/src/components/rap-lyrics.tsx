@@ -4,7 +4,7 @@ import type { RapLyricsDraft } from '@libs/ai/rap-lyrics-types'
 import { findActiveRapLyric } from '../lib/rap-lyrics-client'
 import { rapCopy, type RapLocale } from '../lib/rap-copy'
 
-/** Highlights the submitted script against the planned solo intervals, not inferred speech. */
+/** Highlights the submitted script against the planned performance intervals, not inferred speech. */
 export function RapLyrics({ draft, videoRef, videoUrl, locale }: {
   draft?: RapLyricsDraft; videoRef: RefObject<HTMLVideoElement | null>; videoUrl: string; locale: RapLocale
 }) {
@@ -28,7 +28,7 @@ export function RapLyrics({ draft, videoRef, videoUrl, locale }: {
       <p className="rap-duo-lyrics-note">{copy.approximate}</p>
       <ol lang={draft.language === 'zh' ? 'zh-CN' : 'en'} className="rap-duo-lyrics-lines">
         {cues.map((cue, index) => <li key={index} className={active === index ? 'is-active' : ''} aria-current={active === index ? 'true' : undefined}>
-          <span>{rapCopy[locale].people[cue.performer - 1]}</span><p>{cue.text}</p>
+          <span>{cue.performer === 'both' ? copy.both : rapCopy[locale].people[cue.performer - 1]}</span><p>{cue.text}</p>
         </li>)}
       </ol>
     </> : <p className="rap-duo-lyrics-note">{copy.missing}</p>}

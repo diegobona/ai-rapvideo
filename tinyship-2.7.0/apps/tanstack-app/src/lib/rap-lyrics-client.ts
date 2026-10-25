@@ -1,18 +1,20 @@
 import { normalizeRapLyricsDraft } from '@libs/ai/rap-lyrics-draft'
 import type { RapLyricCue, RapLyricsDraft, RapLyricsLanguage } from '@libs/ai/rap-lyrics-types'
+import type { RapEndingAction } from '../../../../config/rapEndings'
 
-/** Keep editing free-form; divide the unchanged words into the server's solo slots. */
-export function rapLyricsFromText(text: string, language: RapLyricsLanguage): RapLyricsDraft {
-  const tokens = language === 'en' ? text.trim().split(/\s+/u).filter(Boolean) : Array.from(text.trim())
+/** Keep editing free-form; divide the unchanged words into the server's performance slots. */
+export function rapLyricsFromText(text: string, language: RapLyricsLanguage, endingAction?: RapEndingAction): RapLyricsDraft {
+  const characterBased = language === 'zh' || (language === 'auto' && /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u.test(text))
+  const tokens = characterBased ? Array.from(text.trim()) : text.trim().split(/\s+/u).filter(Boolean)
   if (tokens.length < 4) throw new Error('lyrics_too_short')
   const lines: string[] = []
   let offset = 0
   for (let index = 0; index < 4; index++) {
     const count = Math.ceil((tokens.length - offset) / (4 - index))
-    lines.push(tokens.slice(offset, offset + count).join(language === 'en' ? ' ' : '').trim())
+    lines.push(tokens.slice(offset, offset + count).join(characterBased ? '' : ' ').trim())
     offset += count
   }
-  return normalizeRapLyricsDraft({ language, lines })
+  return normalizeRapLyricsDraft({ language, lines, ...(endingAction !== undefined ? { endingAction } : {}) })
 }
 
 /** Lyrics are generated on an explicit editor action, independently of video generation. */

@@ -1,7 +1,32 @@
 {
-  "male-young": { "id": "male-young", "source": "青年男声.wav", "description": "the young adult male voice selected by the user; preserve this reference speaker's vocal identity and natural resonance" },
-  "male-mature": { "id": "male-mature", "source": "中年男声.wav", "description": "the middle-aged male voice selected by the user; preserve this reference speaker's vocal identity and natural resonance" },
-  "male-senior": { "id": "male-senior", "source": "老年男声.wav", "description": "the older male voice selected by the user; preserve this reference speaker's vocal identity and natural resonance" },
-  "female-young": { "id": "female-young", "source": "青年女声.wav", "description": "the young adult female voice selected by the user; preserve this reference speaker's vocal identity and natural resonance" },
-  "female-mature": { "id": "female-mature", "source": "中年女声.wav", "description": "the middle-aged female voice selected by the user; preserve this reference speaker's vocal identity and natural resonance" }
+  "male-young": {
+    "id": "male-young",
+    "source": "青年男声.wav",
+    "description": "the young adult male voice selected by the user; preserve this reference speaker's vocal identity and natural resonance",
+    "durationSeconds": 5.98575
+  },
+  "male-mature": {
+    "id": "male-mature",
+    "source": "中年男声.wav",
+    "description": "the middle-aged male voice selected by the user; preserve this reference speaker's vocal identity and natural resonance",
+    "durationSeconds": 5.963417
+  },
+  "male-senior": {
+    "id": "male-senior",
+    "source": "老年男声.wav",
+    "description": "the older male voice selected by the user; preserve this reference speaker's vocal identity and natural resonance",
+    "durationSeconds": 6.99675
+  },
+  "female-young": {
+    "id": "female-young",
+    "source": "青年女声.wav",
+    "description": "the young adult female voice selected by the user; preserve this reference speaker's vocal identity and natural resonance",
+    "durationSeconds": 5.171292
+  },
+  "female-mature": {
+    "id": "female-mature",
+    "source": "中年女声.wav",
+    "description": "the middle-aged female voice selected by the user; preserve this reference speaker's vocal identity and natural resonance",
+    "durationSeconds": 5.962667
+  }
 }

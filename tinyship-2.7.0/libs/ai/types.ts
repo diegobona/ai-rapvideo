@@ -4,6 +4,12 @@ import type { UIMessage } from 'ai';
 import type { DanceCustomization } from './dance-customization';
 import type { RapLyricsDraft } from './rap-lyrics-types';
 
+/** Public static references only; no keys, uploaded photos or raw prompts. */
+export interface RapReferencePlan {
+  version: string;
+  audios: Array<{ id: string; url: string; durationSeconds: number }>;
+}
+
 // All supported providers (including video-only providers)
 export type AllProviderName = 'qwen' | 'openai' | 'deepseek' | 'fal' | 'volcengine' | 'aliyun' | 'gemini' | 'autodl' | 'compshare';
 
@@ -195,6 +201,7 @@ export interface VideoGenerationOptions {
   danceCustomization?: DanceCustomization;
   /** Approved lyric script, frozen locally and embedded in prompt; not a provider field. */
   rapLyrics?: RapLyricsDraft;
+  rapReferencePlan?: RapReferencePlan;
   /** Last frame image URL for first-last-frame generation */
   lastFrameUrl?: string;
 }
@@ -214,6 +221,7 @@ export interface VideoGenerationResult {
   coverImageUrl?: string;
   /** Exact submitted script; planned highlighting does not claim measured audio alignment. */
   rapLyrics?: RapLyricsDraft;
+  rapReferencePlan?: RapReferencePlan;
 }
 
 // ============================================================

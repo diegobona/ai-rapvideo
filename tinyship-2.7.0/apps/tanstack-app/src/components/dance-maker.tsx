@@ -1,8 +1,8 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
-import { Check, CheckCircle2, Download, ImagePlus, LoaderCircle, Mic2, Music2, ShieldCheck, Sparkles, Upload, X } from 'lucide-react'
+import { ArrowRightLeft, Check, CheckCircle2, Download, ImagePlus, LoaderCircle, Mic2, Music2, ShieldCheck, Sparkles, Upload, X } from 'lucide-react'
 import type { VideoGenerationResult } from '@libs/ai/types'
 import { normalizeRapLyricsDraft } from '@libs/ai/rap-lyrics-draft'
-import type { RapLyricsDraft, RapLyricsLanguage } from '@libs/ai/rap-lyrics-types'
+import type { RapLyricsDraft } from '@libs/ai/rap-lyrics-types'
 import { RAP_VIDEO_DURATION, RAP_VIDEO_SCENES, type RapVideoSceneId } from '../../../../config/rapVideo'
 import { RAP_LYRICS_MAX_LINE_LENGTH } from '../../../../config/rapLyrics'
 import { RAP_VOICE_PROFILES, isRapVoiceAvailable, rapVoiceReference, type RapVoiceType } from '../../../../config/rapVoices'
@@ -97,6 +97,7 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
   const [topic, setTopic] = useState('')
   const [lyrics, setLyrics] = useState<RapLyricsDraft>({ language: 'en', lines: ['', '', '', ''] })
   const [lyricsText, setLyricsText] = useState('')
+  const [lyricsTopic, setLyricsTopic] = useState<string | null>(null)
   const [lyricsRevealed, setLyricsRevealed] = useState(false)
   const [writingLyrics, setWritingLyrics] = useState(false)
   const [lyricsError, setLyricsError] = useState(false)
@@ -110,8 +111,10 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
   const [longWait, setLongWait] = useState(false)
   const working = ['uploading', 'queued', 'processing', 'recovering'].includes(phase)
   const canCheckStatus = phase === 'failed' && (needsRecovery.current || Boolean(activeTask.current))
+  const lyricsTopicChanged = lyricsTopic !== null && topic.trim() !== lyricsTopic
+  const lyricsForTopic = lyricsTopicChanged ? { ...lyrics, endingAction: 'groove' as const } : lyrics
   let approvedLyrics: RapLyricsDraft | undefined
-  try { approvedLyrics = lyricsText === lyrics.lines.join(' ') ? normalizeRapLyricsDraft(lyrics) : rapLyricsFromText(lyricsText, lyrics.language) } catch { /* The paragraph can contain unfinished edits. */ }
+  try { approvedLyrics = lyricsText === lyrics.lines.join(' ') ? normalizeRapLyricsDraft(lyricsForTopic) : rapLyricsFromText(lyricsText, 'auto', lyricsForTopic.endingAction) } catch { /* The paragraph can contain unfinished edits. */ }
   const validLyrics = Boolean(approvedLyrics)
 
   function rememberTask(taskId: string) {
@@ -199,10 +202,11 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
     const timer = setTimeout(() => controller.abort(), 60_000)
     try {
       await ensureDanceSession(controller.signal)
-      const draft = await requestRapLyrics(topic, lyrics.language, controller.signal)
+      const draft = await requestRapLyrics(topic, 'en', controller.signal)
       if (!controller.signal.aborted && mounted.current) {
         setLyrics(draft)
         setLyricsText(draft.lines.join(' '))
+        setLyricsTopic(topic.trim())
         setLyricsRevealed(true)
       }
     } catch { if (mounted.current) setLyricsError(true) }
@@ -307,7 +311,10 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
         <legend><span className="rap-duo-number">01</span>{copy.photos}</legend>
         <p className="rap-duo-hint">{copy.photoHint}</p>
         <div className="rap-duo-photos">{photos.map((photo, index) => <PhotoInput key={index} id={id + '-person-' + (index + 1)} index={index} photo={photo} voice={voices[index]} otherVoice={voices[index === 0 ? 1 : 0]} disabled={working} copy={copy} onChange={file => selectPhoto(index, file)}
-          onVoiceChange={voice => setVoices(current => index === 0 ? [voice, current[1]] : [current[0], voice])} />)}</div>
+          onVoiceChange={voice => setVoices(current => index === 0 ? [voice, current[1]] : [current[0], voice])} />)}
+        <button className="rap-duo-swap" type="button" aria-label={copy.swapPeople} title={copy.swapPeople} disabled={working || !photos[0] || !photos[1]} onClick={() => { setPhotos(([first, second]) => [second, first]); setVoices(([first, second]) => [second, first]) }}><ArrowRightLeft size={20} aria-hidden="true" /></button>
+        </div>
+        <p className="rap-duo-hint">{copy.singingOrder}</p>
       </fieldset>
       <fieldset className="rap-duo-step" disabled={working}>
         <legend><span className="rap-duo-number">02</span>{copy.scene}</legend>
@@ -328,20 +335,16 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
       <fieldset className="rap-duo-step rap-duo-lyrics-editor" disabled={working || writingLyrics}>
         <legend><span className="rap-duo-number">04</span>{copy.lyrics.title}</legend>
         <p className="rap-duo-hint">{copy.lyrics.hint}</p>
-        <label className="rap-duo-language" htmlFor={id + '-language'}>{copy.lyrics.language}
-          <select id={id + '-language'} value={lyrics.language} onChange={event => setLyrics(current => ({ ...current, language: event.target.value as RapLyricsLanguage }))}>
-            <option value="en">{copy.lyrics.english}</option><option value="zh">{copy.lyrics.chinese}</option>
-          </select>
-        </label>
         <button className="rap-duo-write-lyrics" type="button" onClick={() => { void writeLyrics() }} disabled={working || writingLyrics} aria-busy={writingLyrics}>
           {writingLyrics ? <LoaderCircle className="rap-duo-spin" size={16} aria-hidden="true" /> : <Music2 size={16} aria-hidden="true" />}
           {writingLyrics ? copy.lyrics.generating : lyrics.lines.some(Boolean) ? copy.lyrics.regenerate : copy.lyrics.generate}
         </button>
-        {lyricsRevealed && !writingLyrics && <div className="rap-duo-lyrics-text" lang={lyrics.language === 'zh' ? 'zh-CN' : 'en'}>
+        {lyricsRevealed && !writingLyrics && <div className="rap-duo-lyrics-text" lang={approvedLyrics?.language === 'en' ? 'en' : undefined}>
           <label htmlFor={id + '-lyrics-text'}>{copy.lyrics.editorLabel}</label>
-          <textarea id={id + '-lyrics-text'} rows={6} value={lyricsText} maxLength={RAP_LYRICS_MAX_LINE_LENGTH * 4 + 3}
-            placeholder={copy.lyrics.placeholder} aria-describedby={id + '-lyrics-hint'} onChange={event => setLyricsText(event.target.value)} />
+          <textarea id={id + '-lyrics-text'} rows={2} value={lyricsText} maxLength={RAP_LYRICS_MAX_LINE_LENGTH * 4 + 3}
+            placeholder={copy.lyrics.placeholder} aria-describedby={id + '-lyrics-hint' + (lyricsTopicChanged ? ' ' + id + '-lyrics-topic-hint' : '')} onChange={event => setLyricsText(event.target.value)} />
           <p className="rap-duo-hint" id={id + '-lyrics-hint'}>{lyrics.language === 'en' ? copy.lyrics.englishHint : copy.lyrics.chineseHint}</p>
+          {lyricsTopicChanged && <p className="rap-duo-hint" id={id + '-lyrics-topic-hint'}>{copy.lyrics.topicChanged}</p>}
         </div>}
       </fieldset>
       {lyricsError && <p className="rap-duo-error" role="alert">{copy.lyrics.error}</p>}
