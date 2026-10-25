@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { withCfDb } from '@/lib/with-request-db';
-import { videoVisitor, visitorResponse, sameOriginMutation, limitTrialIp, trialErrorResponse } from '@/lib/video-visitor';
+import { videoVisitor, visitorResponse, sameOriginMutation, limitTrialIp, trialErrorResponse, previewIpKey } from '@/lib/video-visitor';
 import { paidDanceDependencies, paidDanceErrorResponse } from '@/lib/paid-dance-service';
 import { publicPaidVideoPurchase, startPaidVideoPurchase } from '@libs/ai/paid-video';
 import { latestVideoPurchase } from '@libs/payment/video-purchases';
@@ -8,7 +8,8 @@ import { schedulePaidVideoRecovery } from '@/lib/paid-video-recovery';
 import { VIDEO_PAYMENT_REQUIRED } from '../../../../../../config/videoPurchase';
 import { createTemporaryRap } from '@/lib/temporary-dance-service';
 import { readTemporaryVideoTask } from '@libs/ai/temporary-video';
-import { VideoTrialError } from '@libs/ai/video-trial';
+import { getVideoTrial, VideoTrialError } from '@libs/ai/video-trial';
+import { previewKeys, readPreviewVideoTask } from '@libs/ai/preview-video';
 
 export const Route = createFileRoute('/api/video-generate/')({
   server: {
@@ -24,8 +25,13 @@ export const Route = createFileRoute('/api/video-generate/')({
           // Keep actual paid work and refunds recoverable during temporary testing.
           const purchase = latest && (VIDEO_PAYMENT_REQUIRED || ['paid', 'starting', 'processing', 'refund_pending'].includes(latest.state))
             ? latest : undefined;
-          const directTask = !VIDEO_PAYMENT_REQUIRED && session?.user.id
-            ? await readTemporaryVideoTask(session.user.id, visitor.id, await paidDanceDependencies(undefined, false)) : undefined;
+          const dependencies = !VIDEO_PAYMENT_REQUIRED ? await paidDanceDependencies(undefined, false) : undefined;
+          const previewTask = !VIDEO_PAYMENT_REQUIRED && session?.user.id
+            ? await readPreviewVideoTask(session.user.id, visitor.id, dependencies) : undefined;
+          const directTask = previewTask || (!VIDEO_PAYMENT_REQUIRED && session?.user.id
+            ? await readTemporaryVideoTask(session.user.id, visitor.id, dependencies) : undefined);
+          const preview = !VIDEO_PAYMENT_REQUIRED
+            ? await getVideoTrial(previewKeys(await previewIpKey(request), session?.user.id, visitor.id)) : undefined;
           if (purchase && ['pending', 'paid', 'starting', 'processing', 'refund_pending'].includes(purchase.state))
             await schedulePaidVideoRecovery(purchase.id);
           return visitorResponse(
@@ -34,13 +40,14 @@ export const Route = createFileRoute('/api/video-generate/')({
               data: {
                 purchase: purchase ? await publicPaidVideoPurchase(purchase) : null,
                 storageKey: visitor.id,
+                ...(preview ? { previewState: preview.state } : {}),
                 ...(directTask && directTask.status !== 'failed' ? { directTaskId: directTask.id } : {}),
               },
             }),
             visitor.cookie,
           );
         } catch (error) {
-          return paidDanceErrorResponse(error);
+          return error instanceof VideoTrialError ? trialErrorResponse(error) : paidDanceErrorResponse(error);
         }
       }),
       POST: withCfDb(async ({ request }) => {
@@ -54,7 +61,7 @@ export const Route = createFileRoute('/api/video-generate/')({
           if (!VIDEO_PAYMENT_REQUIRED && body && typeof body === 'object' && !Array.isArray(body) && !('purchaseId' in body)) {
             await limitTrialIp(request, 'generate');
             const visitor = await videoVisitor(request);
-            const task = await createTemporaryRap(body, session.user.id, visitor.id);
+            const task = await createTemporaryRap(body, session.user.id, visitor.id, await previewIpKey(request));
             return visitorResponse(Response.json({ success: true, data: { taskId: task.id, status: task.status } }), visitor.cookie);
           }
           if (

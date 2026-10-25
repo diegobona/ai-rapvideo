@@ -1,6 +1,7 @@
 /** Public product settings. Provider credentials remain server-only. */
 export const RAP_VIDEO_TEMPLATE = 'rap-duo-v1' as const;
 export const RAP_VIDEO_DURATION = 12;
+export const RAP_PREVIEW_DURATION = 3;
 export const RAP_VIDEO_RESOLUTION = '768p竖(768*1376)' as const;
 export const RAP_VIDEO_WORKFLOW_ID = 'minimax_h3_803' as const;
 export const RAP_VIDEO_MODE = '高质模式' as const;
@@ -14,3 +15,6 @@ export const RAP_VIDEO_SCENES = [
 ] as const;
 
 export type RapVideoSceneId = (typeof RAP_VIDEO_SCENES)[number]['id'];
+
+/** Temporarily hide lyric authoring and playback; retain the two-step code for restoration. */
+export const RAP_LYRICS_UI_ENABLED: boolean = false;

@@ -52,6 +52,12 @@ export const Route = createFileRoute('/api/upload')({
           const session = await auth.api.getSession({ headers: new Headers(request.headers) })
           if (!session?.user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
           await limitTrialIp(request, 'upload')
+          if (session.user.isAnonymous) {
+            const { previewIpKey, videoVisitor } = await import('@/lib/video-visitor')
+            const { assertPreviewAvailable, previewKeys } = await import('@libs/ai/preview-video')
+            const visitor = await videoVisitor(request)
+            await assertPreviewAvailable(previewKeys(await previewIpKey(request), session.user.id, visitor.id))
+          }
 
           const formData = await request.formData()
           const file = formData.get('file') as File | null

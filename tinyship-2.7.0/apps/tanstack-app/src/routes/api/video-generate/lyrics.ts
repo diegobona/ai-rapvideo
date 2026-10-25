@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { withCfDb } from '@/lib/with-request-db';
-import { limitTrialIp, sameOriginMutation, trialErrorResponse } from '@/lib/video-visitor';
+import { limitTrialIp, sameOriginMutation, trialErrorResponse, previewIpKey, videoVisitor } from '@/lib/video-visitor';
+import { assertPreviewAvailable, previewKeys } from '@libs/ai/preview-video';
 import { generateRapLyricsDraft, normalizeRapLyricsRequest, RapLyricsDraftError } from '@libs/ai/deepseek-rap-lyrics';
 import { VideoTrialError, takeTrialRateSlot } from '@libs/ai/video-trial';
 
@@ -34,6 +35,8 @@ export const Route = createFileRoute('/api/video-generate/lyrics')({
           const { auth } = await import('@libs/auth');
           const session = await auth.api.getSession({ headers: request.headers });
           if (!session?.user.id) return Response.json({ error: 'unauthorized' }, { status: 401, headers });
+          const visitor = await videoVisitor(request);
+          await assertPreviewAvailable(previewKeys(await previewIpKey(request), session.user.id, visitor.id));
           const input = normalizeRapLyricsRequest(await readRequest(request));
           // Durable per-owner limits cover local/preview requests too; edge IP
           // limits additionally constrain repeated anonymous session creation.

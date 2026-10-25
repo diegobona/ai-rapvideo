@@ -9,6 +9,19 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.site-google-signin { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 38px; padding: 8px 14px; border: 1px solid var(--border); border-radius: 9px; background: var(--card); color: var(--foreground); font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.site-google-signin:hover:not(:disabled) { background: var(--accent); }
+.site-google-signin:focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
+.site-google-signin:disabled { opacity: .55; cursor: default; }
+.site-google-signin svg { flex-shrink: 0; }
+.site-account { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.site-account-name { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+@media (max-width: 640px) {
+  .site-account-name { max-width: 85px; }
+  .site-google-signin { min-height: 36px; padding: 7px 10px; font-size: 12px; }
+  header nav .site-nav-links { flex-wrap: wrap; }
+}
+
 @font-face {
   font-family: "Geist";
   src: url("../../../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2") format("woff2");

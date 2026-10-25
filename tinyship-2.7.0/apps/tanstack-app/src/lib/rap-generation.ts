@@ -8,7 +8,7 @@ export const RAP_PHOTO_ACCEPT = '.jpg,.jpeg,.png,.webp'
 export const RAP_PHOTO_MAX_BYTES = 20 * 1024 * 1024
 export const RAP_TOPIC_LIMIT = RAP_VIDEO_MAX_TOPIC_LENGTH
 export const RAP_POLLING = { intervalMs: 5_000, maxTimeoutMs: 30 * 60 * 1_000 }
-export type RapErrorCode = 'fileType' | 'fileSize' | 'photoRequired' | 'consentRequired' | 'topicTooLong' | 'upload' | 'generation' | 'status' | 'timeout' | 'download' | 'invalidResponse' | 'unauthorized' | 'expired' | 'rateLimited' | 'visitor'
+export type RapErrorCode = 'fileType' | 'fileSize' | 'photoRequired' | 'consentRequired' | 'topicTooLong' | 'upload' | 'generation' | 'status' | 'timeout' | 'download' | 'invalidResponse' | 'unauthorized' | 'expired' | 'rateLimited' | 'visitor' | 'trialUsed' | 'trialProcessing' | 'previewIp'
 export class RapGenerationError extends Error {
   constructor(readonly code: RapErrorCode, readonly submissionRejected = false) { super(code); this.name = 'RapGenerationError' }
 }
@@ -19,7 +19,7 @@ export function resolveRapRecoveryTask(serverTask: string | null, tabTask: strin
 }
 export function getRapErrorCode(cause: unknown, fallback: RapErrorCode = 'generation'): RapErrorCode {
   if (cause instanceof RapGenerationError) return cause.code
-  if (cause instanceof DanceGenerationError && ['upload', 'generation', 'status', 'timeout', 'download', 'invalidResponse', 'unauthorized', 'expired', 'rateLimited', 'visitor'].includes(cause.code)) return cause.code as RapErrorCode
+  if (cause instanceof DanceGenerationError && ['upload', 'generation', 'status', 'timeout', 'download', 'invalidResponse', 'unauthorized', 'expired', 'rateLimited', 'visitor', 'trialUsed', 'trialProcessing'].includes(cause.code)) return cause.code as RapErrorCode
   return fallback
 }
 export function validateRapPhoto(file: File): 'fileType' | 'fileSize' | null {
@@ -31,10 +31,12 @@ function isHttpUrl(value: unknown): value is string {
   try { return ['https:', 'http:'].includes(new URL(value).protocol) } catch { return false }
 }
 async function readData(response: Response, fallback: RapErrorCode): Promise<Record<string, unknown>> {
-  if (!response.ok) throw new RapGenerationError(
-    response.status === 401 || response.status === 403 ? 'unauthorized' : response.status === 429 ? 'rateLimited' : response.status === 404 || response.status === 410 ? 'expired' : fallback,
-    response.status >= 400 && response.status < 500 && ![408, 409].includes(response.status),
-  )
+  if (!response.ok) {
+    const failure = await response.json().catch(() => null)
+    const code = failure?.error === 'trial_used' ? 'trialUsed' : failure?.error === 'trial_processing' ? 'trialProcessing' : failure?.error === 'preview_ip_unavailable' ? 'previewIp' : null
+    throw new RapGenerationError(code ?? (response.status === 401 || response.status === 403 ? 'unauthorized' : response.status === 429 ? 'rateLimited' : response.status === 404 || response.status === 410 ? 'expired' : fallback),
+      Boolean(code) || (response.status >= 400 && response.status < 500 && ![408, 409].includes(response.status)))
+  }
   const payload = await response.json().catch(() => null)
   if (!payload || payload.success !== true || !payload.data || typeof payload.data !== 'object' || Array.isArray(payload.data)) throw new RapGenerationError('invalidResponse')
   return payload.data

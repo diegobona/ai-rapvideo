@@ -133,11 +133,12 @@ function readPurchase(value: unknown, expectedId?: string): PublicVideoPurchase 
   }
 }
 
-export async function readDancePurchase(signal?: AbortSignal, transport: typeof fetch = fetch): Promise<{ purchase: PublicVideoPurchase | null; storageKey: string; directTaskId?: string }> {
+export async function readDancePurchase(signal?: AbortSignal, transport: typeof fetch = fetch): Promise<{ purchase: PublicVideoPurchase | null; storageKey: string; directTaskId?: string; previewState?: 'available' | 'processing' | 'used' }> {
   const data = await readApiData(await transport('/api/video-generate/', { signal, cache: 'no-store' }), 'visitor')
   if (typeof data.storageKey !== 'string' || !data.storageKey.trim()) throw new DanceGenerationError('invalidResponse')
   if (data.directTaskId !== undefined && data.directTaskId !== null && (typeof data.directTaskId !== 'string' || !/^[\w-]{1,128}$/.test(data.directTaskId))) throw new DanceGenerationError('invalidResponse')
   return { purchase: data.purchase === null ? null : readPurchase(data.purchase), storageKey: data.storageKey,
+    ...(['available', 'processing', 'used'].includes(String(data.previewState)) ? { previewState: data.previewState as 'available' | 'processing' | 'used' } : {}),
     ...(typeof data.directTaskId === 'string' ? { directTaskId: data.directTaskId } : {}),
   }
 }

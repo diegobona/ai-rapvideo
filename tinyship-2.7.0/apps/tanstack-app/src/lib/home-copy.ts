@@ -7,7 +7,7 @@ export const homeCopy = {
     image: 'https://ai-rapvideo.co/images/examples/rap-orange-studio.jpg',
     imageAlt: 'Two rappers performing together at a hanging microphone in a bright orange studio.',
   },
-  intro: 'Create a 12-second AI rap video from two photos. Choose a scene, edit your lyrics, then generate and download. Free, with no account required.',
+  intro: 'Try a free 3-second AI rap video preview from two photos. Choose a scene and topic, then generate and download. One preview per public IP address, with no account required.',
   how: {
     heading: 'How to Make an AI Rap Video',
     steps: [
@@ -25,7 +25,7 @@ export const homeCopy = {
       },
       {
         title: 'Generate your rap video',
-        body: 'Choose a stage and topic. Generate lyrics, edit the four lines, then select Generate rap video.',
+        body: 'Choose a stage, optionally add a topic, then generate your free 3-second preview.',
         image: '/images/rap/step-generate.png',
         alt: 'AI-generated illustration of two rappers performing into a studio microphone during video generation',
       },
@@ -36,6 +36,14 @@ export const homeCopy = {
         alt: 'AI-generated illustration of a finished rap duo video on a phone with a download arrow',
       },
     ],
+  },
+  pricing: {
+    heading: 'Pricing',
+    availability: 'Planned credit pack',
+    price: '$8.90',
+    pack: '1 credit',
+    detail: 'Generate one full 12-second AI rap video',
+    note: 'Checkout is not available yet. Try one free 3-second preview per public IP address.',
   },
   editorial: {
     whatIs: {
@@ -62,17 +70,17 @@ export const homeCopy = {
     items: [
       {
         question: 'What is AI Rap Video?',
-        answer: 'Upload two portraits, choose a stage and generate four editable rap lines. Confirm the lyrics to create a 12-second video with vocals and a beat.',
+        answer: 'Upload two portraits, choose a stage and optionally add a topic. Generate a free 3-second preview of the opening rap bar with both people in the scene and a beat.',
         source: null,
       },
       {
         question: 'How much does it cost, and is there a subscription?',
-        answer: 'Currently free, with no payments, subscriptions, credits or account required.',
+        answer: 'Each public IP address gets one free 3-second preview, with no account required. Switching browsers or clearing cookies does not reset the allowance. Devices on a shared network share it. An $8.90 credit pack for one full 12-second video is planned; checkout is not available yet.',
         source: null,
       },
       {
         question: 'What happens if generation fails?',
-        answer: 'If generation fails, your photos and settings stay available for a retry. Temporary status-check errors can be retried without starting another video. Free generations have no payment to refund.',
+        answer: 'If the provider confirms that generation failed, your free preview allowance is restored. A pending request or an uncertain network response keeps the allowance reserved while its status is checked. Free previews have no payment to refund.',
         source: null,
       },
       {
@@ -82,7 +90,7 @@ export const homeCopy = {
       },
       {
         question: 'What format will my video use?',
-        answer: 'Every clip is a 12-second, 768p portrait MP4. Choose from four stages. Download within 24 hours.',
+        answer: 'The free preview is generated as a 3-second portrait MP4 with rap vocals and a beat. Choose from four stages. Download within 24 hours. Full 12-second videos belong to the planned paid pack.',
         source: null,
       },
       {

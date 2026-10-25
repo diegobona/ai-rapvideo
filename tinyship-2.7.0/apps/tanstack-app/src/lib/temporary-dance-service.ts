@@ -1,12 +1,12 @@
 import { PaidVideoError, PaidVideoInputMissing } from '@libs/ai/paid-video';
-import { createTemporaryVideo } from '@libs/ai/temporary-video';
+import { createPreviewVideo } from '@libs/ai/preview-video';
 import type { VideoGenerationOptions } from '@libs/ai/types';
 import { validateOwnedVideoImage } from '@libs/payment/video-stripe';
 import { createRapVideoOptions } from './rap-template';
 import { paidDanceDependencies } from './paid-dance-service';
 
-/** Repeatable rap generation reuses durable temporary admission and owned photos. */
-export async function createTemporaryRap(input: unknown, userId: string, visitorId: string) {
+/** Public free generation is always a server-owned three-second preview. */
+export async function createTemporaryRap(input: unknown, userId: string, visitorId: string, ipKey: string) {
   if (!input || typeof input !== 'object' || Array.isArray(input))
     throw new PaidVideoError('invalid_video_request', 400);
   const body = input as Record<string, unknown>;
@@ -19,7 +19,7 @@ export async function createTemporaryRap(input: unknown, userId: string, visitor
   try {
     validateOwnedVideoImage(body.personOneImageUrl, userId, publicUrl);
     validateOwnedVideoImage(body.personTwoImageUrl, userId, publicUrl);
-    options = createRapVideoOptions(body);
+    options = createRapVideoOptions(body, true);
   } catch {
     throw new PaidVideoError('invalid_video_request', 400);
   }
@@ -32,5 +32,5 @@ export async function createTemporaryRap(input: unknown, userId: string, visitor
       error instanceof PaidVideoInputMissing ? 400 : 503,
     );
   }
-  return createTemporaryVideo(options, userId, visitorId, { resultStorage: dependencies.resultStorage });
+  return createPreviewVideo(options, userId, visitorId, ipKey, { resultStorage: dependencies.resultStorage });
 }

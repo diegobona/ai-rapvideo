@@ -3,6 +3,7 @@ import { withCfDb } from '@/lib/with-request-db';
 import { paidDanceDependencies, paidDanceErrorResponse } from '@/lib/paid-dance-service';
 import { publicPaidVideoPurchase, refreshPaidVideoPurchase } from '@libs/ai/paid-video';
 import { isManagedVideoExpired } from '../../../../../../config/mediaRetention';
+import { settlePreviewTask } from '@libs/ai/preview-video';
 
 export const Route = createFileRoute('/api/video-generate/status')({
   server: {
@@ -31,6 +32,7 @@ export const Route = createFileRoute('/api/video-generate/status')({
           const { resultStorage } = await paidDanceDependencies(undefined, false);
           const task = await refreshVideoTask(taskId, session.user.id, { resultStorage });
           if (!task) return Response.json({ error: 'not_found' }, { status: 404 });
+          await settlePreviewTask(task);
           if (isManagedVideoExpired(task.result)) return Response.json({ error: 'video_expired' }, { status: 410, headers: { 'Cache-Control': 'private, no-store' } });
           return Response.json(
             {

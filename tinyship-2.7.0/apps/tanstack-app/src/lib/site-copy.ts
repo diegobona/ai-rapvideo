@@ -3,6 +3,10 @@ import { homePage } from './page-registry'
 // One English copy source; no locale routes, detection, or language selector.
 export const siteCopy = {
   name: 'AI Rap Video',
+  navigation: {
+    howItWorks: 'How it works',
+    pricing: 'Pricing',
+  },
   home: {
     title: homePage.title,
     description: homePage.description,

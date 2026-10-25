@@ -1,5 +1,6 @@
 import { videoTrialConfig } from '../../../../config/videoTrial'
 import { VideoTrialError, takeTrialRateSlot } from '@libs/ai/video-trial'
+import { isIP } from 'node:net'
 
 const encoder = new TextEncoder()
 const encode = (bytes: ArrayBuffer) => btoa(String.fromCharCode(...new Uint8Array(bytes))).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
@@ -41,6 +42,14 @@ export async function limitTrialIp(request: Request, action: keyof typeof videoT
   const window = Math.floor(Date.now() / (videoTrialConfig.ipWindowSeconds * 1000))
   const hash = encode(await crypto.subtle.sign('HMAC', await key(), encoder.encode(`trial-rate:${window}:${action}:${ip}`)))
   await takeTrialRateSlot(`${action}:${window}:${hash}`, videoTrialConfig.ipLimits[action], new Date((window + 1) * videoTrialConfig.ipWindowSeconds * 1000))
+}
+/** Stable, non-expiring quota identity. Fail closed without a trusted edge IP. */
+export async function previewIpKey(request: Request) {
+  const raw = (request as Request & { cf?: unknown }).cf ? request.headers.get('cf-connecting-ip') : null
+  if (!raw || !isIP(raw)) throw new VideoTrialError('preview_ip_unavailable', 503)
+  const ip = isIP(raw) === 6 ? new URL(`http://[${raw}]/`).hostname.toLowerCase() : raw
+  const hash = encode(await crypto.subtle.sign('HMAC', await key(), encoder.encode(`rap-preview-ip-v1:${ip}`)))
+  return `preview-v1:ip:${hash}`
 }
 export const trialErrorResponse = (error: VideoTrialError) => Response.json({ error: error.code }, {
   status: error.status, headers: { 'Cache-Control': 'private, no-store', ...(error.status === 429 ? { 'Retry-After': String(videoTrialConfig.ipWindowSeconds) } : {}) },

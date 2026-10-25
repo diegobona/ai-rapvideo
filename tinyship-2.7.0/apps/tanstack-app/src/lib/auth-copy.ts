@@ -14,4 +14,12 @@ export const authCopy = {
   signingOut: 'Signing out…',
   credits: 'credits',
   creditsUnavailable: 'Credits unavailable',
+  google: {
+    continue: 'Continue with Google',
+    loading: 'Connecting…',
+    unavailable: 'Google sign-in is not configured yet.',
+    failed: 'Google sign-in could not be completed. Please try again.',
+    account: 'Google account',
+    viewPack: 'View credit pack',
+  },
 } as const

@@ -8,7 +8,7 @@ export const pageRegistry = {
     ...page('/', 'AI Rap Video', 'ai rap video', '', 'Home'),
     title: 'AI Rap Video Generator – Make an AI Rap Video From Two Photos',
     h1: 'AI Rap Video Generator',
-    description: 'Create an AI rap video from two photos. Choose a scene, add your topic and generate a 12-second rap video with a beat. Free to use. No account required.',
+    description: 'Create an AI rap video from two photos. Choose a scene and topic, then try a free 3-second preview with a beat. One preview per public IP. No account required.',
   },
 } as const
 

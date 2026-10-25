@@ -2,6 +2,14 @@ import { RAP_LYRICS_LINE_COUNT, RAP_LYRICS_MAX_CHINESE_CHARACTERS, RAP_LYRICS_MA
 import { normalizeRapEndingAction } from '../../config/rapEndings';
 import type { RapLyricCue, RapLyricsDraft } from './rap-lyrics-types';
 
+/** Apply to new submissions only: historical results remain readable unchanged. */
+export function assertDistinctRapLines(draft: RapLyricsDraft): void {
+  const keys = draft.lines.map(line => line.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu, ''));
+  if (keys.some(key => !key) || new Set(keys).size !== keys.length) {
+    throw new Error('Each rap line must contain distinct lyrics');
+  }
+}
+
 /** Validate edited lyrics before they become literal model dialogue or saved task data. */
 export function normalizeRapLyricsDraft(value: unknown): RapLyricsDraft {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid rap lyrics');

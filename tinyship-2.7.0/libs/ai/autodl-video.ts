@@ -93,7 +93,7 @@ function buildRequest(options: VideoGenerationOptions, workflowId: string): Auto
   const resolution = options.size ?? (rap ? RAP_VIDEO_RESOLUTION : aiVideoConfig.autodl.defaultResolution);
   const sizes = upgraded ? aiVideoConfig.autodlSizes : aiVideoConfig.autodlLegacySizes;
   // 803 uses explicit dimension labels, unlike both historical H3 workflows.
-  // This product freezes one verified portrait output and high-quality mode.
+  // This product freezes one supported portrait output and high-quality mode.
   if (rap ? resolution !== RAP_VIDEO_RESOLUTION : !sizes.some(size => size.value === resolution)) {
     throw new Error('Unsupported AutoDL resolution');
   }

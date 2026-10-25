@@ -41,7 +41,8 @@ function getRefererInfo(request?: Request): { locale: string; lastSegment: strin
 }
 
 export const auth = betterAuth({
-  appName: 'tinyship',
+  appName: 'AI Rap Video',
+  baseURL: process.env.BETTER_AUTH_URL || process.env.APP_BASE_URL,
   trustedOrigins: [
     ...(process.env.APP_BASE_URL ? [process.env.APP_BASE_URL] : []),
     ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),

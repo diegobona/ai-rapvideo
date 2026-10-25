@@ -3,15 +3,17 @@ import { ArrowRightLeft, Check, CheckCircle2, Download, ImagePlus, LoaderCircle,
 import type { VideoGenerationResult } from '@libs/ai/types'
 import { normalizeRapLyricsDraft } from '@libs/ai/rap-lyrics-draft'
 import type { RapLyricsDraft } from '@libs/ai/rap-lyrics-types'
-import { RAP_VIDEO_DURATION, RAP_VIDEO_SCENES, type RapVideoSceneId } from '../../../../config/rapVideo'
+import { RAP_LYRICS_UI_ENABLED, RAP_PREVIEW_DURATION, RAP_VIDEO_SCENES, type RapVideoSceneId } from '../../../../config/rapVideo'
 import { RAP_LYRICS_MAX_LINE_LENGTH } from '../../../../config/rapLyrics'
-import { RAP_VOICE_PROFILES, isRapVoiceAvailable, rapVoiceReference, type RapVoiceType } from '../../../../config/rapVoices'
+import type { RapVoiceType } from '../../../../config/rapVoices'
 import { DanceGenerationError, ensureDanceSession, pollDanceTask, readDancePurchase } from '../lib/dance-generation'
 import { forgetDanceTask, readDanceTask, rememberDanceTask } from '../lib/dance-task-session'
 import { downloadRapVideo, getRapErrorCode, RAP_PHOTO_ACCEPT, RAP_POLLING, RAP_TOPIC_LIMIT, RapGenerationError, resolveRapRecoveryTask, startRapGeneration, uploadRapPhoto, validateRapPhoto, type RapErrorCode } from '../lib/rap-generation'
 import { rapCopy, type RapLocale } from '../lib/rap-copy'
 import { rapLyricsFromText, requestRapLyrics } from '../lib/rap-lyrics-client'
 import { RapLyrics } from './rap-lyrics'
+import { RapVoicePicker } from './rap-voice-picker'
+import { RapPreviewNextStep } from './rap-preview-next-step'
 import './rap-maker.css'
 
 interface DanceMakerProps {
@@ -21,7 +23,7 @@ interface DanceMakerProps {
   isAvailable?: boolean
   className?: string
 }
-type Phase = 'idle' | 'uploading' | 'queued' | 'processing' | 'succeeded' | 'failed' | 'recovering'
+type Phase = 'idle' | 'preparing' | 'uploading' | 'queued' | 'processing' | 'succeeded' | 'failed' | 'recovering'
 type Photo = { file: File; url?: string }
 
 function PhotoInput({ index, id, photo, voice, otherVoice, disabled, copy, onChange, onVoiceChange }: {
@@ -39,7 +41,7 @@ function PhotoInput({ index, id, photo, voice, otherVoice, disabled, copy, onCha
     return () => URL.revokeObjectURL(url)
   }, [photo?.file])
   return <div className="rap-duo-photo">
-    <label className="rap-duo-photo-label" htmlFor={id}>{copy.people[index]} <span>{copy.required}</span></label>
+    <label className="rap-duo-photo-label" htmlFor={id}>{copy.people[index]}{index === 0 ? ' · ' + copy.singingOrder : ''} <span>{copy.required}</span></label>
     <div className={'rap-duo-drop' + (dragging ? ' is-dragging' : '') + (preview ? ' has-photo' : '')}
       onDragOver={event => { event.preventDefault(); if (!disabled) setDragging(true) }}
       onDragLeave={() => setDragging(false)}
@@ -57,24 +59,7 @@ function PhotoInput({ index, id, photo, voice, otherVoice, disabled, copy, onCha
         onChange={event => { const file = event.currentTarget.files?.[0]; if (file) onChange(file); event.currentTarget.value = '' }} />
     </div>
     <span id={id + '-hint'} className="rap-duo-visually-hidden">{copy.photoHint}</span>
-    <label className="rap-duo-voice" htmlFor={id + '-voice'}>{copy.voice.label}
-      <select id={id + '-voice'} value={voice} disabled={disabled} aria-label={copy.people[index] + ' ' + copy.voice.label}
-        onChange={event => onVoiceChange(event.target.value as RapVoiceType)}>
-        {RAP_VOICE_PROFILES.map(profile => <option key={profile} value={profile} disabled={profile === otherVoice || !isRapVoiceAvailable(index === 0 ? 0 : 1, profile)}>
-          {copy.voice.profiles[profile]}{profile === otherVoice ? ' · ' + copy.voice.inUse : ''}
-        </option>)}
-      </select>
-    </label>
-    <details className="rap-duo-voice-preview">
-      <summary>{copy.voice.preview}</summary>
-      <audio key={voice} controls preload="none" src={rapVoiceReference(index === 0 ? 0 : 1, voice).url}
-        onPlay={event => {
-          const current = event.currentTarget
-          current.closest('.rap-duo-maker')?.querySelectorAll('audio').forEach(audio => { if (audio !== current) audio.pause() })
-        }}
-        aria-label={copy.people[index] + ' ' + copy.voice.preview} />
-      <p>{copy.voice.hint}</p>
-    </details>
+    <RapVoicePicker id={id + '-voice'} index={index === 0 ? 0 : 1} voice={voice} otherVoice={otherVoice} disabled={disabled} copy={copy} onChange={onVoiceChange} />
   </div>
 }
 
@@ -106,10 +91,17 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
   const [restoring, setRestoring] = useState(true)
   const [error, setError] = useState<RapErrorCode | null>(null)
   const [result, setResult] = useState<VideoGenerationResult | null>(null)
+  const [playback, setPlayback] = useState<{ url: string; duration: number; watched: boolean } | null>(null)
   const [downloading, setDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState(false)
   const [longWait, setLongWait] = useState(false)
-  const working = ['uploading', 'queued', 'processing', 'recovering'].includes(phase)
+  const [previewState, setPreviewState] = useState<'available' | 'processing' | 'used'>('available')
+  const working = ['preparing', 'uploading', 'queued', 'processing', 'recovering'].includes(phase)
+  const currentPlayback = playback?.url === result?.videoUrl ? playback : null
+  const resultDuration = currentPlayback?.duration ?? result?.duration
+  // Read actual media duration too: older saved results may not include it.
+  // Full-length results should never be presented as free previews.
+  const isPreviewResult = Boolean(result && resultDuration && resultDuration <= RAP_PREVIEW_DURATION + 0.25)
   const canCheckStatus = phase === 'failed' && (needsRecovery.current || Boolean(activeTask.current))
   const lyricsTopicChanged = lyricsTopic !== null && topic.trim() !== lyricsTopic
   const lyricsForTopic = lyricsTopicChanged ? { ...lyrics, endingAction: 'groove' as const } : lyrics
@@ -131,11 +123,15 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
     const video = await pollDanceTask(taskId, controller.signal, fetch, RAP_POLLING)
     if (controller.signal.aborted) return
     setResult(video)
+    setPreviewState(current => current === 'processing' ? 'used' : current)
     setPhase('succeeded')
     setError(null)
   }
   function fail(cause: unknown, fallback: RapErrorCode) {
     const code = getRapErrorCode(cause, fallback)
+    if (code === 'trialUsed') setPreviewState('used')
+    if (code === 'trialProcessing') setPreviewState('processing')
+    if (cause instanceof DanceGenerationError && cause.terminal && code === 'generation') setPreviewState('available')
     if (cause instanceof DanceGenerationError && cause.terminal) { forgetTask(); needsRecovery.current = false }
     setError(code)
     setPhase('failed')
@@ -154,6 +150,7 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
       finally { clearTimeout(lookupTimer); controller.signal.removeEventListener('abort', onAbort) }
       if (controller.signal.aborted) return
       storageKey.current = owned.storageKey
+      setPreviewState(owned.previewState ?? 'available')
       needsRecovery.current = false
       setRestoring(false)
       let tabTask: string | null = null
@@ -182,10 +179,10 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
   }, [])
   useEffect(() => {
     setLongWait(false)
-    if (phase !== 'processing') return
+    if (!working) return
     const timer = setTimeout(() => setLongWait(true), 2 * 60 * 1000)
     return () => clearTimeout(timer)
-  }, [phase])
+  }, [working])
 
   function selectPhoto(index: number, file: File | null) {
     if (working) return
@@ -234,8 +231,8 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
     event.preventDefault()
     if (operation.current || working || writingLyrics || restoring || !isAvailable) return
     if (canCheckStatus) { await retryStatus(); return }
-    const submittedLyrics = approvedLyrics
-    if (!submittedLyrics) return
+    let submittedLyrics = RAP_LYRICS_UI_ENABLED ? approvedLyrics : undefined
+    if (RAP_LYRICS_UI_ENABLED && !submittedLyrics) return
     if (!photos[0] || !photos[1]) { setError('photoRequired'); return }
     if (!consent) { setError('consentRequired'); return }
     previousTask.current = activeTask.current ?? previousTask.current
@@ -245,12 +242,23 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
     setError(null)
     setDownloadError(false)
     setResult(null)
-    setPhase('uploading')
+    setPhase(RAP_LYRICS_UI_ENABLED ? 'uploading' : 'preparing')
     let submitted = false
     let stage: RapErrorCode = 'visitor'
-    const timer = setTimeout(() => controller.abort(new RapGenerationError('timeout')), 120_000)
+    const timer = setTimeout(() => controller.abort(new RapGenerationError('timeout')), 180_000)
     try {
       await ensureDanceSession(controller.signal)
+      const admission = await readDancePurchase(controller.signal)
+      setPreviewState(admission.previewState ?? 'available')
+      if (admission.previewState === 'used') throw new RapGenerationError('trialUsed', true)
+      if (admission.previewState === 'processing') throw new RapGenerationError('trialProcessing', true)
+      if (!RAP_LYRICS_UI_ENABLED) {
+        stage = 'generation'
+        submittedLyrics = await requestRapLyrics(topic, 'en', controller.signal)
+        controller.signal.throwIfAborted()
+      }
+      if (!submittedLyrics) throw new RapGenerationError('generation')
+      setPhase('uploading')
       stage = 'upload'
       const urls: string[] = []
       for (let index = 0; index < 2; index++) {
@@ -268,6 +276,7 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
       clearTimeout(timer)
       if (controller.signal.aborted) return
       needsRecovery.current = false
+      setPreviewState('processing')
       await followTask(task.taskId, controller)
     } catch (cause) {
       if (mounted.current) {
@@ -314,7 +323,6 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
           onVoiceChange={voice => setVoices(current => index === 0 ? [voice, current[1]] : [current[0], voice])} />)}
         <button className="rap-duo-swap" type="button" aria-label={copy.swapPeople} title={copy.swapPeople} disabled={working || !photos[0] || !photos[1]} onClick={() => { setPhotos(([first, second]) => [second, first]); setVoices(([first, second]) => [second, first]) }}><ArrowRightLeft size={20} aria-hidden="true" /></button>
         </div>
-        <p className="rap-duo-hint">{copy.singingOrder}</p>
       </fieldset>
       <fieldset className="rap-duo-step" disabled={working}>
         <legend><span className="rap-duo-number">02</span>{copy.scene}</legend>
@@ -332,7 +340,7 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
         <textarea id={id + '-topic'} maxLength={RAP_TOPIC_LIMIT} rows={3} value={topic} onChange={event => setTopic(event.target.value)} placeholder={copy.topicPlaceholder} aria-describedby={id + '-topic-count'} />
         <p id={id + '-topic-count'} className="rap-duo-count">{topic.length}/{RAP_TOPIC_LIMIT}</p>
       </fieldset>
-      <fieldset className="rap-duo-step rap-duo-lyrics-editor" disabled={working || writingLyrics}>
+      {RAP_LYRICS_UI_ENABLED && <fieldset className="rap-duo-step rap-duo-lyrics-editor" disabled={working || writingLyrics}>
         <legend><span className="rap-duo-number">04</span>{copy.lyrics.title}</legend>
         <p className="rap-duo-hint">{copy.lyrics.hint}</p>
         <button className="rap-duo-write-lyrics" type="button" onClick={() => { void writeLyrics() }} disabled={working || writingLyrics} aria-busy={writingLyrics}>
@@ -346,39 +354,42 @@ export function DanceMaker({ locale = 'en', isAvailable = true, className = '' }
           <p className="rap-duo-hint" id={id + '-lyrics-hint'}>{lyrics.language === 'en' ? copy.lyrics.englishHint : copy.lyrics.chineseHint}</p>
           {lyricsTopicChanged && <p className="rap-duo-hint" id={id + '-lyrics-topic-hint'}>{copy.lyrics.topicChanged}</p>}
         </div>}
-      </fieldset>
-      {lyricsError && <p className="rap-duo-error" role="alert">{copy.lyrics.error}</p>}
+      </fieldset>}
+      {RAP_LYRICS_UI_ENABLED && lyricsError && <p className="rap-duo-error" role="alert">{copy.lyrics.error}</p>}
       <footer className="rap-duo-actions">
         <div className="rap-duo-specs"><span>{copy.duration}</span><span>{copy.resolution}</span><span><Music2 size={12} aria-hidden="true" />{copy.audio}</span></div>
+        <p className="rap-duo-hint">{copy.previewLimit}</p>
         <label className="rap-duo-consent"><input type="checkbox" checked={consent} onChange={event => setConsent(event.target.checked)} disabled={working} /><span>{copy.consent}</span></label>
         {error && <p className="rap-duo-error" role="alert">{copy.errors[error]}</p>}
         {!isAvailable && <p className="rap-duo-error" role="status">{copy.unavailable}</p>}
-        {!validLyrics && !canCheckStatus && <p className="rap-duo-hint">{copy.lyrics.invalid}</p>}
-        <button className="rap-duo-generate" type="submit" disabled={working || writingLyrics || restoring || !isAvailable || (!canCheckStatus && !validLyrics)}>
+        {RAP_LYRICS_UI_ENABLED && !validLyrics && !canCheckStatus && <p className="rap-duo-hint">{copy.lyrics.invalid}</p>}
+        {previewState !== 'available' && !working && !canCheckStatus && <p className="rap-duo-hint" role="status">{previewState === 'used' ? copy.errors.trialUsed : copy.errors.trialProcessing}</p>}
+        <button className="rap-duo-generate" type="submit" disabled={working || writingLyrics || restoring || !isAvailable || (!canCheckStatus && previewState !== 'available') || (RAP_LYRICS_UI_ENABLED && !canCheckStatus && !validLyrics)}>
           {working || restoring ? <LoaderCircle className="rap-duo-spin" size={18} aria-hidden="true" /> : <Sparkles size={18} aria-hidden="true" />}
           {restoring ? copy.status.recovering : working ? copy.status[phase] : canCheckStatus ? copy.checkStatus : phase === 'failed' ? copy.retry : result ? copy.generateAgain : copy.generate}
         </button>
-        <p className="rap-duo-progress-hint">{copy.lyrics.videoHint}</p>
-        <p className="rap-duo-progress-hint">{copy.progressHint}</p>
         <p className="rap-duo-privacy"><ShieldCheck size={13} aria-hidden="true" />{copy.privacy}</p>
       </footer>
     </form>
     <aside className="rap-duo-output" aria-label={copy.resultTitle}>
       <p className="rap-duo-output-title">{copy.resultTitle}</p>
       <div className="rap-duo-screen" aria-busy={working}>
-        {result ? <video key={result.videoUrl} ref={video} src={result.videoUrl} poster={result.coverImageUrl} controls playsInline preload="metadata" aria-label={copy.videoLabel}>{copy.videoUnsupported}</video> : <div className="rap-duo-empty">
+        {result ? <video key={result.videoUrl} ref={video} src={result.videoUrl} poster={result.coverImageUrl} controls playsInline preload="metadata" aria-label={copy.videoLabel}
+          onLoadedMetadata={event => setPlayback({ url: result.videoUrl, duration: event.currentTarget.duration, watched: false })}
+          onEnded={event => setPlayback({ url: result.videoUrl, duration: event.currentTarget.duration, watched: true })}>{copy.videoUnsupported}</video> : <div className="rap-duo-empty">
           <div className={'rap-duo-mic' + (working ? ' is-working' : '')}>{working ? <LoaderCircle className="rap-duo-spin" size={32} aria-hidden="true" /> : <Mic2 size={38} strokeWidth={1.3} aria-hidden="true" />}</div>
-          <p>{working ? copy.status[phase] : copy.resultEmpty}</p><span>{working ? copy.progressHint : copy.resultHint}</span>
+          <p>{working ? copy.status[phase] : copy.resultEmpty}</p>{!working && <span>{copy.resultHint}</span>}
           <div className="rap-duo-bars" aria-hidden="true">{[14, 25, 38, 22, 44, 30, 19, 34, 16].map((height, index) => <i key={index} style={{ height }} />)}</div>
         </div>}
       </div>
-      {result && <RapLyrics draft={result.rapLyrics} videoRef={video} videoUrl={result.videoUrl} locale={locale} />}
-      {phase !== 'idle' && !restoring && <p className={'rap-duo-status' + (result ? ' is-ready' : '')} role="status" aria-live="polite">{result && <CheckCircle2 size={15} aria-hidden="true" />}{copy.status[phase]}</p>}
-      {longWait && <p className="rap-duo-hint" data-testid="rap-long-wait">{copy.longWait}</p>}
+      {isPreviewResult && <RapPreviewNextStep key={result!.videoUrl} watched={currentPlayback?.watched ?? false} locale={locale} />}
+      {RAP_LYRICS_UI_ENABLED && result && <RapLyrics draft={result.rapLyrics} videoRef={video} videoUrl={result.videoUrl} locale={locale} />}
+      {phase !== 'idle' && !restoring && !isPreviewResult && <p className={'rap-duo-status' + (result ? ' is-ready' : '')} role="status" aria-live="polite">{result && <CheckCircle2 size={15} aria-hidden="true" />}{copy.status[phase]}</p>}
+      {longWait && working && !result && <p className="rap-duo-hint" role="status" aria-live="polite" data-testid="rap-long-wait">{copy.longWait}</p>}
       {result && <div className="rap-duo-download"><button type="button" onClick={() => { void download() }} disabled={downloading}>
         {downloading ? <LoaderCircle className="rap-duo-spin" size={17} aria-hidden="true" /> : <Download size={17} aria-hidden="true" />}{downloading ? copy.downloading : downloadError ? copy.retryDownload : copy.download}
       </button><p>{copy.downloadHint}</p>{downloadError && <p className="rap-duo-error" role="alert">{copy.errors.download}</p>}</div>}
-      <span className="rap-duo-output-format">{RAP_VIDEO_DURATION}s · 9:16 · MP4</span>
+      <span className="rap-duo-output-format">{!result && `${RAP_PREVIEW_DURATION}s · `}9:16 · MP4</span>
     </aside>
   </section>
 }

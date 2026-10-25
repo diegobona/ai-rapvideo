@@ -12,9 +12,25 @@
 #rap-maker.rap-duo-maker .rap-duo-photos { position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; }
 #rap-maker.rap-duo-maker .rap-duo-photo-label { display:flex;justify-content:space-between;gap:5px;margin-bottom:7px;color:#e4dcec;font-size:11px;font-weight:550; }
 #rap-maker.rap-duo-maker .rap-duo-photo-label span { color:#8e819e;font-size:9px;font-weight:400; }
-#rap-maker.rap-duo-maker .rap-duo-voice { display:grid;gap:6px;margin-top:9px;color:#ae9bbf;font-size:10px; }
-#rap-maker.rap-duo-maker .rap-duo-voice select { width:100%;min-width:0;max-width:100%;min-height:32px;padding:5px 7px;border:1px solid #594169;border-radius:7px;background:#171020;color:#f0e5ff;font:inherit; }
-#rap-maker.rap-duo-maker .rap-duo-voice select:disabled { opacity:.55; }
+#rap-maker.rap-duo-maker .rap-duo-voice { position:relative;display:grid;gap:6px;margin-top:9px;min-width:0;color:#ae9bbf;font-size:10px; }
+#rap-maker.rap-duo-maker .rap-duo-voice-trigger { display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;min-width:0;min-height:36px;padding:7px;border:1px solid #594169;border-radius:7px;background:#171020;color:#f0e5ff;font:inherit;text-align:left;cursor:pointer; }
+#rap-maker.rap-duo-maker .rap-duo-voice-trigger>span { min-width:0;overflow-wrap:anywhere; }
+#rap-maker.rap-duo-maker .rap-duo-voice-trigger>svg { flex-shrink:0; }
+#rap-maker.rap-duo-maker .rap-duo-voice-trigger[aria-expanded="true"] { border-color:#b18cdf; }
+#rap-maker.rap-duo-maker .rap-duo-voice-choices { position:absolute;z-index:10;top:calc(100% + 5px);left:0;right:0;max-height:280px;overflow-y:auto;padding:4px;border:1px solid #624879;border-radius:9px;background:#21162e;box-shadow:0 10px 28px #0007; }
+#rap-maker.rap-duo-maker .rap-duo-voice-option { display:flex;align-items:center;gap:3px;min-width:0;border-radius:6px; }
+#rap-maker.rap-duo-maker .rap-duo-voice-option:hover { background:#ffffff08; }
+#rap-maker.rap-duo-maker .rap-duo-voice-option.is-selected { background:#a472f41f; }
+#rap-maker.rap-duo-maker .rap-duo-voice-choice { display:flex;align-items:center;gap:5px;flex:1;min-width:0;min-height:42px;padding:6px 4px;color:#e4d5f0;font-size:10px;line-height:1.45;cursor:pointer; }
+#rap-maker.rap-duo-maker .rap-duo-voice-choice input { width:12px;height:12px;flex-shrink:0;margin:0;accent-color:#b18cdf; }
+#rap-maker.rap-duo-maker .rap-duo-voice-choice:has(input:disabled) { opacity:.45;cursor:default; }
+#rap-maker.rap-duo-maker .rap-duo-voice-choice-text { min-width:0;overflow-wrap:anywhere; }
+#rap-maker.rap-duo-maker .rap-duo-voice-choice-text small { display:block;margin-top:2px;font-size:8px;color:#b7a4c5; }
+#rap-maker.rap-duo-maker .rap-duo-voice-choice>svg { flex-shrink:0;margin-left:auto;color:#c6a5ff; }
+#rap-maker.rap-duo-maker .rap-duo-voice-sample { flex-shrink:0;width:30px; }
+#rap-maker.rap-duo-maker .rap-duo-voice-listen { display:grid;place-items:center;width:30px;min-height:34px;padding:0;border:0;border-radius:6px;background:transparent;color:#cdb0ee;cursor:pointer; }
+#rap-maker.rap-duo-maker .rap-duo-voice-listen:hover,#rap-maker.rap-duo-maker .rap-duo-voice-listen[aria-pressed="true"] { background:#a472f42e;color:#fff; }
+#rap-maker.rap-duo-maker .rap-duo-voice-sample-error { display:block;margin:0 0 4px;color:#f5b2c1;font-size:8px;overflow-wrap:anywhere; }
 #rap-maker.rap-duo-maker .rap-duo-drop { position:relative;display:flex;min-height:164px;flex-direction:column;align-items:center;justify-content:center;gap:12px;overflow:hidden;border:1px dashed #66517e;border-radius:11px;background:#0e0b17;color:#a68fc2;text-align:center;transition:border-color .18s,background .18s; }
 #rap-maker.rap-duo-maker .rap-duo-drop.is-dragging { border-color:#c0a0ff;background:#2f204c; }
 #rap-maker.rap-duo-maker .rap-duo-drop.has-photo { height:164px;justify-content:flex-end;padding:12px; }
@@ -60,6 +76,17 @@
 #rap-maker.rap-duo-maker .rap-duo-bars i { display:block;width:4px;border-radius:3px;background:linear-gradient(#b18cdf,#654384); }
 #rap-maker.rap-duo-maker .rap-duo-status { display:flex;align-items:center;justify-content:center;gap:6px;margin:0;color:#bba2d6;font-size:11px;line-height:1.6; }
 #rap-maker.rap-duo-maker .rap-duo-status.is-ready { color:#b9e4cf; }
+#rap-maker.rap-duo-maker .rap-preview-next-step { display:flex;flex-direction:column;gap:10px;margin:0;padding:17px;border:1px solid #725194;border-radius:12px;background:linear-gradient(135deg,#38234b99,#20162c);scroll-margin-top:24px;transition:border-color .25s,box-shadow .25s; }
+#rap-maker.rap-duo-maker .rap-preview-next-step.is-watched { border-color:#b997ed;box-shadow:0 0 0 2px #b997ed20; }
+#rap-maker.rap-duo-maker .rap-preview-next-step h3 { display:flex;align-items:center;gap:8px;margin:0;font-size:15px;line-height:1.45;font-weight:650;color:#f5edff; }
+#rap-maker.rap-duo-maker .rap-preview-next-step h3 svg { flex-shrink:0;color:#c9a9ff; }
+#rap-maker.rap-duo-maker .rap-preview-next-step p { margin:0;color:#c1aecf;font-size:12px;line-height:1.6; }
+#rap-maker.rap-duo-maker .rap-preview-pack { color:#e8d9f9;font-size:12px;font-weight:600; }
+#rap-maker.rap-duo-maker .rap-preview-next-step .site-google-signin { display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:43px;padding:10px 12px;border:1px solid #c5a4f5;border-radius:9px;background:#cfb0ff;color:#21122e;font:inherit;font-size:13px;font-weight:650;text-decoration:none;cursor:pointer; }
+#rap-maker.rap-duo-maker .rap-preview-next-step .site-google-signin:hover:not(:disabled) { background:#ddc6ff; }
+#rap-maker.rap-duo-maker .rap-preview-next-step .site-google-signin:focus-visible { outline:2px solid #e9d9ff;outline-offset:3px; }
+#rap-maker.rap-duo-maker .rap-preview-next-step .site-google-signin:disabled { opacity:.55;cursor:wait; }
+#rap-maker.rap-duo-maker .rap-preview-next-step .rap-preview-availability { font-size:11px;color:#ad96be;text-align:center; }
 #rap-maker.rap-duo-maker .rap-duo-download { display:flex;flex-direction:column;gap:9px; }
 #rap-maker.rap-duo-maker .rap-duo-download button { display:flex;align-items:center;justify-content:center;gap:8px;min-height:43px;border:1px solid #78569b;border-radius:9px;background:#3c2454;color:#f0dfff;font:inherit;font-size:12px;font-weight:650;cursor:pointer; }
 #rap-maker.rap-duo-maker .rap-duo-download>p { margin:0;color:#8e7c9e;font-size:10px;line-height:1.65;text-align:center; }
@@ -84,14 +111,10 @@
 #rap-maker.rap-duo-maker button:focus-visible,#rap-maker.rap-duo-maker textarea:focus-visible,#rap-maker.rap-duo-maker .rap-duo-scene:has(:focus-visible),#rap-maker.rap-duo-maker .rap-duo-drop:has(input:focus-visible) { outline:2px solid #c4a0ff;outline-offset:3px; }
 #rap-maker.rap-duo-maker .rap-duo-visually-hidden { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
 .rap-duo-spin { animation:rap-duo-spin 1.2s linear infinite; }
-#rap-maker.rap-duo-maker .rap-duo-voice-preview { margin-top:8px;color:#baa8ce;font-size:11px;min-width:0; }
-#rap-maker.rap-duo-maker .rap-duo-voice-preview summary { cursor:pointer;padding:5px 0; }
-#rap-maker.rap-duo-maker .rap-duo-voice-preview audio { display:block;width:100%;max-width:100%;height:32px;margin-top:7px; }
-#rap-maker.rap-duo-maker .rap-duo-voice-preview p { margin:7px 0 0;font-size:10px;line-height:1.6;color:#9b8dac; }
 @keyframes rap-duo-spin { to { transform:rotate(360deg); } }
 @media(max-width:760px) { #rap-maker.rap-duo-maker { grid-template-columns:minmax(0,1fr); } #rap-maker.rap-duo-maker .rap-duo-output { border-left:0;border-top:1px solid #bba0ff13; } #rap-maker.rap-duo-maker .rap-duo-screen { width:100%;max-width:310px;align-self:center; } }
 @media(max-width:420px) { #rap-maker.rap-duo-maker .rap-duo-heading { padding:20px 17px; } #rap-maker.rap-duo-maker .rap-duo-form { padding:22px 17px; } #rap-maker.rap-duo-maker .rap-duo-output { padding:23px 17px; } #rap-maker.rap-duo-maker .rap-duo-drop { min-height:154px; } #rap-maker.rap-duo-maker .rap-duo-heading p { font-size:17px; } }
-@media(prefers-reduced-motion:reduce) { .rap-duo-spin { animation:none; } }
+@media(prefers-reduced-motion:reduce) { .rap-duo-spin { animation:none; } #rap-maker.rap-duo-maker .rap-preview-next-step { transition:none; } }
 
 #rap-maker.rap-duo-maker .rap-duo-swap { position:absolute;z-index:2;top:24px;left:50%;transform:translateX(-50%);display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:#171020;color:#c6a5ef;cursor:pointer; }
 #rap-maker.rap-duo-maker .rap-duo-swap:hover:not(:disabled) { color:#fff;background:#30203f; }

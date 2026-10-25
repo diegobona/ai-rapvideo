@@ -38,13 +38,8 @@ export function VideoExamples({ heading = copy.heading }: { heading?: string }) 
       <div className="example-grid">
         {copy.items.map((example) => (
           <figure className="example-card" key={example.video}>
+            <figcaption><h3 title={example.title}>{example.title}</h3></figcaption>
             <ExamplePlayer {...example} />
-            <figcaption>
-              <h3>{example.title}</h3>
-              <p>{example.body}</p>
-              <p className="example-details">{example.details}</p>
-              <p className="example-use-case">{example.useCase}</p>
-            </figcaption>
           </figure>
         ))}
       </div>

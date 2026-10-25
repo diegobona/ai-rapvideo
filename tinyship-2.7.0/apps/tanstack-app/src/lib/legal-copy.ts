@@ -1,7 +1,7 @@
 export const legalDetails = {
   operator: 'ColdStone co.',
   supportEmail: 'support@ai-rapvideo.co',
-  updated: 'October 24, 2026',
+  updated: 'October 25, 2026',
   updatedLabel: 'Last updated:',
   contactHeading: 'Contact',
   contactLead: 'For support, privacy requests or questions about these terms, email',
@@ -19,7 +19,8 @@ export const legalPages = {
         heading: 'Information used by the service',
         paragraphs: [
           'The service creates an anonymous session with a generated internal identifier to associate uploads and video tasks with your browser. Registration, a name, an email address and a password are not required. Session records can include your IP address and browser information.',
-          'When you select Generate rap video, the service uploads your selected photos and stores the generation request, task status and a link to the result. Support emails contain the information you choose to send us.',
+          'Google sign-in is optional. If you use it, Google provides your account identifier, name, email address, verification status and profile image. We store account and session records to recognize your account and associate your previous video tasks. Google OAuth tokens may be stored in the account record. We do not receive your Google password or request access to Gmail or Google Drive.',
+          'When you generate a free preview, the service uploads your selected photos and stores the generation request, task status and a link to the result. Support emails contain the information you choose to send us.',
         ],
       },
       {
@@ -33,13 +34,14 @@ export const legalPages = {
         heading: 'Storage and video processing',
         paragraphs: [
           'We use Cloudflare to host the service and store uploaded photos and saved generated videos. AutoDL creates new videos; earlier orders may use Compshare. These providers may process information outside your country.',
+          'Google handles the optional sign-in and consent flow under its own privacy policies. Signing in does not reset the one-time free preview allowance for your network or account.',
           'Photos are uploaded when you start generation and provided to the video processor through image links. Image links grant access to the corresponding photos and should be kept private. Selecting a photo for a local preview does not upload it.',
         ],
       },
       {
         heading: 'Current free access and historical payment records',
         paragraphs: [
-          'Current video generation is free and does not require checkout or payment details. Stripe processed payments for earlier paid orders; we did not receive or store full card numbers or card security codes.',
+          'A single 3-second preview is free per public IP address and does not require checkout or payment details. Stripe processed payments for earlier paid orders; we did not receive or store full card numbers or card security codes.',
           'Records for earlier purchases may include the amount, currency, payment references and refund status, and may be retained for order support. New free generation requests are not sent to Stripe.',
         ],
       },
@@ -59,7 +61,7 @@ export const legalPages = {
       {
         heading: 'Cookies and analytics',
         paragraphs: [
-          'The service uses a signed, HttpOnly visitor cookie for session continuity and misuse prevention. This cookie can last up to one year. We also use short-lived, keyed hashes of Cloudflare-provided IP addresses to limit request bursts; the trial rate counters do not store raw IP addresses.',
+          'The service uses a signed, HttpOnly visitor cookie for session continuity and misuse prevention. This cookie can last up to one year. We use keyed hashes of Cloudflare-provided public IP addresses to limit request bursts and enforce one free preview per network. The preview allowance record is retained after photo and video deletion and does not reset when browsers or cookies change. These records do not store raw IP addresses. Devices sharing a public IP share the allowance.',
           'The authentication system uses session cookies, and the interface may store your theme preference in the browser. The current tab may keep your latest video task ID, uploaded-photo links, selected scene and rap topic for recovery. It does not keep uploaded photo bytes in this browser record.',
           'We use PostHog for basic visit and referral-source statistics, including visits from AI assistants. A page-load event includes the page URL, referring website, campaign tags, and browser and device information. PostHog uses anonymous identifiers in browser storage to estimate visitor counts. Its US-hosted service processes analytics requests, including the network information needed to receive them.',
           'Session recording, automatic click capture and person profiles are disabled. We do not track video-generation, upload, preview or download actions. We do not send uploaded photos, filenames, generation prompts, generated-video URLs, names or email addresses as analytics event data. Unrelated query parameters and URL fragments are removed from page URLs before analytics events are sent.',
@@ -98,15 +100,15 @@ export const legalPages = {
       {
         heading: 'Free access and generation',
         paragraphs: [
-          'Video generation is currently free. No payment, subscription, credits or account is required. The tool uses fixed 12-second, 768p portrait settings and four selectable scenes.',
-          'Only selecting Generate rap video starts a new request. Refreshing the page, checking an existing task or downloading a result does not create another video. A new generation can be started after the current request completes.',
+          'Each public IP address can generate one free 3-second portrait preview from four selectable scenes. No payment or account is required. An $8.90 pack for one full 12-second video is planned; checkout is not yet available.',
+          'Only selecting Generate free 3-second preview starts a new request. Refreshing, checking an existing task or downloading does not create another video. The allowance is reserved before submission and consumed after successful generation; clearing cookies or changing browsers does not restore it. Requests with an uncertain submission status remain reserved until resolved.',
           'Keep access to the same browser session to retrieve your video. Generation may continue after you close the page. Contact support@ai-rapvideo.co with your approximate generation time if you need help finding a task.',
         ],
       },
       {
         heading: 'Generation failures and refunds',
         paragraphs: [
-          'New generations are free, so there is no payment to refund. If generation fails, you can retry using your selected photos and settings. Earlier paid orders keep their original failure-refund handling; contact support@ai-rapvideo.co for help with an unresolved historical order.',
+          'Free previews have no payment to refund. If the provider confirms generation failed, the preview allowance is restored for a retry using your selected photos and settings. Earlier paid orders keep their original failure-refund handling; contact support@ai-rapvideo.co for help with an unresolved historical order.',
           'A temporary network or status-check error is not proof that generation failed; the service continues checking the existing order. A completed video can differ from the reference photos or intended motion. A completed result is not automatically refunded solely for a difference in appearance or movement; contact support if you have a concern. Nothing in these terms limits refund rights required by applicable law.',
         ],
       },

@@ -1,9 +1,9 @@
 import { and, eq, inArray, lt, sql } from 'drizzle-orm';
 import { db } from '@libs/database';
-import { videoTask, videoTrial, videoTrialRate, creditTransaction } from '@libs/database/schema';
+import { videoTask, videoTrial, videoTrialRate, creditTransaction, videoPurchase } from '@libs/database/schema';
 
 export class VideoTrialError extends Error {
-  constructor(readonly code: 'trial_used' | 'trial_processing' | 'rate_limited', readonly status: number) { super(code); }
+  constructor(readonly code: 'trial_used' | 'trial_processing' | 'rate_limited' | 'preview_ip_unavailable', readonly status: number) { super(code); }
 }
 export const trialKeys = (visitorId: string, userId?: string) => [`browser:${visitorId}`, ...(userId ? [`user:${userId}`] : [])];
 
@@ -32,7 +32,7 @@ export async function inheritTrialUsage(keys: string[]) {
     .where(and(inArray(videoTrial.key, keys), eq(videoTrial.state, 'available')));
 }
 
-export async function reserveVideoTrial(keys: string[], userId: string) {
+export async function reserveVideoTrial(keys: string[], userId?: string) {
   await ensureTrialScopes(keys, userId);
   const reservationId = crypto.randomUUID();
   // One atomic statement claims BOTH browser and account. Rows already updated
@@ -69,9 +69,13 @@ export async function linkAnonymousVideoData(oldUserId: string, newUserId: strin
   if (oldUserId === newUserId) return;
   await ensureTrialScopes([`user:${oldUserId}`, `user:${newUserId}`], oldUserId);
   await inheritTrialUsage([`user:${oldUserId}`, `user:${newUserId}`]);
+  // Signing in must not reset a guest's one-time preview allowance. Keep the
+  // same reservation/task references so later provider completion settles it.
+  await inheritTrialUsage([`preview-v1:user:${oldUserId}`, `preview-v1:user:${newUserId}`]);
   // Better Auth deletes the anonymous account after this callback. Move its
   // records first so the new account can still poll/download the original job.
   await db.update(creditTransaction).set({ userId: newUserId }).where(eq(creditTransaction.userId, oldUserId));
+  await db.update(videoPurchase).set({ userId: newUserId }).where(eq(videoPurchase.userId, oldUserId));
   await db.update(videoTask).set({ userId: newUserId }).where(eq(videoTask.userId, oldUserId));
 }
 

@@ -5,6 +5,12 @@
 APP_BASE_URL=http://localhost:7001
 BETTER_AUTH_URL=http://localhost:7001
 
+# Google OAuth (Web application). Production redirect:
+# https://ai-rapvideo.co/api/auth/callback/google
+# For local use also authorize http://localhost:7001/api/auth/callback/google
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
 # Minimal required backend variables for local startup
 DB_DIALECT=d1
 BETTER_AUTH_SECRET=replace-with-a-random-32-char-min-secret

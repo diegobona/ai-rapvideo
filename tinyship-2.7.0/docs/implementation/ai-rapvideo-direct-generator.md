@@ -473,3 +473,146 @@ owner's manual listening assessment.
 Type checking and the Cloudflare production build passed. Published Worker
 version: `eab42368-cd26-4b9d-88bd-1b82df51e0bf`. Audio output quality is not
 claimed verified; no test generation was submitted.
+
+### Temporarily hidden lyric controls (2026-10-25)
+
+`RAP_LYRICS_UI_ENABLED` is false. The authoring step, editor, lyric validation
+hints and synchronized playback transcript remain in source but are not rendered.
+Video submission no longer requires an invisible approved draft. A new explicit
+Generate rap video click validates photos and consent, requests English lyrics
+for the current topic, then uploads photos and submits the video. Preparing is a
+busy state, so controls and duplicate submissions are blocked. A lyric failure
+stops before a video POST; an uncertain video submission still uses the existing
+status-recovery path. Refresh/status recovery never starts a lyric request.
+Homepage instructions and FAQ now describe this single-click flow. Type checking
+passed. No automated tests, live lyric calls or test videos were run.
+
+### Reduce repeated solo lines (2026-10-25)
+
+The owner reports Person 1 sometimes repeats a sung line. No new failing output
+was supplied for this turn, so this revision does not assert whether a duplicate
+script or H3 performance drift caused that specific result. New DeepSeek drafts
+and video submissions reject duplicate whole lines after Unicode normalization,
+case folding and removal of spacing/punctuation. Historical saved drafts remain
+readable. The lyric prompt asks for distinct opening bars with different starts
+and content. A rejected draft stops before paid video submission.
+
+H3 dialogue events now include terminal punctuation. The vocal direction specifies
+a single forward pass through four bars, with a closed-mouth breath after bar 1,
+new words for bar 2 and instrumental-only space when a line finishes early.
+Person 1's solo completion keeps the mouth closed until the existing shared final
+bar. Choreography, voice bindings, music, lyric slots and closing gesture remain
+unchanged. This is a prevention measure, not deterministic enforcement of the
+rendered audio. No automated tests, live lyric call or test generation was run.
+
+### Inline voice previews in the picker (2026-10-25)
+
+The native voice select and separate preview details are replaced by a compact
+picker. Every available voice row contains a radio selection and its own preview
+icon button. Listening does not select the voice or submit the form. The voice
+already assigned to the other performer stays unavailable for selection but can
+still be previewed. Previews use the same existing owner-v1 reference URLs as
+video generation and load only on request.
+
+Starting a sample pauses other audio previews in the maker. Choosing a voice,
+closing the picker, clicking outside, pressing Escape, tabbing away or starting
+video generation unmounts and stops playback. Play failure has an inline retry
+message; intentional pause/cancellation does not show a false failure. The
+selected voice still follows its person when photos are swapped. No generation
+logic or audio assets changed. No automated tests or test video were run.
+
+Type checking and production build passed. Published Worker version:
+`35227066-2a19-4f8b-9508-e2007681734b`. Browser/audio interaction is left for the
+owner's manual check, following the standing request not to run tests.
+
+### Waiting copy only after two minutes (2026-10-25)
+
+Removed the obsolete lyric-review instruction and the always-visible wait/refresh
+copy from the form and empty video area. The busy-state timer now spans preparing,
+uploading, queueing and processing without restarting at each phase transition.
+Only after two minutes of continuous work with no result does the video output
+area show: 'Generation is taking longer than usual. The service may be busy;
+please wait.' The message disappears on completion or failure. No refresh promise
+is displayed. No automated test, lyric API call or video generation was run.
+
+### Six compact portrait examples (2026-10-25)
+
+Replaced the gallery with the owner's previously supplied cowork.mp4, besties.mp4,
+bday.mp4, grandpa.mp4, couple.mp4 and friends.mp4. All six are 720x1280 portrait
+clips of 12.096 seconds. Public copies preserve the original video bytes and
+soundtracks. Posters are matching one-second frames, extracted locally at
+360x640; no generation request was used. Existing unrelated assets are retained.
+
+Cards now have one short scene title above the video, without paragraph,
+duration or use-case blocks. Desktop uses three columns in a centered 720px-wide
+grid; small screens use two columns. Native controls and click-to-load playback
+remain. No new page URL, sitemap change or automated test was introduced.
+
+### Six examples per desktop row and HD output (2026-10-25)
+
+The portrait gallery now spans the page width in six desktop columns, with three
+columns below 900px and two below 640px. Removed the former 720px gallery cap.
+Each card retains one short scene title above its video.
+
+Maker copy in both languages, homepage FAQ and terms now show 1080P. The actual
+new-generation request was raised to the existing 803 workflow's documented
+`1088p竖(1088*1920)` option, rather than relabeling the previous 768px output.
+The public workflow schema was read without creating a task:
+https://www.autodl.art/api/v1/comfyui/workflows/minimax_h3_803
+Its resolution enum supports that exact label. Existing videos and the owner's
+720x1280 examples are retained unchanged. The 12-second duration, audio references
+and choreography are unchanged. No automated tests or paid generation was run.
+
+### Restore 768P provider requests (2026-10-25)
+
+The owner clarified that the requested 1080P change applies to interface text
+only. Reverted RAP_VIDEO_RESOLUTION to `768p竖(768*1376)`, the pre-existing 803
+request option. New requests again use 768P. The 1080P display text and six-column
+desktop gallery remain as requested. No video-generation task was submitted.
+This correction supersedes the preceding HD-request change.
+
+### Voice choice closes before selection (2026-10-25)
+
+The owner reported that the custom voice picker could not switch selections.
+Its root onBlur handler immediately closed the menu when relatedTarget was null.
+Clicking a radio label's text can blur the trigger before the label activates its
+input, unmounting the options before onChange can commit the selected voice.
+Removed that premature blur dismissal. A document focusin handler now dismisses
+only after focus actually arrives outside the picker; outside pointerdown and
+Escape behavior remain. Voice selection still commits before explicit closing,
+and preview clicks remain independent of selection. No audio, generation settings
+or layout was changed. Type checking passed; no automated interaction test or
+video-generation task was run, following the owner's standing instruction.
+
+### Stronger BGM balance (2026-10-25)
+- Updated only the prompt summary and music mix instructions: instrumental and vocals have equal perceived prominence, with kick/snare attacks slightly ahead and sustained bass/hi-hats audible throughout, including the final duet.
+- Removed the previous vocal-above-beat balance instruction. Voice casting, choreography, timing, reference assets and request resolution remain unchanged.
+- This is a generative mixing instruction, not a deterministic output gain adjustment. Existing rendered videos are unchanged. No video generation test requested or performed.
+
+### Homepage section navigation and displayed pricing (2026-10-25)
+- Header links to `/#how-to-make` and `/#pricing`; both targets are sections on the server-rendered homepage. In-page anchor scrolling is smooth unless the visitor requests reduced motion.
+- Pricing shows one planned $8.90 pack: one credit for one generation. Checkout remains disabled and new video generations remain free; the card and FAQ say this explicitly.
+- The prior $4.99 paid-order configuration and database checks remain untouched so historical purchases are unaffected. Any later activation of $8.90 credits requires a separate checkout, balance, consumption and refund implementation.
+
+### Three-second guest preview with durable network quota (2026-10-25)
+- AutoDL workflow 803 public input_rules confirmed duration accepts integer 1–15. Public free submissions compile a dedicated 0–3 second opening-bar prompt and pass duration=3 to the provider, with no full-length generation or playback clipping. Full 12-second builder remains available only for future server-authorized paid work.
+- A persistent HMAC of the trusted Cloudflare connecting IP plus browser/account scopes is atomically reserved in video_trial before provider submission. One successful preview per IP, no daily reset. New browser/account/cookie cannot bypass a used or pending IP. Only the edge address is accepted; missing/unverifiable IP fails closed. Raw IP is not stored in quota records.
+- Confirmed provider failure/rejection releases admission. Transport ambiguity retains it without automatic expiry to avoid repeat spend. Preview rows use a separate prefix; historical temporary/paid tasks remain owner-recoverable. An IP never grants access to another user's result. Asset cleanup does not clear the allowance.
+- UI, metadata, FAQ and privacy/terms reflect the 3-second preview and shared network allowance. Pricing remains display-only at $8.90 for a planned full 12-second video.
+- Per user instruction, no live generation or automated interaction tests were run. Verification is typecheck/build plus static request-path inspection.
+
+### Optional Google sign-in (2026-10-25)
+- Added a header Google sign-in button, account name and sign-out. Uses the installed Better Auth 1.4.10 authorization-code flow; Google handles account selection and consent. No extra site page or password registration flow was added.
+- Public auth handler now allows only get-session, Google callback/error, Google-only social initiation, anonymous sign-in and sign-out. Social initiation validates its request contract; mutation origin checks and existing per-IP session rate limiting remain enabled.
+- Production auth base is explicitly configured. Starts on www/Workers addresses move to the apex before initiating OAuth so state and callback use the same cookie host. Callback: https://ai-rapvideo.co/api/auth/callback/google.
+- Anonymous-to-Google linking transfers video tasks, historical purchases and existing preview quota to the real account. Signing in cannot reset an IP/account preview allowance.
+- GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are server-only values read from ignored .dev.vars locally, and uploaded to the existing Worker using a whitelist payload on Wrangler stdin. No secrets appear in client source or chat. .dev.vars.example lists the variable names and callback.
+- Privacy copy now describes optional Google profile data and stored OAuth account tokens. Browser tools failed to initialize (kernel assets path missing), so Google Console setup was completed manually by the user. Per standing instruction, no sign-in or generation tests were performed; typecheck/build are required before deployment.
+# Preview completion prompt (2026-10-25)
+
+- A compact next-step card appears directly below a completed 3-second preview; full-length historical results keep their existing presentation. The media metadata supplies duration when older result records omit it.
+- On playback ending, the card changes its heading to "Ready for the full performance?" and gently emphasizes its border. No modal, automatic playback, page scroll, or focus change interrupts viewing.
+- Guests can continue with Google from the card. OAuth returns to the restored preview card; signed-in users see a link to the existing homepage credit-pack section.
+- The offer remains $8.90 for one credit / one full 12-second generation. Checkout is still display-only, so the card explicitly says it is coming soon and does not claim a purchase or full generation can start today.
+- Preview downloads, quota rules, generation parameters, and payment activation are unchanged. Interactive sign-in, playback, and generation verification remain manual at the user's request.
+
