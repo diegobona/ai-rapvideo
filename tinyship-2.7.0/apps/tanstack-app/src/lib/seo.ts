@@ -22,7 +22,7 @@ export interface SeoOptions {
 
 export interface SeoHead {
   meta: Array<{ title: string } | { name: string; content: string } | { property: string; content: string } | { charSet: 'utf-8' }>
-  links: Array<{ rel: string; href: string; type?: string }>
+  links: Array<{ rel: string; href: string; type?: string; sizes?: string }>
   scripts?: Array<{ type: 'application/ld+json'; children: string }>
 }
 
@@ -60,7 +60,12 @@ export function seoHead(options: SeoOptions): SeoHead {
 
   if (options.document) {
     meta.unshift({ charSet: 'utf-8' }, { name: 'viewport', content: 'width=device-width, initial-scale=1' })
-    links.push({ rel: 'icon', href: '/favicon.ico', type: 'image/x-icon' })
+    links.push(
+      { rel: 'icon', href: '/favicon-wave.ico', type: 'image/x-icon', sizes: '16x16 32x32 48x48' },
+      { rel: 'icon', href: '/favicon-wave.svg', type: 'image/svg+xml', sizes: 'any' },
+      { rel: 'apple-touch-icon', href: '/apple-touch-icon.png?v=wave1', sizes: '180x180' },
+      { rel: 'manifest', href: '/site.webmanifest?v=wave1' },
+    )
   }
 
   const head: SeoHead = { meta, links }

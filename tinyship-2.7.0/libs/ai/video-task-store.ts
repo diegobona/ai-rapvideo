@@ -5,6 +5,7 @@ import { videoTask, creditTransaction, user } from '@libs/database/schema';
 import type { AsyncVideoProviderName, VideoGenerationResult, RapReferencePlan } from './types';
 import type { RapLyricsDraft } from './rap-lyrics-types';
 import { normalizeRapLyricsDraft } from './rap-lyrics-draft';
+import { migrateRapMediaUrl } from '../../config/mediaRetention';
 
 type LocalVideoTaskStatus = 'processing' | 'succeeded' | 'failed';
 
@@ -38,7 +39,11 @@ function toRecord(row: typeof videoTask.$inferSelect): VideoTaskRecord {
     ...row,
     provider: row.provider as AsyncVideoProviderName,
     status: row.status as LocalVideoTaskStatus,
-    result: saved && typeof saved.videoUrl === 'string' ? saved as VideoGenerationResult : undefined,
+    result: saved && typeof saved.videoUrl === 'string' ? {
+      ...saved,
+      videoUrl: migrateRapMediaUrl(saved.videoUrl, process.env.R2_PUBLIC_URL),
+      ...(typeof saved.coverImageUrl === 'string' ? { coverImageUrl: migrateRapMediaUrl(saved.coverImageUrl, process.env.R2_PUBLIC_URL) } : {}),
+    } as VideoGenerationResult : undefined,
     ...(rapLyrics ? { rapLyrics } : {}),
     ...(saved?.rapReferencePlan ? { rapReferencePlan: saved.rapReferencePlan } : {}),
     errorMessage: row.errorMessage ?? undefined,

@@ -9,7 +9,7 @@ export interface RapCreditOrder {
   result?: VideoGenerationResult
 }
 export interface RapCreditStatus { enabled: boolean; credits: number; order?: RapCreditOrder }
-export type RapCreditErrorCode = 'unavailable' | 'signin' | 'network' | 'checkout' | 'invalid' | 'credits'
+export type RapCreditErrorCode = 'unavailable' | 'signin' | 'network' | 'checkout' | 'invalid' | 'credits' | 'popup' | 'draft'
 export class RapCreditError extends Error {
   constructor(readonly code: RapCreditErrorCode) { super(code); this.name = 'RapCreditError' }
 }
@@ -41,11 +41,11 @@ export async function verifyRapCredits(sessionId: string, signal?: AbortSignal):
   if (!/^cs_[A-Za-z0-9_]{8,256}$/.test(sessionId)) throw new RapCreditError('invalid')
   return readStatus(await data(await fetch('/api/rap-credits/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId }), signal }), 'invalid'))
 }
-export async function createRapCreditCheckout(signal?: AbortSignal): Promise<string> {
+export async function createRapCreditCheckout(signal?: AbortSignal): Promise<{ url: string; orderId: string }> {
   const result = await data(await fetch('/api/rap-credits/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', signal }), 'checkout')
   if (typeof result.orderId !== 'string' || !result.orderId || typeof result.checkoutUrl !== 'string') throw new RapCreditError('invalid')
   let url: URL
   try { url = new URL(result.checkoutUrl) } catch { throw new RapCreditError('invalid') }
   if (url.protocol !== 'https:' || url.hostname !== 'checkout.stripe.com' || url.username || url.password || url.port) throw new RapCreditError('invalid')
-  return url.href
+  return { url: url.href, orderId: result.orderId }
 }

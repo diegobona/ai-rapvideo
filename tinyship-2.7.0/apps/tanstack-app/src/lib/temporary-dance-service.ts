@@ -6,6 +6,7 @@ import type { VideoGenerationOptions } from '@libs/ai/types';
 import { validateOwnedVideoImage } from '@libs/payment/video-stripe';
 import { createRapVideoOptions } from './rap-template';
 import { paidDanceDependencies } from './paid-dance-service';
+import { migrateRapMediaUrl } from '../../../../config/mediaRetention';
 
 export async function prepareRap(input: unknown, userId: string, preview: boolean) {
   if (!input || typeof input !== 'object' || Array.isArray(input))
@@ -18,9 +19,15 @@ export async function prepareRap(input: unknown, userId: string, preview: boolea
   } catch { /* Node uses the configured public storage origin. */ }
   let options: VideoGenerationOptions;
   try {
-    validateOwnedVideoImage(body.personOneImageUrl, userId, publicUrl);
-    validateOwnedVideoImage(body.personTwoImageUrl, userId, publicUrl);
-    options = createRapVideoOptions(body, preview);
+    // An already-open tab may hold photo URLs uploaded before the custom-domain
+    // switch. Canonicalize only known same-bucket keys, then keep owner checks.
+    const current = { ...body,
+      personOneImageUrl: typeof body.personOneImageUrl === 'string' ? migrateRapMediaUrl(body.personOneImageUrl, publicUrl) : body.personOneImageUrl,
+      personTwoImageUrl: typeof body.personTwoImageUrl === 'string' ? migrateRapMediaUrl(body.personTwoImageUrl, publicUrl) : body.personTwoImageUrl,
+    };
+    validateOwnedVideoImage(current.personOneImageUrl, userId, publicUrl);
+    validateOwnedVideoImage(current.personTwoImageUrl, userId, publicUrl);
+    options = createRapVideoOptions(current, preview);
   } catch {
     throw new PaidVideoError('invalid_video_request', 400);
   }

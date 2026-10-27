@@ -1,12 +1,12 @@
 # PostHog analytics
 
-TanStack Start site only, using the official `posthog-js` SDK. The production website is `https://rumpelstiltskin-ai.co`; localhost and preview hostnames do not send analytics. No new routes, database tables or payment configuration are needed.
+TanStack Start site only, using the official `posthog-js` SDK. The production website is `https://ai-rapvideo.co`; localhost and preview hostnames do not send analytics. No new routes, database tables or payment configuration are needed.
 
 ## Configuration
 
 Vite reads the monorepo root `.env.production`, because this app sets `envDir` to the root. Public values are `VITE_POSTHOG_PROJECT_TOKEN` and `VITE_POSTHOG_HOST=https://us.i.posthog.com`. The token is a public project token, not a personal API key. The example is `apps/tanstack-app/.env.analytics.example`. Keep server secrets in the existing, ignored app `.env.production.local`; do not move them into Vite-prefixed variables.
 
-`src/components/site-analytics.tsx` initializes once after hydration. `src/lib/analytics.ts` dynamically imports the SDK and preserves referrer and UTM information. Only a page-load visit is captured, with no History API navigation tracking. There is no additional Cloudflare or Plausible beacon.
+`src/components/site-analytics.tsx` initializes once after hydration. `src/lib/analytics.ts` dynamically imports the SDK and preserves referrer and UTM information. Only a page-load visit is captured by this PostHog integration, with no History API navigation tracking. The optional [Plausible integration](./plausible-analytics.md) is configured separately and keeps PostHog in place.
 
 ## Events and interpretation
 

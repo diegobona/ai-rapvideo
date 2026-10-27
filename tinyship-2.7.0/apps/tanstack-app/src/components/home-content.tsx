@@ -16,9 +16,7 @@ type HomeContentProps = {
 export function HomeContent({ relatedTools = homeCopy.related.items }: HomeContentProps) {
   return (
     <div className="home-content">
-      <p className="home-intro">{homeCopy.intro}</p>
-
-      <VideoExamples heading={homeCopy.examplesHeading} />
+      <VideoExamples heading={homeCopy.presentation.examplesHeading} note={homeCopy.presentation.examplesNote} />
 
       <section className="home-section section-how" aria-labelledby="how-to-make">
         <h2 id="how-to-make">{homeCopy.how.heading}</h2>
@@ -37,11 +35,21 @@ export function HomeContent({ relatedTools = homeCopy.related.items }: HomeConte
 
       <section className="home-section section-pricing" aria-labelledby="pricing">
         <h2 id="pricing">{homeCopy.pricing.heading}</h2>
-        <RapPricingCard />
+        <div className="pricing-options">
+          <article className="pricing-card pricing-preview">
+            <span className="pricing-availability">{homeCopy.presentation.previewPricing.label}</span>
+            <div className="pricing-offer"><strong className="pricing-price">{homeCopy.presentation.previewPricing.price}</strong></div>
+            <h3>{homeCopy.presentation.previewPricing.title}</h3>
+            <p className="pricing-note">{homeCopy.presentation.previewPricing.description}</p>
+            <a className="pricing-preview-link" href="#rap-maker">{homeCopy.presentation.previewPricing.action}<span aria-hidden="true">↗</span></a>
+          </article>
+          <RapPricingCard />
+        </div>
       </section>
 
       <section className="home-section section-editorial" aria-labelledby="what-is-rap-video">
         <h2 id="what-is-rap-video">{homeCopy.editorial.whatIs.heading}</h2>
+        <p>{homeCopy.intro}</p>
         <p>{homeCopy.editorial.whatIs.body}</p>
       </section>
 
@@ -59,12 +67,12 @@ export function HomeContent({ relatedTools = homeCopy.related.items }: HomeConte
         <h2 id="video-faq">{homeCopy.faq.heading}</h2>
         <div className="faq-list">
           {homeCopy.faq.items.map((item) => (
-            <div className="faq-item" key={item.question}>
-              <h3>{item.question}</h3>
+            <details className="faq-item" key={item.question}>
+              <summary>{item.question}</summary>
               <p>
                 {item.answer}
               </p>
-            </div>
+            </details>
           ))}
         </div>
       </section>

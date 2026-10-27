@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { Sparkles } from 'lucide-react'
 import { rapCopy, type RapLocale } from '@/lib/rap-copy'
-import { RapCreditPurchase } from './rap-credit-purchase'
+import { rapCreditCopy } from '@/lib/rap-credit-copy'
 
-export function RapPreviewNextStep({ watched, locale }: { watched: boolean; locale: RapLocale }) {
+export function RapPreviewNextStep({ watched, locale, onContinue, disabled = false }: { watched: boolean; locale: RapLocale; onContinue: () => void; disabled?: boolean }) {
   const copy = rapCopy[locale].previewNextStep
   const card = useRef<HTMLElement>(null)
 
@@ -19,6 +19,6 @@ export function RapPreviewNextStep({ watched, locale }: { watched: boolean; loca
     <h3 id="preview-next-step-title" aria-live="polite" aria-atomic="true"><Sparkles size={17} aria-hidden="true" />{watched ? copy.watched : copy.ready}</h3>
     <p>{copy.description}</p>
     <strong className="rap-preview-pack">{copy.pack}</strong>
-    <RapCreditPurchase locale={locale} compact />
+    <button className="rap-credit-buy" type="button" onClick={onContinue} disabled={disabled}>{rapCreditCopy[locale].generateFull} · {rapCreditCopy[locale].price}</button>
   </section>
 }

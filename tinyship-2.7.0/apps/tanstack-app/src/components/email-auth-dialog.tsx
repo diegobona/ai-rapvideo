@@ -1,12 +1,13 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { Eye, EyeOff, LoaderCircle, Mail, X } from 'lucide-react'
+import { Eye, EyeOff, LoaderCircle, UserRound, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { authClientReact } from '@libs/auth/authClient'
 import { config } from '@config'
 import { authCopy } from '@/lib/auth-copy'
 import { useAuthCapabilities } from '@/hooks/use-auth-capabilities'
 import { SITE_ORIGIN } from '@/lib/site'
+import { forgetRapAccessIntent } from '@/lib/rap-generation-access'
 import { GoogleSignin } from './google-signin'
 import './email-auth.css'
 
@@ -54,9 +55,16 @@ export function EmailAuthDialog({ variant = 'header' }: { variant?: 'header' | '
       return
     }
     setOpen(next)
-    if (!next) { setPassword(''); setError(''); setNotice(''); setShowPassword(false); resetToken.current = null }
+    if (!next) { setPassword(''); setError(''); setNotice(''); setShowPassword(false); resetToken.current = null; forgetRapAccessIntent(); window.dispatchEvent(new Event('rap-auth-dismissed')) }
     else changeMode('signin')
   }
+
+  useEffect(() => {
+    if (variant !== 'header') return
+    const requestSignIn = () => { if (!user && !busy) { setReturnTo('#rap-maker'); changeOpen(true) } }
+    window.addEventListener('rap-auth-required', requestSignIn)
+    return () => window.removeEventListener('rap-auth-required', requestSignIn)
+  }, [variant, user?.id, busy])
 
   useEffect(() => {
     // Only the persistent header dialog consumes recovery URLs. Remove the
@@ -117,7 +125,7 @@ export function EmailAuthDialog({ variant = 'header' }: { variant?: 'header' | '
 
   return <Dialog.Root open={open} onOpenChange={changeOpen}>
     {!user && <Dialog.Trigger asChild><button type="button" className={'site-email-signin' + (variant === 'preview' ? ' is-preview' : '')} disabled={isPending}>
-      <Mail size={15} aria-hidden="true" />{copy.trigger}
+      <UserRound size={15} aria-hidden="true" />{copy.trigger}
     </button></Dialog.Trigger>}
     <Dialog.Portal>
       <Dialog.Overlay className="email-auth-overlay" />

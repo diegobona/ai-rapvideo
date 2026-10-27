@@ -3,14 +3,38 @@ import { and, eq, isNull, lt, or, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { db } from '@libs/database';
 import { rapCreditOrder } from '@libs/database/schema';
-import { getRapCreditConfig, rapCreditConfig, rapCreditPaymentsEnabled } from '../../config/rapCredits';
+import { getRapCreditConfig, rapCreditConfig, rapCreditPaymentsEnabled, type RapCreditStripeAccount } from '../../config/rapCredits';
 import { PaidVideoError } from '../ai/paid-video';
 import { findRapCreditOrderByIntent, getRapCreditOrder, type RapCreditOrder } from './rap-credit-orders';
 
 export type RapRecovery = (id: string) => Promise<void>;
-export const createRapStripeClient = () => new Stripe(getRapCreditConfig().secretKey, {
-  apiVersion: '2025-04-30.basil', httpClient: Stripe.createFetchHttpClient(), timeout: 10_000, maxNetworkRetries: 1,
-});
+const clientAccounts = new WeakMap<Stripe, RapCreditStripeAccount>();
+function stripeAccount(accountId?: string): RapCreditStripeAccount {
+  const cfg = getRapCreditConfig();
+  if (!accountId || accountId === cfg.accountId || (!cfg.accountId && !cfg.legacyAccounts.length)) return cfg;
+  const legacy = cfg.legacyAccounts.find(account => account.accountId === accountId);
+  if (!legacy) throw new PaidVideoError('payments_unavailable', 503);
+  return legacy;
+}
+export function createRapStripeClient(accountId?: string) {
+  const account = stripeAccount(accountId);
+  const stripe = new Stripe(account.secretKey, {
+    apiVersion: '2025-04-30.basil', httpClient: Stripe.createFetchHttpClient(), timeout: 10_000, maxNetworkRetries: 1,
+  });
+  clientAccounts.set(stripe, account);
+  return stripe;
+}
+function stripeForOrder(order: RapCreditOrder, candidate?: Stripe) {
+  if (order.amount !== 890 || order.currency !== 'usd' || !/^price_[A-Za-z0-9]+$/.test(order.stripePriceId))
+    throw new PaidVideoError('invalid_payment', 400);
+  const account = stripeAccount(order.stripeAccountId);
+  const legacy = getRapCreditConfig().legacyAccounts.find(value => value.accountId === order.stripeAccountId);
+  if (legacy && order.stripePriceId !== legacy.priceId) throw new PaidVideoError('invalid_payment', 400);
+  const provided = candidate && clientAccounts.get(candidate);
+  // Some generation callers pass one current client across several purchased
+  // credits. Never use that client for an order purchased on a legacy account.
+  return candidate && provided?.secretKey === account.secretKey ? candidate : createRapStripeClient(order.stripeAccountId);
+}
 const itemId = (value: string | { id: string } | null | undefined) => typeof value === 'string' ? value : value?.id;
 const metadata = (order: RapCreditOrder) => ({ app: rapCreditConfig.appMarker, orderId: order.id, userId: order.userId, accountId: order.stripeAccountId });
 
@@ -23,7 +47,10 @@ async function checkoutParams(order: RapCreditOrder): Promise<Stripe.Checkout.Se
     cancel_url: `${cfg.appBaseUrl}/?rap_checkout=cancelled#pricing`,
     expires_at: Math.floor(order.createdAt.getTime() / 1000) + rapCreditConfig.checkoutLifetimeSeconds,
     allow_promotion_codes: false, adaptive_pricing: { enabled: false }, automatic_tax: { enabled: false },
-    ...{ branding_settings: { display_name: 'AI Rap Video', background_color: '#171124', button_color: '#7550ab' } },
+    ...{ branding_settings: {
+      display_name: 'AI Rap Video', background_color: '#191714', button_color: '#bba789',
+      icon: { type: 'url', url: 'https://ai-rapvideo.co/android-chrome-512x512.png?v=wave1' },
+    } },
   };
 }
 export async function createRapCreditCheckout(userId: string, schedule: RapRecovery) {
@@ -32,12 +59,14 @@ export async function createRapCreditCheckout(userId: string, schedule: RapRecov
   const cfg = getRapCreditConfig();
   const account = await stripe.accounts.retrieve();
   const price = await stripe.prices.retrieve(cfg.priceId);
-  if (!account.charges_enabled || !price.active || price.unit_amount !== 890 || price.currency !== 'usd' || price.type !== 'one_time' || price.livemode !== cfg.live)
+  if ((cfg.accountId && account.id !== cfg.accountId) || !account.charges_enabled || !price.active || price.unit_amount !== 890 || price.currency !== 'usd' || price.type !== 'one_time' || price.livemode !== cfg.live)
     throw new PaidVideoError('payments_unavailable', 503);
   let [order] = await db.select().from(rapCreditOrder).where(and(eq(rapCreditOrder.userId, userId), eq(rapCreditOrder.state, 'pending'))).limit(1) as RapCreditOrder[];
   if (order) {
     await schedule(order.id);
-    order = await reconcileRapCheckout(order, stripe);
+    order = await reconcileRapCheckout(order);
+    if (order.state === 'pending' && (order.stripeAccountId !== account.id || order.stripePriceId !== cfg.priceId))
+      order = await retirePreviousCheckout(order);
     if (order.state !== 'pending') order = undefined as unknown as RapCreditOrder;
   }
   if (!order) {
@@ -63,9 +92,9 @@ export async function createRapCreditCheckout(userId: string, schedule: RapRecov
 }
 
 function validateSessionIdentity(session: Stripe.Checkout.Session, order: RapCreditOrder) {
-  const cfg = getRapCreditConfig();
+  const cfg = stripeAccount(order.stripeAccountId);
   if ((order.checkoutSessionId && session.id !== order.checkoutSessionId) || session.mode !== 'payment'
-    || session.livemode !== cfg.live || session.client_reference_id !== order.id || session.metadata?.app !== cfg.appMarker
+    || session.livemode !== cfg.live || session.client_reference_id !== order.id || session.metadata?.app !== rapCreditConfig.appMarker
     || session.metadata?.orderId !== order.id || session.metadata?.userId !== order.userId || session.metadata?.accountId !== order.stripeAccountId)
     throw new PaidVideoError('invalid_payment', 400);
 }
@@ -95,8 +124,9 @@ async function settleSession(session: Stripe.Checkout.Session, order: RapCreditO
   }
   return (await getRapCreditOrder(order.id))!;
 }
-export async function reconcileRapCheckout(order: RapCreditOrder, stripe = createRapStripeClient()): Promise<RapCreditOrder> {
+export async function reconcileRapCheckout(order: RapCreditOrder, candidate?: Stripe): Promise<RapCreditOrder> {
   if (order.state !== 'pending') return order;
+  const stripe = stripeForOrder(order, candidate);
   let id = order.checkoutSessionId;
   if (!id) {
     // Read-only recovery searches the entire possible creation window, including
@@ -127,13 +157,38 @@ export async function reconcileRapCheckout(order: RapCreditOrder, stripe = creat
   }
   return settleSession(session, order, stripe);
 }
+/** Replacing an unpaid checkout must not cancel a payment that just completed. */
+async function retirePreviousCheckout(order: RapCreditOrder): Promise<RapCreditOrder> {
+  if (!order.checkoutSessionId) throw new PaidVideoError('checkout_recovery_pending', 409);
+  const stripe = stripeForOrder(order);
+  let session = await stripe.checkout.sessions.retrieve(order.checkoutSessionId, { expand: ['line_items.data.price'] });
+  validateSessionIdentity(session, order);
+  if (session.status === 'open') {
+    try {
+      session = await stripe.checkout.sessions.expire(session.id, {}, { idempotencyKey: `rap-credit-retire-${order.id}` });
+    } catch (error) {
+      // A completed payment wins a race with expiry. Re-read its authoritative
+      // status; uncertain transport errors leave the order pending for recovery.
+      if (!(error instanceof Stripe.errors.StripeInvalidRequestError)) throw error;
+      session = await stripe.checkout.sessions.retrieve(session.id, { expand: ['line_items.data.price'] });
+    }
+  }
+  if (session.status === 'complete' && session.payment_status === 'paid' && !session.line_items)
+    session = await stripe.checkout.sessions.retrieve(session.id, { expand: ['line_items.data.price'] });
+  const settled = await settleSession(session, order, stripe);
+  if (settled.state === 'pending') throw new PaidVideoError('checkout_recovery_pending', 409);
+  return settled;
+}
 export async function verifyRapCreditCheckout(sessionId: string, userId: string, schedule: RapRecovery) {
   if (!/^cs_(test_|live_)?[A-Za-z0-9]{10,}$/.test(sessionId) || sessionId.length > 255) throw new PaidVideoError('invalid_payment', 400);
-  const stripe = createRapStripeClient();
-  const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['line_items.data.price'] });
-  const id = session.metadata?.orderId;
-  const order = id ? await getRapCreditOrder(id, userId) : undefined;
+  const [order] = await db.select().from(rapCreditOrder)
+    .where(and(eq(rapCreditOrder.checkoutSessionId, sessionId), eq(rapCreditOrder.userId, userId))).limit(1) as RapCreditOrder[];
   if (!order) throw new PaidVideoError('not_found', 404);
+  return verifyOrderCheckout(sessionId, order, schedule);
+}
+async function verifyOrderCheckout(sessionId: string, order: RapCreditOrder, schedule: RapRecovery, candidate?: Stripe) {
+  const stripe = stripeForOrder(order, candidate);
+  const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['line_items.data.price'] });
   validateSessionIdentity(session, order);
   await schedule(order.id);
   const settled = await settleSession(session, order, stripe);
@@ -143,8 +198,9 @@ export async function verifyRapCreditCheckout(sessionId: string, userId: string,
 }
 
 /** Refund inventory is authoritative, including dashboard refunds and pending reservations. */
-export async function refreshRapCreditRefunds(order: RapCreditOrder, stripe = createRapStripeClient()): Promise<RapCreditOrder> {
+export async function refreshRapCreditRefunds(order: RapCreditOrder, candidate?: Stripe): Promise<RapCreditOrder> {
   if (!order.paymentIntentId) return order;
+  const stripe = stripeForOrder(order, candidate);
   const refunds: Stripe.Refund[] = [];
   let after: string | undefined;
   for (let page = 0; page < 10; page++) {
@@ -201,20 +257,43 @@ export async function refreshRapCreditRefunds(order: RapCreditOrder, stripe = cr
 
 export async function handleRapCreditWebhook(body: string, signature: string, schedule: RapRecovery) {
   const cfg = getRapCreditConfig();
-  const stripe = createRapStripeClient();
-  const event = await stripe.webhooks.constructEventAsync(body, signature, cfg.webhookSecret, undefined, Stripe.createSubtleCryptoProvider());
-  if (event.livemode !== cfg.live || event.account) throw new PaidVideoError('invalid_payment', 400);
-    if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded' || event.type === 'checkout.session.expired') {
+  let verified: { event: Stripe.Event; stripe: Stripe; account: RapCreditStripeAccount } | undefined;
+  for (const account of [cfg, ...cfg.legacyAccounts]) {
+    const stripe = createRapStripeClient(account.accountId || undefined);
+    try {
+      const event = await stripe.webhooks.constructEventAsync(body, signature, account.webhookSecret, undefined, Stripe.createSubtleCryptoProvider());
+      verified = { event, stripe, account };
+      break;
+    } catch (error) {
+      if (!(error instanceof Error) || error.name !== 'StripeSignatureVerificationError') throw error;
+    }
+  }
+  if (!verified) throw new PaidVideoError('invalid_payment', 400);
+  const { event, stripe, account } = verified;
+  if (event.livemode !== account.live || event.account) throw new PaidVideoError('invalid_payment', 400);
+  const validateWebhookOrder = (order: RapCreditOrder) => {
+    if (stripeAccount(order.stripeAccountId).secretKey !== account.secretKey
+      || (account.accountId && order.stripeAccountId !== account.accountId) || order.amount !== 890 || order.currency !== 'usd')
+      throw new PaidVideoError('invalid_payment', 400);
+    stripeForOrder(order, stripe);
+  };
+  if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded' || event.type === 'checkout.session.expired') {
     const session = event.data.object as Stripe.Checkout.Session;
     if (session.metadata?.app !== cfg.appMarker) return;
     const order = session.metadata.orderId ? await getRapCreditOrder(session.metadata.orderId) : undefined;
     if (!order) throw new PaidVideoError('not_found', 404);
-    await verifyRapCreditCheckout(session.id, order.userId, schedule);
+    validateWebhookOrder(order);
+    validateSessionIdentity(session, order);
+    await verifyOrderCheckout(session.id, order, schedule, stripe);
   } else if (['charge.refunded', 'refund.created', 'refund.updated', 'refund.failed'].includes(event.type)) {
     const object = event.data.object as Stripe.Refund | Stripe.Charge;
     const intentId = itemId(object.payment_intent);
     const order = intentId ? await findRapCreditOrderByIntent(intentId) : undefined;
     if (!order) return;
+    validateWebhookOrder(order);
+    // Refund objects have no livemode field; their mode comes from the signed
+    // enclosing event and the account-specific API client.
+    if (object.currency !== 'usd' || (object.object === 'charge' && object.livemode !== account.live)) throw new PaidVideoError('invalid_payment', 400);
     await schedule(order.id);
     await refreshRapCreditRefunds(order, stripe);
     await schedule(order.id);

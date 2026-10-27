@@ -2,6 +2,19 @@
 import { danceExamples } from './dance-examples'
 
 export const homeCopy = {
+  presentation: {
+    eyebrow: 'Two faces. One unforgettable verse.',
+    previewNote: 'Start with a free 3-second preview',
+    examplesHeading: 'A little inspiration.',
+    examplesNote: 'Different people. Same main-character energy.',
+    previewPricing: {
+      label: 'The first impression',
+      price: 'Free',
+      title: '3-second preview',
+      description: 'Your photos, voices, and scene. One free preview per public IP address, with no account or payment required.',
+      action: 'Create free preview',
+    },
+  },
   subtitle: 'Turn two photos into an AI rap video with original verses and a beat.',
   share: {
     image: 'https://ai-rapvideo.co/images/examples/rap-orange-studio.jpg',
@@ -13,13 +26,13 @@ export const homeCopy = {
     steps: [
       {
         title: 'Upload the first portrait',
-        body: 'Upload a clear portrait of your first performer. Choose a JPG, PNG, or WebP up to 20 MB.',
+        body: 'Upload a clear portrait of your first performer, or upload one photo of both people to split automatically. Choose a JPG, PNG, or WebP up to 20 MB.',
         image: '/images/rap/step-person-1.png',
         alt: 'AI-generated illustration of a first performer portrait with an upload arrow',
       },
       {
         title: 'Add the second portrait',
-        body: 'Add a separate portrait of your second performer. Both uploaded photos are required for the rap duo.',
+        body: 'Add your second portrait, or check the two portraits automatically cropped from your joint photo. Use the arrows to swap the people if needed.',
         image: '/images/rap/step-person-2.png',
         alt: 'AI-generated illustration of two separate performer portrait uploads',
       },
@@ -60,7 +73,7 @@ export const homeCopy = {
     },
     twoPhotos: {
       heading: 'Why Two Photos',
-      body: 'Two photos place both people in one performance. A single-person template centers one face; a duo shares the scene and attention. Upload a separate, clear portrait for each person to keep their identities distinct.',
+      body: 'Two portraits place both people in one performance. A single-person template centers one face; a duo shares the scene and attention. Upload separate, clear portraits, or let us crop one photo of both people into two individual reference images.',
     },
   },
   examples: danceExamples,
@@ -85,7 +98,7 @@ export const homeCopy = {
       },
       {
         question: 'Do I need to upload both photos?',
-        answer: 'Yes. Upload one photo for person 1 and another for person 2. There is no default second person. Choose clear photos with one visible face in each image, in JPG, PNG, or WebP format, up to 20 MB each.',
+        answer: 'Both people are required. Upload two individual portraits, or upload one photo containing exactly two people and we automatically crop it into Person 1 and Person 2. There is no default second person. Choose clear faces in JPG, PNG, or WebP images, up to 20 MB each.',
         source: null,
       },
       {

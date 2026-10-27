@@ -12,6 +12,7 @@ import { Toaster } from '@libs/react-shared/ui/sonner'
 import { GlobalHeader } from '@/components/global-header'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteAnalytics } from '@/components/site-analytics'
+import { PlausibleAnalytics } from '@/components/plausible-analytics'
 import { RapCreditsProvider } from '@/components/rap-credit-provider'
 import '../styles.css'
 
@@ -70,9 +71,10 @@ function NotFoundPage() {
 }
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
+  const plausibleAnalyticsEnabled = useLoaderData({ from: '__root__', select: data => data.plausibleAnalyticsEnabled })
   return (
     <html lang="en" suppressHydrationWarning>
-      <head><HeadContent /><ThemeScript /></head>
+      <head><HeadContent /><ThemeScript /><PlausibleAnalytics enabled={plausibleAnalyticsEnabled} /></head>
       <body className="antialiased">
         <ThemeProvider>{children}<Toaster /></ThemeProvider>
         <Scripts />

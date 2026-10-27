@@ -1,7 +1,7 @@
 export const legalDetails = {
   operator: 'ColdStone co.',
   supportEmail: 'support@ai-rapvideo.co',
-  updated: 'October 25, 2026',
+  updated: 'October 27, 2026',
   updatedLabel: 'Last updated:',
   contactHeading: 'Contact',
   contactLead: 'For support, privacy requests or questions about these terms, email',
@@ -63,8 +63,8 @@ export const legalPages = {
         heading: 'Cookies and analytics',
         paragraphs: [
           'The service uses a signed, HttpOnly visitor cookie for session continuity and misuse prevention. This cookie can last up to one year. We use keyed hashes of Cloudflare-provided public IP addresses to limit request bursts and enforce one free preview per network. The preview allowance record is retained after photo and video deletion and does not reset when browsers or cookies change. These records do not store raw IP addresses. Devices sharing a public IP share the allowance.',
-          'The authentication system uses session cookies, and the interface may store your theme preference in the browser. The current tab may keep your latest video task ID, uploaded-photo links, selected scene and rap topic for recovery. It does not keep uploaded photo bytes in this browser record.',
-          'We use PostHog for basic visit and referral-source statistics, including visits from AI assistants. A page-load event includes the page URL, referring website, campaign tags, and browser and device information. PostHog uses anonymous identifiers in browser storage to estimate visitor counts. Its US-hosted service processes analytics requests, including the network information needed to receive them.',
+          'The authentication system uses session cookies, and the interface may store your theme preference in the browser. The current tab may keep your latest video task ID and uploaded-photo links for recovery. To restore an unfinished creation after sign-in or checkout, the browser also stores selected photo files, scene, rap topic, voice choices and consent state in IndexedDB, associated with a draft identifier in tab storage. Drafts expire within 24 hours, and expired records are removed when the creator is used again. This local draft storage does not itself upload photos.',
+          'We use PostHog and Plausible for basic visit and referral-source statistics, including visits from AI assistants. Page-visit events include the page URL, referring website, campaign tags, and browser and device information. Plausible also measures time spent on a page and scroll depth. PostHog uses anonymous identifiers in browser storage to estimate visitor counts, and its US-hosted service processes analytics requests. Plausible does not use cookies or persistent browser identifiers for analytics and processes its analytics data in the EU. Both services receive the network information needed to handle analytics requests.',
           'Session recording, automatic click capture and person profiles are disabled. We do not track video-generation, upload, preview or download actions. We do not send uploaded photos, filenames, generation prompts, generated-video URLs, names or email addresses as analytics event data. Unrelated query parameters and URL fragments are removed from page URLs before analytics events are sent.',
         ],
       },

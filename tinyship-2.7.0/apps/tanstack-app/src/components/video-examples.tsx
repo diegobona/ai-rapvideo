@@ -22,6 +22,10 @@ function ExamplePlayer({ video, poster, title, width, height }: {
         playsInline
         preload="none"
         aria-label={title}
+        onPlay={event => {
+          const current = event.currentTarget
+          current.closest('.example-grid')?.querySelectorAll('video').forEach(other => { if (other !== current) other.pause() })
+        }}
         onError={() => setFailed(true)}
       >
         <a href={video} target="_blank" rel="noopener noreferrer">{copy.fallback}</a>
@@ -31,15 +35,15 @@ function ExamplePlayer({ video, poster, title, width, height }: {
   )
 }
 
-export function VideoExamples({ heading = copy.heading }: { heading?: string }) {
+export function VideoExamples({ heading = copy.heading, note }: { heading?: string; note?: string }) {
   return (
     <section className="home-section section-examples" aria-labelledby="video-examples">
-      <h2 id="video-examples">{heading}</h2>
+      <div className="examples-heading"><h2 id="video-examples">{heading}</h2>{note && <p>{note}</p>}</div>
       <div className="example-grid">
         {copy.items.map((example) => (
           <figure className="example-card" key={example.video}>
-            <figcaption><h3 title={example.title}>{example.title}</h3></figcaption>
             <ExamplePlayer {...example} />
+            <figcaption><h3 title={example.title}>{example.title}</h3></figcaption>
           </figure>
         ))}
       </div>

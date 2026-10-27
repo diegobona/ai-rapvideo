@@ -5,11 +5,14 @@ import { authClientReact } from '@libs/auth/authClient'
 import { useAuthCapabilities } from '@/hooks/use-auth-capabilities'
 import { authCopy } from '@/lib/auth-copy'
 import { SITE_ORIGIN } from '@/lib/site'
+import { clearRapDraft, flushRapDraft } from '@/lib/rap-draft-session'
+import { forgetRapAccessIntent } from '@/lib/rap-generation-access'
 
-export function GoogleSignin({ variant = 'header', signedInLabel = authCopy.google.viewPack, returnTo }: {
+export function GoogleSignin({ variant = 'header', signedInLabel = authCopy.google.viewPack, returnTo, accountOnly = false }: {
   variant?: 'header' | 'preview' | 'dialog'
   signedInLabel?: string
   returnTo?: '#rap-maker' | '#preview-next-step'
+  accountOnly?: boolean
 }) {
   const { socialProviders } = useAuthCapabilities()
   const { data: session, isPending } = authClientReact.useSession()
@@ -21,6 +24,10 @@ export function GoogleSignin({ variant = 'header', signedInLabel = authCopy.goog
   async function signIn(destination: '#rap-maker' | '#preview-next-step' = returnTo ?? (variant === 'preview' ? '#preview-next-step' : '#rap-maker')) {
     if (started.current) return
     if (!enabled) { toast.error(authCopy.google.unavailable); return }
+    started.current = true
+    setBusy(true)
+    try { await flushRapDraft() }
+    catch { started.current = false; setBusy(false); toast.error(authCopy.draftFailed); return }
     const local = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)
     if (!local && window.location.origin !== SITE_ORIGIN) {
       // OAuth state and callback cookies must use the same host, including when
@@ -28,8 +35,6 @@ export function GoogleSignin({ variant = 'header', signedInLabel = authCopy.goog
       window.location.assign(`${SITE_ORIGIN}/?signin=google${destination === '#preview-next-step' ? '&continue=preview' : ''}`)
       return
     }
-    started.current = true
-    setBusy(true)
     try {
       const { data, error } = await authClientReact.signIn.social({
         provider: 'google', disableRedirect: true,
@@ -73,6 +78,8 @@ export function GoogleSignin({ variant = 'header', signedInLabel = authCopy.goog
     try {
       const { error } = await authClientReact.signOut()
       if (error) throw new Error('signout_failed')
+      forgetRapAccessIntent()
+      await clearRapDraft().catch(() => {})
       window.location.assign('/')
     } catch { toast.error(authCopy.requestFailed); setBusy(false) }
   }
@@ -88,6 +95,10 @@ export function GoogleSignin({ variant = 'header', signedInLabel = authCopy.goog
       {busy ? authCopy.signingOut : authCopy.signOut}
     </button>
   </div>
+
+  // The header keeps OAuth-return handling and the signed-in account controls;
+  // guests enter both sign-in methods through the shared dialog.
+  if (accountOnly) return null
 
   return <button type="button" className="site-google-signin" onClick={() => { void signIn() }} disabled={busy || isPending || !enabled} title={!enabled ? authCopy.google.unavailable : undefined}>
     {busy ? <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> : <GoogleMark />}

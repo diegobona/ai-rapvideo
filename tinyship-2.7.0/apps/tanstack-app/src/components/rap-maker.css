@@ -1,5 +1,6 @@
 #rap-maker.rap-duo-maker { display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,.78fr);gap:0;width:100%;overflow:hidden;border:1px solid #3a2d53;border-radius:22px;background:#171124;color:#f8f5ff;box-shadow:0 18px 80px #06030d45;scroll-margin-top:24px; }
 #rap-maker.rap-duo-maker * { box-sizing:border-box; }
+#rap-maker.rap-duo-maker .rap-duo-workbench { display:contents; }
 #rap-maker.rap-duo-maker .rap-duo-heading { grid-column:1/-1;display:flex;align-items:center;gap:13px;padding:24px 28px;border:0;border-bottom:1px solid #bba0ff13;background:transparent;position:static; }
 #rap-maker.rap-duo-maker .rap-duo-heading-icon { display:grid;place-items:center;width:42px;height:42px;border:1px solid #8b5cf65c;border-radius:13px;background:#8b5cf61a;color:#c3a5ff; }
 #rap-maker.rap-duo-maker .rap-duo-heading p { margin:0;font-size:19px;font-weight:700;letter-spacing:-.035em; }
@@ -53,6 +54,14 @@
 #rap-maker.rap-duo-maker textarea { width:100%;min-height:84px;resize:vertical;padding:12px;border:1px solid #4b355e;border-radius:10px;background:#0e0b17;color:#f7efff;font:inherit;font-size:12px;line-height:1.65; }
 #rap-maker.rap-duo-maker textarea::placeholder { color:#7d6e8e; }
 #rap-maker.rap-duo-maker .rap-duo-count { margin:5px 0 0;text-align:right;color:#857591;font-size:10px;font-variant-numeric:tabular-nums; }
+#rap-maker.rap-duo-maker .rap-duo-topic-footer { display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:10px;margin-top:8px;min-width:0; }
+#rap-maker.rap-duo-maker .rap-duo-topic-footer .rap-duo-count { margin:0; }
+#rap-maker.rap-duo-maker .rap-duo-topic-presets { display:flex;flex:1;flex-wrap:wrap;gap:6px;min-width:0; }
+#rap-maker.rap-duo-maker .rap-duo-topic-preset { display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:4px 9px;border:1px solid #bba78955;border-radius:0;background:transparent;color:#c7bca9;font:inherit;font-size:11px;font-weight:500;line-height:1.5;white-space:nowrap;cursor:pointer; }
+#rap-maker.rap-duo-maker .rap-duo-topic-preset:hover:not(:disabled) { border-color:#bba789;background:#bba78912;color:#eee9df; }
+#rap-maker.rap-duo-maker .rap-duo-topic-preset[aria-pressed="true"] { border-color:#bba789;background:#bba78920;color:#eee9df; }
+#rap-maker.rap-duo-maker .rap-duo-topic-preset:focus-visible { outline:2px solid #bba789;outline-offset:3px; }
+#rap-maker.rap-duo-maker .rap-duo-topic-preset:disabled { opacity:.55;cursor:wait; }
 #rap-maker.rap-duo-maker .rap-duo-actions { display:flex;flex-direction:column;gap:13px;padding:0;margin:0;border:0;background:transparent; }
 #rap-maker.rap-duo-maker .rap-duo-specs { display:flex;flex-wrap:wrap;justify-content:center;gap:7px 13px;color:#ad9fbe;font-size:10px; }
 #rap-maker.rap-duo-maker .rap-duo-specs>span { display:inline-flex;align-items:center;gap:4px; }

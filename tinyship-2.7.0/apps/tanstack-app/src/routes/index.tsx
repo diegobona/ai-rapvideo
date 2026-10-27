@@ -6,7 +6,7 @@ import { HomeContent } from '@/components/home-content'
 import { homeCopy } from '@/lib/home-copy'
 import { getDanceServiceState } from '@/lib/dance-service'
 import { homeStructuredData } from '@/lib/home-structured-data'
-import '../home.css'
+import '../editorial-home.css'
 
 export const Route = createFileRoute('/')({
   ssr: true,
@@ -24,10 +24,14 @@ export const Route = createFileRoute('/')({
 
 function HomePage() {
   const { isAvailable } = Route.useLoaderData()
+  const headingWords = siteCopy.home.heading.split(' ')
+  const lastWord = headingWords.pop()
   return (
-    <main className="home-page motion-home">
-      <h1 className="home-title">{siteCopy.home.heading}</h1>
-      <p className="home-subtitle">{homeCopy.subtitle}</p>
+    <main className="editorial-home">
+      <section className="home-hero" aria-labelledby="home-title">
+        <div><p className="home-eyebrow">{homeCopy.presentation.eyebrow}</p><h1 id="home-title" className="home-title">{headingWords.join(' ')}{' '}<em>{lastWord}</em></h1></div>
+        <div className="home-hero-copy"><p className="home-subtitle">{homeCopy.subtitle}</p><p className="home-hero-note">{homeCopy.presentation.previewNote}</p></div>
+      </section>
       <DanceMaker isAvailable={isAvailable} className="home-maker" />
       <HomeContent />
     </main>

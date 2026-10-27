@@ -26,7 +26,7 @@
 		"APP_BASE_URL": "https://ai-rapvideo.co",
 		"BETTER_AUTH_URL": "https://ai-rapvideo.co",
 		"VITE_STORAGE_PROVIDER": "r2",
-		"R2_PUBLIC_URL": "https://media.rumpelstiltskin-ai.co"
+		"R2_PUBLIC_URL": "https://media.ai-rapvideo.co"
 	},
 	"r2_buckets": [
 		{

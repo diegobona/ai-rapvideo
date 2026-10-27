@@ -25,9 +25,16 @@ export const getPublicFeatureFlags = createServerFn({ method: 'GET' }).handler(a
   const { authEmailAvailable } = await import('@libs/auth/email-availability')
   const passwordResetEnabled = authEmailAvailable()
   const { rapCreditPaymentsEnabled } = await import('../../../../config/rapCredits')
+  let plausibleAnalyticsEnabled = false
+  try {
+    const { getRequest } = await import('@tanstack/react-start/server')
+    const origin = new URL(getRequest().url).origin
+    plausibleAnalyticsEnabled = ['https://ai-rapvideo.co', 'https://www.ai-rapvideo.co'].includes(origin)
+  } catch { /* Previews and requests without a known origin do not load analytics. */ }
 
   return {
     affiliateEnabled: config.affiliate.enabled,
+    plausibleAnalyticsEnabled,
     rapCreditPaymentsEnabled: rapCreditPaymentsEnabled(),
     auth: {
       socialProviders,
